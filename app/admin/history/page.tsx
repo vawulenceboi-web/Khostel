@@ -86,6 +86,8 @@ export default function AdminHistoryPage() {
         const data = await response.json()
         setAgents(data.data || [])
         console.log('📋 Loaded agent history:', data.data?.length)
+        console.log('🔍 First agent banned status:', data.data?.[0]?.banned)
+        console.log('🔍 Agent data sample:', data.data?.[0])
       }
     } catch (error) {
       console.error('Error fetching agent history:', error)
