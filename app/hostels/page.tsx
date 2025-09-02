@@ -55,6 +55,12 @@ export default function HostelsPage() {
     fetchHostels()
   }, [])
 
+  useEffect(() => {
+    // Auto-refresh hostels every 30 seconds for real-time updates
+    const interval = setInterval(fetchHostels, 30000)
+    return () => clearInterval(interval)
+  }, [])
+
   const fetchHostels = async () => {
     try {
       const queryParams = new URLSearchParams()

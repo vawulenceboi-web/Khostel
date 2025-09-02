@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { MapPin, Shield, Clock, Users, Star, Search, GraduationCap, Building } from "lucide-react"
@@ -11,6 +11,12 @@ import Link from "next/link"
 export default function HomePage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const [stats, setStats] = useState({
+    totalHostels: 0,
+    availableHostels: 0,
+    totalUniversities: 0,
+    totalStudents: 0,
+  })
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
@@ -18,6 +24,23 @@ export default function HomePage() {
       router.push('/dashboard')
     }
   }, [session, status, router])
+
+  // Fetch real platform stats for landing page
+  useEffect(() => {
+    const fetchPublicStats = async () => {
+      try {
+        const response = await fetch('/api/public-stats')
+        if (response.ok) {
+          const data = await response.json()
+          setStats(data.data)
+        }
+      } catch (error) {
+        console.error('Error fetching public stats:', error)
+      }
+    }
+
+    fetchPublicStats()
+  }, [])
 
   if (status === 'loading') {
     return (
@@ -98,23 +121,31 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* Quick Stats */}
+            {/* Real-Time Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-20">
               <div className="text-center">
-                <div className="text-4xl font-bold text-primary mb-2">500+</div>
-                <div className="text-muted-foreground">Verified Hostels</div>
+                <div className="text-4xl font-bold text-primary mb-2">
+                  {stats.totalHostels || 0}
+                </div>
+                <div className="text-muted-foreground">Total Hostels</div>
               </div>
               <div className="text-center">
-                <div className="text-4xl font-bold text-primary mb-2">50+</div>
+                <div className="text-4xl font-bold text-primary mb-2">
+                  {stats.totalUniversities || 0}
+                </div>
                 <div className="text-muted-foreground">Universities</div>
               </div>
               <div className="text-center">
-                <div className="text-4xl font-bold text-primary mb-2">10K+</div>
-                <div className="text-muted-foreground">Happy Students</div>
+                <div className="text-4xl font-bold text-primary mb-2">
+                  {stats.totalStudents || 0}
+                </div>
+                <div className="text-muted-foreground">Students</div>
               </div>
               <div className="text-center">
-                <div className="text-4xl font-bold text-primary mb-2">25+</div>
-                <div className="text-muted-foreground">Cities</div>
+                <div className="text-4xl font-bold text-primary mb-2">
+                  {stats.availableHostels || 0}
+                </div>
+                <div className="text-muted-foreground">Available Now</div>
               </div>
             </div>
           </div>
