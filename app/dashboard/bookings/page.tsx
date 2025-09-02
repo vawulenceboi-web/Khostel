@@ -140,9 +140,9 @@ export default function BookingsPage() {
     <div className="max-w-7xl mx-auto p-4">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-black">Booking Requests</h1>
+        <h1 className="text-3xl font-bold text-black">My Bookings</h1>
         <p className="text-gray-600 mt-2">
-          Manage inspection requests from students
+          View and manage your hostel inspection requests
         </p>
       </div>
 
@@ -185,9 +185,9 @@ export default function BookingsPage() {
         <Card>
           <CardContent className="p-8 text-center">
             <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-black mb-2">No Booking Requests</h3>
+            <h3 className="text-lg font-semibold text-black mb-2">No Bookings Yet</h3>
             <p className="text-gray-600">
-              Students haven't requested any inspections yet. Keep your hostels updated to attract more bookings!
+              You haven't made any hostel inspection requests yet. Browse hostels to book inspections!
             </p>
           </CardContent>
         </Card>
@@ -259,40 +259,46 @@ export default function BookingsPage() {
                   </div>
                 </div>
 
-                {/* Action Buttons */}
+                {/* Student Action - Only Cancel */}
                 {booking.status === 'pending' && (
                   <div className="flex gap-2 pt-4 border-t">
-                    <Button
-                      onClick={() => updateBookingStatus(booking.id, 'confirmed')}
-                      className="bg-green-600 hover:bg-green-700 text-white"
-                    >
-                      Confirm
-                    </Button>
                     <Button
                       onClick={() => updateBookingStatus(booking.id, 'cancelled')}
                       variant="outline"
                       className="border-red-300 text-red-600 hover:bg-red-50"
                     >
-                      Decline
+                      Cancel Request
                     </Button>
                   </div>
                 )}
 
                 {booking.status === 'confirmed' && (
-                  <div className="flex gap-2 pt-4 border-t">
-                    <Button
-                      onClick={() => updateBookingStatus(booking.id, 'completed')}
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      Mark Completed
-                    </Button>
-                    <Button
-                      onClick={() => updateBookingStatus(booking.id, 'cancelled')}
-                      variant="outline"
-                      className="border-red-300 text-red-600 hover:bg-red-50"
-                    >
-                      Cancel
-                    </Button>
+                  <div className="pt-4 border-t">
+                    <div className="bg-green-50 p-3 rounded-md">
+                      <p className="text-green-800 text-sm font-medium">
+                        ✅ Your inspection has been confirmed! The agent will contact you soon.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {booking.status === 'completed' && (
+                  <div className="pt-4 border-t">
+                    <div className="bg-blue-50 p-3 rounded-md">
+                      <p className="text-blue-800 text-sm font-medium">
+                        🏁 Inspection completed. Hope you found your perfect hostel!
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {booking.status === 'cancelled' && (
+                  <div className="pt-4 border-t">
+                    <div className="bg-gray-50 p-3 rounded-md">
+                      <p className="text-gray-600 text-sm">
+                        ❌ This booking request was cancelled.
+                      </p>
+                    </div>
                   </div>
                 )}
               </CardContent>
