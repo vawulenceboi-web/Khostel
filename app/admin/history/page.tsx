@@ -159,7 +159,6 @@ export default function AdminHistoryPage() {
     if (filter === 'all') return true
     if (filter === 'verified') return agent.verified_status
     if (filter === 'pending') return !agent.verified_status
-    if (filter === 'banned') return agent.banned === true
     return false
   })
 
@@ -255,8 +254,7 @@ export default function AdminHistoryPage() {
             {[
               { key: 'all', label: 'All', count: agents.length },
               { key: 'verified', label: 'Verified', count: agents.filter(a => a.verified_status).length },
-              { key: 'pending', label: 'Pending', count: agents.filter(a => !a.verified_status).length },
-              { key: 'banned', label: 'Banned', count: agents.filter(a => a.banned).length }
+              { key: 'pending', label: 'Pending', count: agents.filter(a => !a.verified_status).length }
             ].map(tab => (
               <Button
                 key={tab.key}
