@@ -84,7 +84,16 @@ export default function HostelsClient() {
                   <p>Price: ₦{hostel.price?.toLocaleString()} / {hostel.price_type}</p>
                   <p>Room: {hostel.room_type}</p>
                   <p>Location: {hostel.location?.name}</p>
-                  <p>Agent: {hostel.agent?.first_name} {hostel.agent?.last_name}</p>
+                  {/* Step 3: Add Instagram verification badge carefully */}
+                  <div className="flex items-center space-x-2">
+                    <span>Agent: {hostel.agent?.first_name} {hostel.agent?.last_name}</span>
+                    {hostel.agent?.verified_status && (
+                      <InstagramVerificationBadge 
+                        verified={true} 
+                        size="sm" 
+                      />
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             ))}
