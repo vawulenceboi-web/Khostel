@@ -63,28 +63,82 @@ export default function ProfilePhotoUpload({
     setIsUploading(true)
 
     try {
+      console.log('📸 Starting validation and upload for:', selectedFile.name)
+      
+      // Step 1: Validate image quality first
+      const reader = new FileReader()
+      const imageDataUrl = await new Promise<string>((resolve) => {
+        reader.onload = () => resolve(reader.result as string)
+        reader.readAsDataURL(selectedFile)
+      })
+
+      const validationResponse = await fetch('/api/validate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageData: imageDataUrl,
+          fileName: selectedFile.name
+        })
+      })
+
+      const validationResult = await validationResponse.json()
+      
+      if (!validationResult.success) {
+        // Show specific validation error
+        throw new Error(validationResult.message)
+      }
+
+      console.log('✅ Image validation passed, proceeding with upload...')
+
+      // Step 2: Upload the validated image
       const formData = new FormData()
       formData.append('file', selectedFile)
-      formData.append('type', 'profile-photo')
 
       const response = await fetch('/api/upload-profile', {
         method: 'POST',
         body: formData
       })
 
+      console.log('📡 Upload response status:', response.status)
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('❌ Upload failed with status:', response.status, errorText)
+        throw new Error(`Upload failed: ${response.status}`)
+      }
+
       const result = await response.json()
+      console.log('📊 Upload result:', result)
 
       if (result.success) {
-        toast.success('Profile photo updated successfully!')
+        toast.success(`Profile photo updated successfully! Quality score: ${result.data.qualityScore}%`)
         onPhotoUploaded(result.data.publicUrl)
         setSelectedFile(null)
         setPreviewUrl('')
       } else {
-        toast.error(result.message || 'Upload failed')
+        // Show specific error messages for image quality issues
+        if (result.message.includes('blurry')) {
+          toast.error('📷 The photo upload is blurry, please select a clear image with good lighting and focus.')
+        } else if (result.message.includes('quality')) {
+          toast.error('📷 The image quality is too low. Please upload a clearer, higher resolution photo.')
+        } else if (result.message.includes('size')) {
+          toast.error('📷 The image file is too small or large. Please select a different photo.')
+        } else {
+          toast.error(result.message || 'Upload failed - please try a different photo')
+        }
       }
     } catch (error) {
-      console.error('Profile photo upload error:', error)
-      toast.error('Upload failed. Please try again.')
+      console.error('❌ Profile photo upload error:', error)
+      
+      if (error.message?.includes('Failed to fetch')) {
+        toast.error('🌐 Network error - please check your connection and try again')
+      } else if (error.message?.includes('413')) {
+        toast.error('📷 Image file is too large. Please select a smaller photo (under 5MB)')
+      } else if (error.message?.includes('timeout')) {
+        toast.error('⏱️ Upload timed out. Please try with a smaller image or check your connection')
+      } else {
+        toast.error('📷 Upload failed. Please try again with a different photo.')
+      }
     } finally {
       setIsUploading(false)
     }
