@@ -145,63 +145,101 @@ export default function AdminHistoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Admin Header */}
-      <header className="border-b border-border bg-background/95 backdrop-blur-md sticky top-0 z-50">
+    <div className="min-h-screen bg-gray-50">
+      {/* Modern Mobile-Friendly Header */}
+      <div className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-4 sm:py-6">
+            {/* Left Section */}
+            <div className="flex items-center space-x-3 mb-3 sm:mb-0">
               <Link href="/admin/dashboard">
-                <Button variant="ghost" size="sm">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to Dashboard
+                <Button variant="outline" size="sm" className="border-gray-300 hover:bg-gray-50">
+                  <ArrowLeft className="w-4 h-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Back to Dashboard</span>
+                  <span className="sm:hidden">Back</span>
                 </Button>
               </Link>
-              <div className="text-2xl font-bold text-foreground">Agent History</div>
-              <Badge variant="default" className="bg-blue-600 text-white">
-                <History className="w-3 h-3 mr-1" />
-                Management Panel
-              </Badge>
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-600 rounded-lg flex items-center justify-center">
+                  <History className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-lg sm:text-xl font-bold text-gray-900">Agent History</h1>
+                  <p className="text-xs sm:text-sm text-gray-500">Management & verification records</p>
+                </div>
+              </div>
             </div>
             
-            <div className="flex items-center space-x-4">
-              <Button variant="outline" onClick={fetchAgentHistory}>
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Refresh
+            {/* Right Section */}
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <Badge className="bg-purple-100 text-purple-800 border-purple-200 text-xs sm:text-sm">
+                <Shield className="w-3 h-3 mr-1" />
+                Admin Panel
+              </Badge>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={fetchAgentHistory}
+                className="border-gray-300 hover:bg-gray-50"
+              >
+                <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Refresh</span>
               </Button>
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            Agent Management & History
-          </h1>
-          <p className="text-muted-foreground">
-            View all agents, their verification history, and manage policy violations
-          </p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* Mobile-Friendly Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <Card className="bg-white shadow-sm">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-gray-900">{agents.length}</div>
+              <p className="text-sm text-gray-600">Total Agents</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-white shadow-sm">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-green-600">
+                {agents.filter(a => a.verified_status).length}
+              </div>
+              <p className="text-sm text-gray-600">Verified</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-white shadow-sm">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-yellow-600">
+                {agents.filter(a => !a.verified_status).length}
+              </div>
+              <p className="text-sm text-gray-600">Pending</p>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Filter Tabs */}
-        <div className="flex space-x-2 mb-6">
-          {[
-            { key: 'all', label: 'All Agents', count: agents.length },
-            { key: 'verified', label: 'Verified', count: agents.filter(a => a.verified_status).length },
-            { key: 'pending', label: 'Pending', count: agents.filter(a => !a.verified_status).length }
-          ].map(tab => (
-            <Button
-              key={tab.key}
-              variant={filter === tab.key ? 'default' : 'outline'}
-              onClick={() => setFilter(tab.key as any)}
-              className="flex items-center space-x-2"
-            >
-              <span>{tab.label}</span>
-              <Badge variant="secondary">{tab.count}</Badge>
-            </Button>
-          ))}
+        {/* Mobile-Friendly Filter Tabs */}
+        <div className="mb-6">
+          <div className="flex flex-wrap gap-2">
+            {[
+              { key: 'all', label: 'All', count: agents.length },
+              { key: 'verified', label: 'Verified', count: agents.filter(a => a.verified_status).length },
+              { key: 'pending', label: 'Pending', count: agents.filter(a => !a.verified_status).length }
+            ].map(tab => (
+              <Button
+                key={tab.key}
+                variant={filter === tab.key ? 'default' : 'outline'}
+                onClick={() => setFilter(tab.key as any)}
+                size="sm"
+                className="flex items-center space-x-1 text-xs sm:text-sm"
+              >
+                <span>{tab.label}</span>
+                <Badge variant="secondary" className="bg-white text-black text-xs ml-1">
+                  {tab.count}
+                </Badge>
+              </Button>
+            ))}
+          </div>
         </div>
 
         {/* Agents List */}
@@ -218,9 +256,9 @@ export default function AdminHistoryPage() {
             </Card>
           ) : (
             filteredAgents.map((agent) => (
-              <Card key={agent.id} className="border-2">
-                <CardContent className="p-6">
-                  <div className="flex flex-col lg:flex-row gap-6">
+              <Card key={agent.id} className="border border-gray-200 shadow-sm bg-white">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
                     {/* Agent Info */}
                     <div className="flex-1">
                       <div className="flex items-start justify-between mb-4">
