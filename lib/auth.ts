@@ -46,6 +46,10 @@ export const authOptions: NextAuthOptions = {
             name: `${user.first_name} ${user.last_name || ''}`.trim(),
             firstName: user.first_name,
             lastName: user.last_name || undefined,
+            phone: user.phone || undefined,
+            address: user.address || undefined,
+            profileImage: user.profile_image_url || undefined,
+            facePhoto: user.face_photo_url || undefined,
             role: user.role,
             verifiedStatus: user.verified_status || false,
             schoolId: user.school_id || undefined,
@@ -80,6 +84,10 @@ export const authOptions: NextAuthOptions = {
           token.verifiedStatus = user.verifiedStatus
           token.firstName = user.firstName
           token.lastName = user.lastName
+          token.phone = user.phone
+          token.address = user.address
+          token.profileImage = user.profileImage
+          token.facePhoto = user.facePhoto
           token.schoolId = user.schoolId
           console.log('✅ JWT token updated successfully')
         }
@@ -98,6 +106,10 @@ export const authOptions: NextAuthOptions = {
           session.user.verifiedStatus = (token.verifiedStatus as boolean) || false
           session.user.firstName = (token.firstName as string) || ''
           session.user.lastName = (token.lastName as string) || ''
+          session.user.phone = (token.phone as string) || ''
+          session.user.address = (token.address as string) || ''
+          session.user.profileImage = (token.profileImage as string) || ''
+          session.user.facePhoto = (token.facePhoto as string) || ''
           session.user.schoolId = (token.schoolId as string) || ''
           console.log('✅ Session created successfully for:', session.user.email)
         }

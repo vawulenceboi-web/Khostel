@@ -8,6 +8,10 @@ declare module "next-auth" {
       name: string
       firstName: string
       lastName?: string
+      phone?: string
+      address?: string
+      profileImage?: string
+      facePhoto?: string
       role: string
       verifiedStatus: boolean
       schoolId?: string
@@ -20,6 +24,10 @@ declare module "next-auth" {
     name: string
     firstName: string
     lastName?: string
+    phone?: string
+    address?: string
+    profileImage?: string
+    facePhoto?: string
     role: string
     verifiedStatus: boolean
     schoolId?: string
@@ -32,6 +40,10 @@ declare module "next-auth/jwt" {
     verifiedStatus: boolean
     firstName: string
     lastName?: string
+    phone?: string
+    address?: string
+    profileImage?: string
+    facePhoto?: string
     schoolId?: string
   }
 }
