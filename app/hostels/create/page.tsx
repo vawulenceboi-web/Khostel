@@ -127,8 +127,12 @@ export default function CreateHostelPage() {
       return
     }
 
+    console.log('📊 Validation check - uploadedMediaUrls:', uploadedMediaUrls)
+    console.log('📊 Validation check - uploadedMediaTypes:', uploadedMediaTypes)
+    
     if (uploadedMediaUrls.length === 0) {
       toast.error('At least one photo or video is required')
+      console.log('❌ Validation failed: No uploaded media URLs found')
       return
     }
 
@@ -340,6 +344,8 @@ export default function CreateHostelPage() {
                 
                 <MediaUpload 
                   onMediaChange={(urls, types) => {
+                    console.log('📊 MediaUpload callback - URLs received:', urls)
+                    console.log('📊 MediaUpload callback - Types received:', types)
                     setUploadedMediaUrls(urls)
                     setUploadedMediaTypes(types)
                   }}

@@ -115,14 +115,26 @@ export default function MediaUpload({
           const result = await response.json()
 
           if (result.success) {
-            console.log('✅ Uploaded:', mediaFile.file.name)
+            console.log('✅ Uploaded:', mediaFile.file.name, '→', result.data.publicUrl)
             
             // Update the specific file as uploaded
-            setMediaFiles(prev => prev.map(mf => 
-              mf.file.name === mediaFile.file.name 
-                ? { ...mf, uploaded: true, url: result.data.publicUrl }
-                : mf
-            ))
+            setMediaFiles(prev => {
+              const updated = prev.map(mf => 
+                mf.file.name === mediaFile.file.name 
+                  ? { ...mf, uploaded: true, url: result.data.publicUrl }
+                  : mf
+              )
+              
+              // Immediately call parent callback with updated URLs
+              const uploadedFiles = updated.filter(mf => mf.uploaded)
+              const urls = uploadedFiles.map(mf => mf.url).filter(Boolean) as string[]
+              const types = uploadedFiles.map(mf => mf.type)
+              
+              console.log('📊 Immediate callback - URLs:', urls)
+              onMediaChange(urls, types)
+              
+              return updated
+            })
           } else {
             console.error('❌ Upload failed:', mediaFile.file.name, result.message)
             toast.error(`Failed to upload ${mediaFile.file.name}`)
