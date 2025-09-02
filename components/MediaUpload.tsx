@@ -85,21 +85,21 @@ export default function MediaUpload({
     if (newFiles.length > 0) {
       setMediaFiles(prev => [...prev, ...newFiles])
       toast.success(`${newFiles.length} file(s) added`)
+      
+      // Automatically upload files after selection
+      setTimeout(() => {
+        uploadNewFiles(newFiles)
+      }, 500)
     }
   }
 
-  const uploadFiles = async () => {
-    const unuploadedFiles = mediaFiles.filter(mf => !mf.uploaded)
-    
-    if (unuploadedFiles.length === 0) {
-      toast.error('No new files to upload')
-      return
-    }
-
+  const uploadNewFiles = async (filesToUpload: MediaFile[]) => {
     setIsUploading(true)
 
     try {
-      const uploadPromises = unuploadedFiles.map(async (mediaFile, index) => {
+      console.log('📤 Auto-uploading', filesToUpload.length, 'files...')
+
+      const uploadPromises = filesToUpload.map(async (mediaFile) => {
         const formData = new FormData()
         formData.append('file', mediaFile.file)
         formData.append('type', 'hostel-media')
@@ -112,12 +112,14 @@ export default function MediaUpload({
         const result = await response.json()
 
         if (result.success) {
+          console.log('✅ File uploaded:', mediaFile.file.name, '→', result.data.publicUrl)
           return {
             ...mediaFile,
             uploaded: true,
             url: result.data.publicUrl
           }
         } else {
+          console.error('❌ Upload failed for:', mediaFile.file.name, result.message)
           throw new Error(`Upload failed for ${mediaFile.file.name}: ${result.message}`)
         }
       })
@@ -130,19 +132,33 @@ export default function MediaUpload({
         return uploaded || mf
       }))
 
-      // Notify parent component
-      const urls = mediaFiles.map(mf => mf.url).filter(Boolean) as string[]
-      const types = mediaFiles.map(mf => mf.type)
+      // Immediately notify parent component with uploaded URLs
+      const allFiles = [...mediaFiles.filter(mf => mf.uploaded), ...uploadedFiles]
+      const urls = allFiles.map(mf => mf.url).filter(Boolean) as string[]
+      const types = allFiles.map(mf => mf.type)
+      
+      console.log('📊 Notifying parent with URLs:', urls)
       onMediaChange(urls, types)
 
       toast.success(`${uploadedFiles.length} file(s) uploaded successfully!`)
 
     } catch (error) {
-      console.error('Upload error:', error)
-      toast.error('Some files failed to upload')
+      console.error('❌ Auto-upload error:', error)
+      toast.error('Some files failed to upload. Please try again.')
     } finally {
       setIsUploading(false)
     }
+  }
+
+  const uploadFiles = async () => {
+    const unuploadedFiles = mediaFiles.filter(mf => !mf.uploaded)
+    
+    if (unuploadedFiles.length === 0) {
+      toast.error('No new files to upload')
+      return
+    }
+
+    await uploadNewFiles(unuploadedFiles)
   }
 
   const removeFile = (index: number) => {
