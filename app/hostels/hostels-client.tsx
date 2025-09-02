@@ -8,6 +8,7 @@ import { ArrowLeft, Calendar } from "lucide-react"
 import { MdVerified } from "react-icons/md"
 import { useSession } from 'next-auth/react'
 import { toast } from 'sonner'
+import { Badge } from "@/components/ui/badge"
 
 export default function HostelsClient() {
   const { data: session } = useSession()
@@ -150,6 +151,17 @@ export default function HostelsClient() {
                       {!session?.user ? 'Sign In to Book' : 'Book Inspection'}
                     </Button>
                   </div>
+                  
+                  {/* Step 6: Add amenities display */}
+                  {hostel.amenities && Array.isArray(hostel.amenities) && hostel.amenities.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {hostel.amenities.map((amenity, amenityIndex) => (
+                        <Badge key={amenityIndex} variant="outline" className="text-xs">
+                          {amenity}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                   
                   {/* Step 3: Agent with verification badge */}
                   <div className="flex items-center space-x-2 text-sm text-muted-foreground">
