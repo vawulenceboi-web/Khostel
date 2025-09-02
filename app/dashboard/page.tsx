@@ -158,7 +158,25 @@ export default function DashboardPage() {
     return null
   }
 
-  const user = session.user
+  const user = session.user || {}
+  
+  // Safety check for user data
+  if (!user.id || !user.email) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <AlertTriangle className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+          <h2 className="text-2xl font-bold mb-2">Session Error</h2>
+          <p className="text-muted-foreground mb-4">
+            There was an issue loading your session. Please sign in again.
+          </p>
+          <Button onClick={() => signOut({ callbackUrl: '/auth/login' })}>
+            Sign In Again
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -209,13 +227,13 @@ export default function DashboardPage() {
                 {/* Profile Picture */}
                 <div className="relative">
                   <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden border-4 border-primary/20 bg-secondary">
-                    {user.profileImage || user.facePhoto ? (
+                    {(user?.profileImage || user?.facePhoto) ? (
                       <img
                         src={user.profileImage || user.facePhoto}
-                        alt={user.firstName || user.name}
+                        alt={user?.firstName || user?.name || 'Agent'}
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.firstName || user.name || 'Agent')}&background=random`
+                          e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.firstName || user?.name || 'Agent')}&background=random`
                         }}
                       />
                     ) : (
@@ -237,9 +255,9 @@ export default function DashboardPage() {
                 <div className="flex-1 text-center sm:text-left">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-3">
                     <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-                      {user.firstName} {user.lastName}
+                      {user?.firstName || user?.name || 'Agent'} {user?.lastName || ''}
                     </h1>
-                    {user.verifiedStatus && (
+                    {user?.verifiedStatus && (
                       <div className="flex items-center justify-center sm:justify-start gap-2">
                         <InstagramVerificationBadge verified={true} size="md" />
                         <span className="text-sm font-semibold text-blue-600">Verified Agent</span>
@@ -248,14 +266,14 @@ export default function DashboardPage() {
                   </div>
 
                   <div className="space-y-2 mb-4">
-                    <p className="text-muted-foreground">{user.email}</p>
-                    {user.phone && (
+                    <p className="text-muted-foreground">{user?.email || 'No email'}</p>
+                    {user?.phone && (
                       <p className="text-muted-foreground flex items-center justify-center sm:justify-start">
                         <Phone className="w-4 h-4 mr-2" />
                         {user.phone}
                       </p>
                     )}
-                    {user.address && (
+                    {user?.address && (
                       <p className="text-muted-foreground flex items-center justify-center sm:justify-start">
                         <MapPin className="w-4 h-4 mr-2" />
                         {user.address}
@@ -294,7 +312,7 @@ export default function DashboardPage() {
                   )}
                   
                   {/* Profile Photo Trust Indicator for Agents */}
-                  {user.role === 'agent' && user.verifiedStatus && !user.profileImage && !user.facePhoto && (
+                  {user?.role === 'agent' && user?.verifiedStatus && !user?.profileImage && !user?.facePhoto && (
                     <Card className="bg-yellow-50 border-yellow-200 mt-4">
                       <CardContent className="p-3">
                         <div className="flex items-center justify-between">
@@ -815,12 +833,12 @@ export default function DashboardPage() {
                 </div>
                 
                 <ProfilePhotoUpload
-                  currentPhotoUrl={user.profileImage || user.facePhoto}
+                  currentPhotoUrl={user?.profileImage || user?.facePhoto || ''}
                   onPhotoUploaded={(photoUrl) => {
                     handleProfilePhotoUploaded(photoUrl)
                     setShowProfileUpload(false)
                   }}
-                  userRole={user.role as any}
+                  userRole={(user?.role as any) || 'student'}
                 />
               </div>
             </div>
