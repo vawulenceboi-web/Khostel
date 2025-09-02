@@ -4,16 +4,18 @@ import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import Link from "next/link"
-import { ArrowLeft, Calendar, Clock, CheckCircle } from "lucide-react"
+import { ArrowLeft, Calendar, Clock, CheckCircle, Search } from "lucide-react"
 import { MdVerified } from "react-icons/md"
 import { useSession } from 'next-auth/react'
 import { toast } from 'sonner'
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
 
 export default function HostelsClient() {
   const { data: session } = useSession()
   const [hostels, setHostels] = useState([])
   const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
     fetchHostels()
@@ -136,6 +138,19 @@ export default function HostelsClient() {
       </div>
 
       <div className="max-w-7xl mx-auto p-4">
+        {/* Step 8a: Add just search bar */}
+        <div className="mb-6">
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search hostels..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </div>
+
         {hostels.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center">
