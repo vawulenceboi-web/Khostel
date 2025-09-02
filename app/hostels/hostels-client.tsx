@@ -65,10 +65,10 @@ export default function HostelsClient() {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {hostels.map((hostel, index) => (
-              <Card key={hostel.id || index} className="overflow-hidden">
-                {/* Step 2: Add simple image display */}
+              <Card key={hostel.id || index} className="overflow-hidden hover:shadow-lg transition-shadow">
+                {/* Step 2: Professional image display */}
                 {hostel.images && Array.isArray(hostel.images) && hostel.images.length > 0 && (
                   <img 
                     src={hostel.images[0]} 
@@ -80,13 +80,30 @@ export default function HostelsClient() {
                   />
                 )}
                 
-                <CardContent className="p-4">
-                  <h3 className="text-lg font-bold">{hostel.title}</h3>
-                  <p>Price: ₦{hostel.price?.toLocaleString()} / {hostel.price_type}</p>
-                  <p>Room: {hostel.room_type}</p>
-                  <p>Location: {hostel.location?.name}</p>
-                  {/* Step 3: Add simple blue verification tick */}
-                  <div className="flex items-center space-x-2">
+                <CardContent className="p-6">
+                  {/* Step 4: Professional title */}
+                  <h3 className="font-bold text-xl mb-3">{hostel.title}</h3>
+                  
+                  {/* Step 4: Professional location */}
+                  <div className="flex items-center text-muted-foreground mb-3">
+                    <span className="text-sm">{hostel.location?.name}</span>
+                  </div>
+                  
+                  {/* Step 4: Professional price display */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="text-2xl font-bold text-primary">
+                      ₦{hostel.price?.toLocaleString()}
+                      <span className="text-sm text-muted-foreground font-normal ml-1">
+                        /{hostel.price_type}
+                      </span>
+                    </div>
+                    <span className="text-sm bg-secondary px-2 py-1 rounded">
+                      {hostel.room_type}
+                    </span>
+                  </div>
+                  
+                  {/* Step 3: Agent with verification badge */}
+                  <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                     <span>Agent: {hostel.agent?.first_name} {hostel.agent?.last_name}</span>
                     {hostel.agent?.verified_status && (
                       <MdVerified className="text-blue-500 w-4 h-4" />
