@@ -189,45 +189,72 @@ export default function CreateHostelPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-background/95 backdrop-blur-md sticky top-0 z-50">
+    <div className="min-h-screen bg-gray-50">
+      {/* Modern Dynamic Header */}
+      <div className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-4 sm:py-6">
+            {/* Left Section */}
+            <div className="flex items-center space-x-3 mb-3 sm:mb-0">
               <Link href="/dashboard">
-                <Button variant="ghost" size="sm">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to Dashboard
+                <Button variant="outline" size="sm" className="border-gray-300 hover:bg-gray-50">
+                  <ArrowLeft className="w-4 h-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Back to Dashboard</span>
+                  <span className="sm:hidden">Back</span>
                 </Button>
               </Link>
-              <div className="text-2xl font-bold text-foreground">Create Hostel Listing</div>
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                  <Home className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-lg sm:text-xl font-bold text-gray-900">Create Hostel Listing</h1>
+                  <p className="text-xs sm:text-sm text-gray-500">Add your property to attract students</p>
+                </div>
+              </div>
             </div>
             
-            <div className="flex items-center space-x-4">
-              <Badge variant="default">
-                <Home className="w-3 h-3 mr-1" />
+            {/* Right Section */}
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <Badge className="bg-green-100 text-green-800 border-green-200 text-xs sm:text-sm">
+                <Plus className="w-3 h-3 mr-1" />
                 New Listing
               </Badge>
+              <div className="hidden sm:flex items-center space-x-1 text-xs text-gray-500">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span>Ready to publish</span>
+              </div>
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>List Your Hostel</CardTitle>
-            <CardDescription>
-              Create a detailed listing to attract students. Include high-quality photos and videos.
-            </CardDescription>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <Card className="shadow-lg border-0 bg-white">
+          <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-100">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <Home className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-xl sm:text-2xl text-gray-900">List Your Hostel</CardTitle>
+                <CardDescription className="text-sm sm:text-base text-gray-600 mt-1">
+                  Create a detailed listing to attract students. Include high-quality photos and videos.
+                </CardDescription>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-8">
+          <CardContent className="p-4 sm:p-6 lg:p-8">
+            <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
               {/* Basic Information */}
-              <div className="space-y-6">
-                <h3 className="text-lg font-semibold">Basic Information</h3>
+              <div className="space-y-4 sm:space-y-6">
+                <div className="flex items-center space-x-2 pb-2 border-b border-gray-100">
+                  <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <span className="text-blue-600 font-semibold text-sm">1</span>
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Basic Information</h3>
+                </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -272,7 +299,12 @@ export default function CreateHostelPage() {
 
               {/* Location & Pricing */}
               <div className="space-y-6">
-                <h3 className="text-lg font-semibold">Location & Pricing</h3>
+                <div className="flex items-center space-x-2 pb-2 border-b border-gray-100">
+                  <div className="w-6 h-6 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <span className="text-purple-600 font-semibold text-sm">2</span>
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Location & Pricing</h3>
+                </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -341,7 +373,12 @@ export default function CreateHostelPage() {
 
               {/* Media Upload */}
               <div className="space-y-6">
-                <h3 className="text-lg font-semibold">Photos & Videos</h3>
+                <div className="flex items-center space-x-2 pb-2 border-b border-gray-100">
+                  <div className="w-6 h-6 bg-green-100 rounded-lg flex items-center justify-center">
+                    <span className="text-green-600 font-semibold text-sm">3</span>
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Photos & Videos</h3>
+                </div>
                 
                 <SimpleMediaUpload 
                   uploadedUrls={uploadedMediaUrls}
@@ -357,7 +394,12 @@ export default function CreateHostelPage() {
 
               {/* Amenities */}
               <div className="space-y-6">
-                <h3 className="text-lg font-semibold">Amenities</h3>
+                <div className="flex items-center space-x-2 pb-2 border-b border-gray-100">
+                  <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <span className="text-orange-600 font-semibold text-sm">4</span>
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Amenities</h3>
+                </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                   {commonAmenities.map((amenity) => (
                     <div key={amenity} className="flex items-center space-x-2">
@@ -391,33 +433,41 @@ export default function CreateHostelPage() {
               </div>
 
               {/* Submit Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 pt-6">
-                <Button 
-                  type="submit" 
-                  className="flex-1" 
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
-                      Creating Listing...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-4 h-4 mr-2" />
-                      Publish Hostel Listing
-                    </>
-                  )}
-                </Button>
+              <div className="bg-gray-50 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-6 mt-8">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                  <Button 
+                    type="submit" 
+                    className="flex-1 h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg" 
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        <span className="hidden sm:inline">Creating Listing...</span>
+                        <span className="sm:hidden">Creating...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        <span className="hidden sm:inline">Publish Hostel Listing</span>
+                        <span className="sm:hidden">Publish Listing</span>
+                      </>
+                    )}
+                  </Button>
 
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => router.push('/dashboard')}
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => router.push('/dashboard')}
+                    className="flex-1 h-12 border-gray-300 text-gray-700 hover:bg-gray-50 font-medium"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+                
+                <p className="text-xs text-gray-500 text-center mt-3">
+                  By publishing, you agree to our terms and conditions
+                </p>
               </div>
             </form>
           </CardContent>
