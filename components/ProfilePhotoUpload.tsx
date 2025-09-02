@@ -115,6 +115,12 @@ export default function ProfilePhotoUpload({
         onPhotoUploaded(result.data.publicUrl)
         setSelectedFile(null)
         setPreviewUrl('')
+        
+        // Force session refresh to show new photo immediately
+        console.log('🔄 Refreshing session to display new photo...')
+        setTimeout(() => {
+          window.location.reload()
+        }, 1000)
       } else {
         // Show specific error messages for image quality issues
         if (result.message.includes('blurry')) {

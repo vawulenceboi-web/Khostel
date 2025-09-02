@@ -53,6 +53,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [isResubmitting, setIsResubmitting] = useState(false)
   const [showProfileUpload, setShowProfileUpload] = useState(false)
+  const [freshUserData, setFreshUserData] = useState<any>(null)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -62,6 +63,7 @@ export default function DashboardPage() {
 
     if (status === 'authenticated' && session?.user) {
       fetchRealTimeData()
+      fetchFreshUserData()
     }
   }, [status, session, router])
 
@@ -100,6 +102,19 @@ export default function DashboardPage() {
     }
   }
 
+  const fetchFreshUserData = async () => {
+    try {
+      const response = await fetch('/api/user/profile')
+      if (response.ok) {
+        const data = await response.json()
+        setFreshUserData(data.data)
+        console.log('🔄 Fresh user data loaded:', data.data.profileImage ? 'Has profile image' : 'No profile image')
+      }
+    } catch (error) {
+      console.error('Error fetching fresh user data:', error)
+    }
+  }
+
   const handleResubmitVerification = async () => {
     setIsResubmitting(true)
     
@@ -127,11 +142,25 @@ export default function DashboardPage() {
     }
   }
 
-  const handleProfilePhotoUploaded = (photoUrl: string) => {
-    toast.success('Profile photo updated! Refreshing...')
-    setTimeout(() => {
-      window.location.reload()
-    }, 1500)
+  const handleProfilePhotoUploaded = async (photoUrl: string) => {
+    try {
+      toast.success('Profile photo updated! Updating display...')
+      
+      // Immediately update the fresh user data with new photo
+      setFreshUserData(prev => ({
+        ...prev,
+        profileImage: photoUrl
+      }))
+      
+      // Also refresh from database to be sure
+      await fetchFreshUserData()
+      
+      console.log('✅ Profile photo updated in dashboard display')
+      
+    } catch (error) {
+      console.error('Error updating profile display:', error)
+      toast.error('Photo uploaded but display update failed. Please refresh the page.')
+    }
   }
 
   if (status === 'loading' || loading) {
@@ -150,7 +179,8 @@ export default function DashboardPage() {
     return null
   }
 
-  const user = session.user
+  // Use fresh user data if available, otherwise fall back to session
+  const user = freshUserData || session.user
 
   // Safety check for essential user data
   if (!user?.id || !user?.email) {
@@ -216,13 +246,16 @@ export default function DashboardPage() {
                         src={user.profileImage || user.facePhoto}
                         alt={user?.firstName || user?.name || 'Agent'}
                         className="w-full h-full object-cover"
+                        onLoad={() => console.log('✅ Profile image loaded successfully:', user.profileImage || user.facePhoto)}
                         onError={(e) => {
+                          console.log('❌ Profile image failed to load:', user.profileImage || user.facePhoto)
                           e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.firstName || user?.name || 'Agent')}&background=random`
                         }}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <Users className="w-12 h-12 text-muted-foreground" />
+                        {console.log('ℹ️ No profile image found for user:', user?.email)}
                       </div>
                     )}
                   </div>
