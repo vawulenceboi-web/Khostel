@@ -176,7 +176,7 @@ export const registerUserSchema = z.object({
 
 // Admin login schema (hardcoded credentials)
 export const adminLoginSchema = z.object({
-  username: z.string().min(1, 'Username is required'),
+  email: z.string().email('Valid admin email is required'),
   password: z.string().min(1, 'Password is required'),
 })
 

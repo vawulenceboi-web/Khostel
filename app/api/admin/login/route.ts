@@ -10,11 +10,11 @@ export async function POST(request: NextRequest) {
     // Validate input
     const validatedData = adminLoginSchema.parse(body)
     
-    console.log('🔐 Admin login attempt for:', validatedData.username)
+    console.log('🔐 Admin login attempt for:', validatedData.email)
 
     // Validate admin credentials
     const isValid = await validateAdminCredentials(
-      validatedData.username, 
+      validatedData.email, 
       validatedData.password
     )
 
@@ -46,7 +46,6 @@ export async function POST(request: NextRequest) {
       message: 'Admin authentication successful',
       data: {
         email: adminSession.email,
-        username: adminSession.username,
         role: adminSession.role
       }
     })

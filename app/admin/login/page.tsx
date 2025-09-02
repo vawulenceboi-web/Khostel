@@ -12,7 +12,7 @@ import { toast } from 'sonner'
 export default function AdminLoginPage() {
   const router = useRouter()
   const [formData, setFormData] = useState({
-    username: '',
+    email: '',
     password: ''
   })
   const [showPassword, setShowPassword] = useState(false)
@@ -68,15 +68,15 @@ export default function AdminLoginPage() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="email">Admin Email</Label>
                 <Input
-                  id="username"
-                  type="text"
-                  placeholder="Admin username"
-                  value={formData.username}
+                  id="email"
+                  type="email"
+                  placeholder="admin@k-h.com"
+                  value={formData.email}
                   onChange={(e) => setFormData(prev => ({
                     ...prev,
-                    username: e.target.value
+                    email: e.target.value
                   }))}
                   required
                 />
@@ -134,6 +134,7 @@ export default function AdminLoginPage() {
             <div className="mt-6 pt-6 border-t border-border">
               <div className="text-center">
                 <p className="text-xs text-muted-foreground mb-2">
+                  <strong>Admin Email:</strong> admin@k-h.com<br/>
                   Admin credentials can only be changed in the database
                 </p>
                 <div className="text-xs text-muted-foreground">

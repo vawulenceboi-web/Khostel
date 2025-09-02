@@ -2,15 +2,14 @@ import bcrypt from 'bcryptjs'
 
 // Hardcoded admin credentials (can only be changed in database)
 const ADMIN_CREDENTIALS = {
-  username: 'k-h-admin',
+  email: 'admin@k-h.com',
   password: 'AdminK-H2024!', // This will be hashed
-  email: 'admin@k-h.com'
 }
 
-export async function validateAdminCredentials(username: string, password: string): Promise<boolean> {
+export async function validateAdminCredentials(email: string, password: string): Promise<boolean> {
   try {
-    // Check username
-    if (username !== ADMIN_CREDENTIALS.username) {
+    // Check email
+    if (email !== ADMIN_CREDENTIALS.email) {
       return false
     }
 
@@ -35,7 +34,6 @@ export function getAdminEmail(): string {
 
 // Admin session data
 export interface AdminSession {
-  username: string
   email: string
   role: 'admin'
   loginTime: Date
@@ -43,7 +41,6 @@ export interface AdminSession {
 
 export function createAdminSession(): AdminSession {
   return {
-    username: ADMIN_CREDENTIALS.username,
     email: ADMIN_CREDENTIALS.email,
     role: 'admin',
     loginTime: new Date()

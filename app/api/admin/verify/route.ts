@@ -31,7 +31,6 @@ export async function GET(request: NextRequest) {
       success: true,
       data: {
         email: adminSession.email,
-        username: adminSession.username,
         role: adminSession.role
       }
     })
