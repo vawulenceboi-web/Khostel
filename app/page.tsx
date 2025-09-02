@@ -1,490 +1,317 @@
-"use client"
+'use client'
 
-import { useState } from "react"
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
-import { MapPin, Users, Shield, Search, Star, Calendar, Map } from "lucide-react"
-import HostelMap from "@/components/hostel-map"
+import { Card, CardContent } from "@/components/ui/card"
+import { MapPin, Shield, Clock, Users, Star, Search, GraduationCap, Building } from "lucide-react"
+import Link from "next/link"
 
 export default function HomePage() {
-  const [userRole, setUserRole] = useState<"student" | "agent" | "admin" | null>(null)
+  const { data: session, status } = useSession()
+  const router = useRouter()
 
-  const LoginForm = ({ role }: { role: string }) => (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">K-H Platform</CardTitle>
-        <CardDescription>
-          Sign in as {role === "student" ? "Student" : role === "agent" ? "Agent/Owner" : "Admin"}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" placeholder="Enter your email" />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" placeholder="Enter your password" />
-        </div>
-        {role === "agent" && (
-          <div className="space-y-2">
-            <Label htmlFor="cac">CAC Registration Number</Label>
-            <Input id="cac" placeholder="Enter CAC number for verification" />
-          </div>
-        )}
-        <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">Sign In</Button>
-        <div className="text-center text-sm text-muted-foreground">
-          Don't have an account?{" "}
-          <Button variant="link" className="p-0 h-auto text-accent">
-            Sign up
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  )
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user) {
+      router.push('/dashboard')
+    }
+  }, [session, status, router])
 
-  const StudentDashboard = () => (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <h1 className="text-2xl font-bold">K-H</h1>
-            <Badge variant="secondary">Student</Badge>
-          </div>
-          <Button variant="outline" onClick={() => setUserRole(null)}>
-            Logout
-          </Button>
-        </div>
-      </header>
-
-      {/* Search Section */}
-      <section className="bg-muted py-12">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold mb-4 text-balance">Find Your Perfect Hostel</h2>
-          <p className="text-xl text-muted-foreground mb-8 text-pretty">
-            Discover verified hostels around Nigerian universities
-          </p>
-          <div className="max-w-2xl mx-auto flex gap-2">
-            <Input placeholder="Search by university or location..." className="flex-1" />
-            <Button className="bg-accent hover:bg-accent/90 text-accent-foreground">
-              <Search className="w-4 h-4 mr-2" />
-              Search
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Maps Integration Section */}
-      <section className="py-12">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h3 className="text-2xl font-bold mb-2">Explore Hostel Areas</h3>
-              <p className="text-muted-foreground">Interactive map showing hostel locations around universities</p>
-            </div>
-            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-              <Map className="w-4 h-4" />
-              <span>KWASU Campus Areas</span>
-            </div>
-          </div>
-          <HostelMap />
-        </div>
-      </section>
-
-      {/* Featured Hostels */}
-      <section className="py-12 bg-muted">
-        <div className="container mx-auto px-4">
-          <h3 className="text-2xl font-bold mb-8">Featured Hostels</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Card key={i} className="overflow-hidden hover:shadow-lg transition-shadow">
-                <div className="h-48 bg-muted flex items-center justify-center">
-                  <img
-                    src={`/modern-hostel-room-.png?height=200&width=300&query=modern hostel room ${i}`}
-                    alt={`Hostel ${i}`}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <h4 className="font-semibold">Westend Lodge {i}</h4>
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <Star className="w-4 h-4 fill-accent text-accent mr-1" />
-                      4.{i}
-                    </div>
-                  </div>
-                  <div className="flex items-center text-sm text-muted-foreground mb-2">
-                    <MapPin className="w-4 h-4 mr-1" />
-                    KWASU, Westend Area
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold">₦{(150 + i * 25).toLocaleString()}/semester</span>
-                    <Button size="sm" className="bg-accent hover:bg-accent/90 text-accent-foreground">
-                      <Calendar className="w-4 h-4 mr-1" />
-                      Book Inspection
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* My Bookings */}
-      <section className="py-12">
-        <div className="container mx-auto px-4">
-          <h3 className="text-2xl font-bold mb-8">My Bookings</h3>
-          <div className="grid gap-4">
-            {[1, 2].map((i) => (
-              <Card key={i}>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-semibold">Safari Heights {i}</h4>
-                      <p className="text-sm text-muted-foreground">Inspection booked for Dec {20 + i}, 2024</p>
-                    </div>
-                    <Badge variant={i === 1 ? "default" : "secondary"}>{i === 1 ? "Confirmed" : "Pending"}</Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-    </div>
-  )
-
-  const AgentDashboard = () => (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <h1 className="text-2xl font-bold">K-H</h1>
-            <Badge variant="secondary">Agent</Badge>
-          </div>
-          <Button variant="outline" onClick={() => setUserRole(null)}>
-            Logout
-          </Button>
-        </div>
-      </header>
-
-      {/* Quick Stats */}
-      <section className="py-8 bg-muted">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card>
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold">12</div>
-                <div className="text-sm text-muted-foreground">Active Listings</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold">8</div>
-                <div className="text-sm text-muted-foreground">Pending Bookings</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold">24</div>
-                <div className="text-sm text-muted-foreground">This Month Views</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold">4.2</div>
-                <div className="text-sm text-muted-foreground">Average Rating</div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Management Tabs */}
-      <section className="py-8">
-        <div className="container mx-auto px-4">
-          <Tabs defaultValue="listings" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="listings">My Listings</TabsTrigger>
-              <TabsTrigger value="bookings">Booking Requests</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="listings" className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="text-xl font-semibold">Hostel Listings</h3>
-                <Button className="bg-accent hover:bg-accent/90 text-accent-foreground">Add New Listing</Button>
-              </div>
-              <div className="grid gap-4">
-                {[1, 2, 3].map((i) => (
-                  <Card key={i}>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                          <div className="w-16 h-16 bg-muted rounded flex items-center justify-center">
-                            <img
-                              src={`/hostel-building-.png?height=64&width=64&query=hostel building ${i}`}
-                              alt={`Listing ${i}`}
-                              className="w-full h-full object-cover rounded"
-                            />
-                          </div>
-                          <div>
-                            <h4 className="font-semibold">Chapel Road Lodge {i}</h4>
-                            <p className="text-sm text-muted-foreground">₦{(180 + i * 20).toLocaleString()}/semester</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Badge variant={i === 1 ? "default" : "secondary"}>
-                            {i === 1 ? "Available" : "Not Available"}
-                          </Badge>
-                          <Button variant="outline" size="sm">
-                            Edit
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="bookings" className="space-y-4">
-              <h3 className="text-xl font-semibold">Booking Requests</h3>
-              <div className="grid gap-4">
-                {[1, 2, 3].map((i) => (
-                  <Card key={i}>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="font-semibold">John Doe {i}</h4>
-                          <p className="text-sm text-muted-foreground">
-                            Wants to inspect Chapel Road Lodge {i} on Dec {25 + i}, 2024
-                          </p>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Button variant="outline" size="sm">
-                            Decline
-                          </Button>
-                          <Button size="sm" className="bg-accent hover:bg-accent/90 text-accent-foreground">
-                            Confirm
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </section>
-    </div>
-  )
-
-  const AdminDashboard = () => (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <h1 className="text-2xl font-bold">K-H</h1>
-            <Badge variant="secondary">Admin</Badge>
-          </div>
-          <Button variant="outline" onClick={() => setUserRole(null)}>
-            Logout
-          </Button>
-        </div>
-      </header>
-
-      {/* Admin Stats */}
-      <section className="py-8 bg-muted">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card>
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold">156</div>
-                <div className="text-sm text-muted-foreground">Total Students</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold">23</div>
-                <div className="text-sm text-muted-foreground">Verified Agents</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold">5</div>
-                <div className="text-sm text-muted-foreground">Pending Verifications</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold">89</div>
-                <div className="text-sm text-muted-foreground">Active Listings</div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Admin Management */}
-      <section className="py-8">
-        <div className="container mx-auto px-4">
-          <Tabs defaultValue="verification" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="verification">Agent Verification</TabsTrigger>
-              <TabsTrigger value="listings">Manage Listings</TabsTrigger>
-              <TabsTrigger value="reports">Reports</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="verification" className="space-y-4">
-              <h3 className="text-xl font-semibold">Pending Agent Verifications</h3>
-              <div className="grid gap-4">
-                {[1, 2, 3].map((i) => (
-                  <Card key={i}>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="font-semibold">Agent Name {i}</h4>
-                          <p className="text-sm text-muted-foreground">
-                            CAC: RC{1234567 + i} | Email: agent{i}@example.com
-                          </p>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Button variant="outline" size="sm">
-                            Reject
-                          </Button>
-                          <Button size="sm" className="bg-accent hover:bg-accent/90 text-accent-foreground">
-                            <Shield className="w-4 h-4 mr-1" />
-                            Verify
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="listings" className="space-y-4">
-              <h3 className="text-xl font-semibold">All Hostel Listings</h3>
-              <div className="grid gap-4">
-                {[1, 2, 3, 4].map((i) => (
-                  <Card key={i}>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="font-semibold">University Lodge {i}</h4>
-                          <p className="text-sm text-muted-foreground">
-                            By Agent {i} | ₦{(200 + i * 15).toLocaleString()}/semester
-                          </p>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Badge variant={i % 2 === 0 ? "default" : "secondary"}>
-                            {i % 2 === 0 ? "Active" : "Under Review"}
-                          </Badge>
-                          <Button variant="outline" size="sm">
-                            View
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="reports" className="space-y-4">
-              <h3 className="text-xl font-semibold">Platform Reports</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Monthly Bookings</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold">142</div>
-                    <p className="text-sm text-muted-foreground">+12% from last month</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>User Growth</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold">+28</div>
-                    <p className="text-sm text-muted-foreground">New users this month</p>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </section>
-    </div>
-  )
-
-  if (!userRole) {
+  if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="w-full max-w-4xl">
-          {/* Hero Section */}
-          <div className="text-center mb-12">
-            <h1 className="text-5xl font-bold mb-4 text-balance">K-H Platform</h1>
-            <p className="text-xl text-muted-foreground mb-8 text-pretty">
-              Connecting Nigerian students with verified hostel accommodations
-            </p>
-          </div>
-
-          {/* Role Selection */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <Card
-              className="cursor-pointer hover:shadow-lg transition-shadow border-2 hover:border-accent"
-              onClick={() => setUserRole("student")}
-            >
-              <CardContent className="p-6 text-center">
-                <Users className="w-12 h-12 mx-auto mb-4 text-accent" />
-                <h3 className="text-xl font-semibold mb-2">Student</h3>
-                <p className="text-muted-foreground">Find and book hostel inspections</p>
-              </CardContent>
-            </Card>
-
-            <Card
-              className="cursor-pointer hover:shadow-lg transition-shadow border-2 hover:border-accent"
-              onClick={() => setUserRole("agent")}
-            >
-              <CardContent className="p-6 text-center">
-                <MapPin className="w-12 h-12 mx-auto mb-4 text-accent" />
-                <h3 className="text-xl font-semibold mb-2">Agent/Owner</h3>
-                <p className="text-muted-foreground">List and manage your hostels</p>
-              </CardContent>
-            </Card>
-
-            <Card
-              className="cursor-pointer hover:shadow-lg transition-shadow border-2 hover:border-accent"
-              onClick={() => setUserRole("admin")}
-            >
-              <CardContent className="p-6 text-center">
-                <Shield className="w-12 h-12 mx-auto mb-4 text-accent" />
-                <h3 className="text-xl font-semibold mb-2">Admin</h3>
-                <p className="text-muted-foreground">Manage platform and verify agents</p>
-              </CardContent>
-            </Card>
-          </div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-2xl font-bold text-foreground mb-2">k-H</div>
+          <div className="text-muted-foreground">Loading...</div>
         </div>
       </div>
     )
   }
 
-  if (userRole === "student") return <StudentDashboard />
-  if (userRole === "agent") return <AgentDashboard />
-  if (userRole === "admin") return <AdminDashboard />
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Navigation */}
+      <nav className="border-b border-border bg-background/95 backdrop-blur-md sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <Link href="/" className="text-2xl font-bold text-foreground">
+                k-H
+              </Link>
+            </div>
+            
+            <div className="hidden md:flex items-center space-x-8">
+              <Link href="/hostels" className="text-foreground hover:text-primary transition-colors">
+                Browse Hostels
+              </Link>
+              <Link href="/how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">
+                How It Works
+              </Link>
+              <Link href="/about" className="text-muted-foreground hover:text-foreground transition-colors">
+                About
+              </Link>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <Link href="/auth/login">
+                <Button variant="ghost">Sign In</Button>
+              </Link>
+              <Link href="/auth/register">
+                <Button>Get Started</Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </nav>
 
-  return <LoginForm role={userRole} />
+      {/* Hero Section */}
+      <section className="relative py-20 md:py-32 overflow-hidden">
+        <div className="absolute inset-0 pattern-dots opacity-20"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+              <span className="bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
+                Find Your Perfect
+              </span>
+              <br />
+              <span className="text-foreground">Student Hostel</span>
+            </h1>
+            <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed">
+              Discover verified, affordable accommodation near Nigerian universities. 
+              Book inspections instantly with trusted agents.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+              <Link href="/hostels">
+                <Button size="lg" className="text-lg px-8 py-4 h-14 min-w-[200px]">
+                  <Search className="mr-2 h-5 w-5" />
+                  Browse Hostels
+                </Button>
+              </Link>
+              <Link href="/auth/register?role=agent">
+                <Button variant="outline" size="lg" className="text-lg px-8 py-4 h-14 min-w-[200px]">
+                  <Building className="mr-2 h-5 w-5" />
+                  List Your Property
+                </Button>
+              </Link>
+            </div>
+
+            {/* Quick Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-20">
+              <div className="text-center">
+                <div className="text-4xl font-bold text-primary mb-2">500+</div>
+                <div className="text-muted-foreground">Verified Hostels</div>
+              </div>
+              <div className="text-center">
+                <div className="text-4xl font-bold text-primary mb-2">50+</div>
+                <div className="text-muted-foreground">Universities</div>
+              </div>
+              <div className="text-center">
+                <div className="text-4xl font-bold text-primary mb-2">10K+</div>
+                <div className="text-muted-foreground">Happy Students</div>
+              </div>
+              <div className="text-center">
+                <div className="text-4xl font-bold text-primary mb-2">25+</div>
+                <div className="text-muted-foreground">Cities</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* User Type Selection */}
+      <section className="py-20 bg-secondary/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-foreground mb-6">Choose Your Path</h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Select your role to get started with k-H
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <Card className="border-2 border-border/50 hover:border-primary/50 transition-all duration-300 cursor-pointer group">
+              <CardContent className="p-8 text-center">
+                <div className="bg-primary/10 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-primary/20 transition-colors">
+                  <GraduationCap className="h-10 w-10 text-primary" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4">I'm a Student</h3>
+                <p className="text-muted-foreground mb-6 leading-relaxed">
+                  Find and book affordable hostels near your university. Browse verified listings and schedule inspections.
+                </p>
+                <Link href="/auth/register?role=student">
+                  <Button className="w-full h-12 text-base font-semibold">
+                    Get Started as Student
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-2 border-border/50 hover:border-primary/50 transition-all duration-300 cursor-pointer group">
+              <CardContent className="p-8 text-center">
+                <div className="bg-primary/10 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-primary/20 transition-colors">
+                  <Building className="h-10 w-10 text-primary" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4">I'm an Agent/Owner</h3>
+                <p className="text-muted-foreground mb-6 leading-relaxed">
+                  List your properties and connect with students. Manage bookings and grow your hostel business.
+                </p>
+                <Link href="/auth/register?role=agent">
+                  <Button className="w-full h-12 text-base font-semibold">
+                    Get Started as Agent
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-foreground mb-6">Why Choose k-H?</h2>
+            <p className="text-xl text-muted-foreground">
+              We make finding student accommodation simple, safe, and reliable
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            <div className="text-center">
+              <div className="bg-primary/10 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <Shield className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-bold mb-4">Verified Agents</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                All agents are verified with CAC business registration before they can list properties
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <div className="bg-primary/10 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <MapPin className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-bold mb-4">Location-Based Search</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Find hostels in specific areas around your university with integrated Google Maps
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <div className="bg-primary/10 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <Clock className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-bold mb-4">Instant Booking</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Book hostel inspections instantly and get email confirmations from verified agents
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="py-20 bg-secondary/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-foreground mb-6">How It Works</h2>
+            <p className="text-xl text-muted-foreground">Simple steps to find your perfect hostel</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="bg-primary text-primary-foreground w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">
+                1
+              </div>
+              <h3 className="text-xl font-semibold mb-3">Search & Filter</h3>
+              <p className="text-muted-foreground">Browse hostels by university, location, price range, and amenities</p>
+            </div>
+            
+            <div className="text-center">
+              <div className="bg-primary text-primary-foreground w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">
+                2
+              </div>
+              <h3 className="text-xl font-semibold mb-3">Book Inspection</h3>
+              <p className="text-muted-foreground">Schedule a visit with verified agents and get instant confirmation</p>
+            </div>
+            
+            <div className="text-center">
+              <div className="bg-primary text-primary-foreground w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">
+                3
+              </div>
+              <h3 className="text-xl font-semibold mb-3">Move In</h3>
+              <p className="text-muted-foreground">Complete your booking and enjoy your new home away from home</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 border-t border-border">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-4xl font-bold text-foreground mb-6">
+            Ready to Find Your Perfect Hostel?
+          </h2>
+          <p className="text-xl text-muted-foreground mb-8">
+            Join thousands of Nigerian students who have found their ideal accommodation
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/auth/register">
+              <Button size="lg" className="text-lg px-8 py-4 h-14 min-w-[200px]">
+                Get Started Free
+              </Button>
+            </Link>
+            <Link href="/hostels">
+              <Button variant="outline" size="lg" className="text-lg px-8 py-4 h-14 min-w-[200px]">
+                Browse Hostels
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-card border-t-2 border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+            <div className="md:col-span-2">
+              <Link href="/" className="text-3xl font-bold text-foreground">
+                k-H
+              </Link>
+              <p className="text-muted-foreground mt-4 text-lg leading-relaxed max-w-md">
+                Making student accommodation search easier and safer across Nigerian universities.
+              </p>
+            </div>
+            
+            <div>
+              <h3 className="font-semibold text-foreground mb-4">For Students</h3>
+              <ul className="space-y-2">
+                <li><Link href="/hostels" className="text-muted-foreground hover:text-foreground transition-colors">Browse Hostels</Link></li>
+                <li><Link href="/how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">How It Works</Link></li>
+                <li><Link href="/support" className="text-muted-foreground hover:text-foreground transition-colors">Support</Link></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h3 className="font-semibold text-foreground mb-4">For Agents</h3>
+              <ul className="space-y-2">
+                <li><Link href="/auth/register?role=agent" className="text-muted-foreground hover:text-foreground transition-colors">List Property</Link></li>
+                <li><Link href="/verification" className="text-muted-foreground hover:text-foreground transition-colors">Get Verified</Link></li>
+                <li><Link href="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">Dashboard</Link></li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="border-t border-border mt-12 pt-8 text-center">
+            <p className="text-muted-foreground">
+              &copy; 2024 k-H. All rights reserved. Made for Nigerian students.
+            </p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  )
 }
