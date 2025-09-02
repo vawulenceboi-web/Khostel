@@ -72,20 +72,29 @@ export default function HostelsClient() {
     }
   }
 
-  // Step 7: Add time formatting function
+  // Step 7: Fixed time formatting function
   const formatTimeAgo = (dateString) => {
     if (!dateString) return 'Recently posted'
     
     try {
       const now = new Date()
       const date = new Date(dateString)
-      const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+      const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
 
-      if (diffInHours < 1) return 'Just posted'
-      if (diffInHours < 24) return `${Math.floor(diffInHours)}h ago`
-      if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d ago`
+      console.log('⏰ Time calculation:', {
+        hostelDate: dateString,
+        now: now.toISOString(),
+        diffInSeconds,
+        diffInHours: Math.floor(diffInSeconds / 3600)
+      })
+
+      if (diffInSeconds < 60) return 'Just posted'
+      if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`
+      if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`
+      if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}d ago`
       return 'Posted recently'
-    } catch {
+    } catch (error) {
+      console.log('❌ Time formatting error:', error)
       return 'Recently posted'
     }
   }
