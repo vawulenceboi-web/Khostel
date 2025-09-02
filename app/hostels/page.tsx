@@ -9,9 +9,22 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { MapPin, Star, Wifi, Car, Utensils, Search, Filter, ArrowLeft, Calendar, Clock, CheckCircle, Users, AlertTriangle } from "lucide-react"
+import { 
+  MapPin, 
+  Star, 
+  Wifi, 
+  Car, 
+  Utensils, 
+  Search, 
+  Filter, 
+  ArrowLeft, 
+  Calendar, 
+  Clock, 
+  CheckCircle, 
+  Users, 
+  AlertTriangle 
+} from "lucide-react"
 import { toast } from 'sonner'
-import { formatRelativeTime, isWithinLast24Hours } from '@/lib/timeUtils'
 import { InstagramVerificationBadge } from '@/components/ui/verification-badge'
 
 interface Hostel {
@@ -27,8 +40,6 @@ interface Hostel {
   address: string
   created_at: string
   updated_at: string
-  timeAgo?: string
-  isNew?: boolean
   location: {
     id: string
     name: string
@@ -48,6 +59,7 @@ export default function HostelsPage() {
   const { data: session } = useSession()
   const [hostels, setHostels] = useState<Hostel[]>([])
   const [loading, setLoading] = useState(true)
+  const [locations, setLocations] = useState<any[]>([])
   const [filters, setFilters] = useState({
     search: '',
     locationId: '',
@@ -59,6 +71,7 @@ export default function HostelsPage() {
 
   useEffect(() => {
     fetchHostels()
+    fetchLocations()
   }, [])
 
   useEffect(() => {
@@ -78,12 +91,29 @@ export default function HostelsPage() {
       if (response.ok) {
         const data = await response.json()
         setHostels(data.data || [])
+        console.log('🏠 Loaded hostels:', data.data?.length || 0)
+      } else {
+        console.error('❌ Hostels API failed:', response.status)
+        toast.error('Failed to load hostels')
       }
     } catch (error) {
       console.error('Error fetching hostels:', error)
       toast.error('Failed to load hostels')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchLocations = async () => {
+    try {
+      const response = await fetch('/api/locations')
+      if (response.ok) {
+        const data = await response.json()
+        setLocations(data.data || [])
+        console.log('📍 Loaded locations:', data.data?.length || 0)
+      }
+    } catch (error) {
+      console.error('Error fetching locations:', error)
     }
   }
 
@@ -106,34 +136,62 @@ export default function HostelsPage() {
         },
         body: JSON.stringify({
           hostelId,
-          message: 'I would like to schedule an inspection for this hostel.',
-        }),
+          preferredDate: new Date().toISOString().split('T')[0],
+          message: 'Inspection booking request'
+        })
       })
 
-      if (response.ok) {
-        toast.success('Inspection booked successfully!', {
-          description: 'The agent will contact you soon to confirm the appointment.'
-        })
+      const result = await response.json()
+
+      if (result.success) {
+        toast.success('Inspection booked successfully!')
       } else {
-        const data = await response.json()
-        toast.error('Booking failed', {
-          description: data.message || 'Please try again'
-        })
+        toast.error(result.message || 'Booking failed')
       }
     } catch (error) {
-      toast.error('Booking failed', {
-        description: 'An unexpected error occurred'
-      })
+      console.error('Booking error:', error)
+      toast.error('Failed to book inspection')
     }
   }
 
-  const getAmenityIcon = (amenity: string) => {
-    switch (amenity.toLowerCase()) {
-      case 'wifi': return <Wifi className="h-4 w-4" />
-      case 'parking': return <Car className="h-4 w-4" />
-      case 'kitchen': return <Utensils className="h-4 w-4" />
-      default: return null
+  const formatTimeAgo = (dateString: string): string => {
+    try {
+      if (!dateString) return 'Recently posted'
+      
+      const now = new Date()
+      const date = new Date(dateString)
+      const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+
+      if (diffInHours < 1) return 'Just posted'
+      if (diffInHours < 24) return `${Math.floor(diffInHours)}h ago`
+      if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d ago`
+      return 'Posted recently'
+    } catch (error) {
+      return 'Recently posted'
     }
+  }
+
+  const isNewPost = (dateString: string): boolean => {
+    try {
+      if (!dateString) return false
+      const now = new Date()
+      const date = new Date(dateString)
+      const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+      return diffInHours <= 24
+    } catch (error) {
+      return false
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <div className="text-muted-foreground">Loading hostels...</div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -166,165 +224,149 @@ export default function HostelsPage() {
                     {session.user.firstName}
                   </span>
                   <Link href="/dashboard">
-                    <Button variant="ghost">Dashboard</Button>
+                    <Button variant="outline" size="sm">Dashboard</Button>
                   </Link>
                 </>
               ) : (
-                <>
-                  <Link href="/auth/login">
-                    <Button variant="ghost">Sign In</Button>
-                  </Link>
-                  <Link href="/auth/register">
-                    <Button>Get Started</Button>
-                  </Link>
-                </>
+                <Link href="/auth/login">
+                  <Button size="sm">Sign In</Button>
+                </Link>
               )}
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Search and Filters */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-4">Find Student Hostels</h1>
-          <p className="text-xl text-muted-foreground">
-            Discover verified hostels near Nigerian universities
-          </p>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search hostels..."
+                value={filters.search}
+                onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                className="pl-10"
+              />
+            </div>
+
+            <Select value={filters.locationId} onValueChange={(value) => 
+              setFilters(prev => ({ ...prev, locationId: value }))
+            }>
+              <SelectTrigger>
+                <SelectValue placeholder="All locations" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All locations</SelectItem>
+                {locations.map((location) => (
+                  <SelectItem key={location.id} value={location.id}>
+                    {location.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={filters.roomType} onValueChange={(value) => 
+              setFilters(prev => ({ ...prev, roomType: value }))
+            }>
+              <SelectTrigger>
+                <SelectValue placeholder="Room type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All types</SelectItem>
+                <SelectItem value="single">Single Room</SelectItem>
+                <SelectItem value="shared">Shared Room</SelectItem>
+                <SelectItem value="self-contain">Self-Contain</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Button onClick={fetchHostels} className="w-full">
+              <Filter className="w-4 h-4 mr-2" />
+              Apply Filters
+            </Button>
+          </div>
         </div>
 
-        {/* Filters */}
-        <Card className="mb-8 border-2 border-border/50">
-          <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="space-y-2">
-                <Label>Search</Label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search hostels..."
-                    value={filters.search}
-                    onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Room Type</Label>
-                <Select value={filters.roomType} onValueChange={(value) => setFilters(prev => ({ ...prev, roomType: value }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Any room type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">Any room type</SelectItem>
-                    <SelectItem value="single">Single Room</SelectItem>
-                    <SelectItem value="shared">Shared Room</SelectItem>
-                    <SelectItem value="self-contain">Self Contain</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Price Range</Label>
-                <div className="flex space-x-2">
-                  <Input
-                    placeholder="Min"
-                    type="number"
-                    value={filters.minPrice}
-                    onChange={(e) => setFilters(prev => ({ ...prev, minPrice: e.target.value }))}
-                  />
-                  <Input
-                    placeholder="Max"
-                    type="number"
-                    value={filters.maxPrice}
-                    onChange={(e) => setFilters(prev => ({ ...prev, maxPrice: e.target.value }))}
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-end">
-                <Button onClick={fetchHostels} className="w-full h-10">
-                  <Filter className="w-4 h-4 mr-2" />
-                  Apply Filters
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Hostels Grid */}
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="text-muted-foreground">Loading hostels...</div>
-          </div>
-        ) : hostels.length === 0 ? (
-          <div className="text-center py-12">
-            <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No hostels found</h3>
-            <p className="text-muted-foreground">Try adjusting your search filters</p>
-          </div>
+        {hostels.length === 0 ? (
+          <Card>
+            <CardContent className="p-12 text-center">
+              <div className="text-6xl mb-4">🏠</div>
+              <h3 className="text-xl font-semibold mb-2">No Hostels Found</h3>
+              <p className="text-muted-foreground">
+                No hostels match your search criteria. Try adjusting your filters.
+              </p>
+            </CardContent>
+          </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {hostels.map((hostel) => (
-              <Card key={hostel.id} className="overflow-hidden border-2 border-border/50 hover:border-primary/50 transition-all duration-300 group">
-                {hostel.images?.[0] && (
+              <Card key={hostel.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                {/* Hostel Image */}
+                {hostel.images && hostel.images.length > 0 && (
                   <img 
                     src={hostel.images[0]} 
                     alt={hostel.title}
-                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-48 object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none'
+                    }}
                   />
                 )}
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start mb-3">
-                    <h3 className="text-xl font-bold text-foreground line-clamp-2">{hostel.title}</h3>
-                    <Badge variant={hostel.availability ? 'default' : 'secondary'}>
-                      {hostel.availability ? 'Available' : 'Unavailable'}
+
+                <CardContent className="p-4">
+                  <h3 className="font-bold text-lg mb-2 line-clamp-2">
+                    {hostel.title}
+                  </h3>
+                  
+                  <div className="flex items-center text-muted-foreground mb-2">
+                    <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
+                    <span className="text-sm truncate">
+                      {hostel.location?.name || 'Location not specified'}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="text-xl font-bold text-primary">
+                      ₦{hostel.price?.toLocaleString() || '0'}
+                      <span className="text-sm text-muted-foreground font-normal">
+                        /{hostel.priceType || 'semester'}
+                      </span>
+                    </div>
+                    <Badge variant="outline">
+                      {hostel.roomType || 'Unknown'}
                     </Badge>
                   </div>
-                  
-                  <div className="flex items-center text-muted-foreground mb-3">
-                    <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
-                    <span className="text-sm">{hostel.location?.name || 'Location not specified'}</span>
-                  </div>
-                  
+
                   {hostel.description && (
-                    <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
+                    <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
                       {hostel.description}
                     </p>
                   )}
-                  
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <span className="text-2xl font-bold text-foreground">
-                        ₦{hostel.price?.toLocaleString()}
-                      </span>
-                      <span className="text-muted-foreground text-sm">/{hostel.priceType}</span>
-                    </div>
-                    <Badge variant="outline">
-                      {hostel.roomType}
-                    </Badge>
-                  </div>
-                  
+
+                  {/* Amenities */}
                   {hostel.amenities && hostel.amenities.length > 0 && (
-                    <div className="flex items-center gap-3 mb-4 text-sm text-muted-foreground">
-                      {hostel.amenities.slice(0, 3).map((amenity, index) => (
-                        <div key={index} className="flex items-center">
-                          {getAmenityIcon(amenity)}
-                          <span className="ml-1">{amenity}</span>
-                        </div>
+                    <div className="flex flex-wrap gap-1 mb-3">
+                      {hostel.amenities.slice(0, 3).map((amenity) => (
+                        <Badge key={amenity} variant="outline" className="text-xs">
+                          {amenity}
+                        </Badge>
                       ))}
                       {hostel.amenities.length > 3 && (
-                        <span className="text-xs">+{hostel.amenities.length - 3} more</span>
+                        <Badge variant="outline" className="text-xs">
+                          +{hostel.amenities.length - 3} more
+                        </Badge>
                       )}
                     </div>
                   )}
 
-                  <div className="flex space-x-2">
+                  {/* Book Inspection Button */}
+                  <div className="mb-3">
                     <Button 
+                      className="w-full"
                       onClick={() => handleBookInspection(hostel.id)}
-                      disabled={!hostel.availability || !session?.user || session.user.role !== 'student'}
-                      className="flex-1"
+                      disabled={!session?.user || session.user.role !== 'student'}
                     >
                       <Calendar className="w-4 h-4 mr-2" />
                       {!session?.user ? 'Sign In to Book' : 'Book Inspection'}
@@ -353,8 +395,8 @@ export default function HostelsPage() {
                       
                       <div className="flex items-center text-xs text-muted-foreground">
                         <Clock className="w-3 h-3 mr-1" />
-                        {formatRelativeTime(hostel.created_at || hostel.updated_at)}
-                        {isWithinLast24Hours(hostel.created_at || hostel.updated_at) && (
+                        {formatTimeAgo(hostel.created_at || hostel.updated_at)}
+                        {isNewPost(hostel.created_at || hostel.updated_at) && (
                           <CheckCircle className="w-3 h-3 ml-1 text-green-600" />
                         )}
                       </div>
