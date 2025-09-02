@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { MapPin, Star, Wifi, Car, Utensils, Search, Filter, ArrowLeft, Calendar, Clock, CheckCircle, Users } from "lucide-react"
+import { MapPin, Star, Wifi, Car, Utensils, Search, Filter, ArrowLeft, Calendar, Clock, CheckCircle, Users, AlertTriangle } from "lucide-react"
 import { toast } from 'sonner'
 import { formatRelativeTime, isWithinLast24Hours } from '@/lib/timeUtils'
 import { InstagramVerificationBadge } from '@/components/ui/verification-badge'
@@ -331,32 +331,51 @@ export default function HostelsPage() {
                     </Button>
                   </div>
 
-                  <div className="mt-3 flex items-center justify-between">
+                  <div className="mt-3 space-y-2">
                     {/* Agent Profile Link with Verification Badge */}
-                    {hostel.agent?.verifiedStatus && (
-                      <Link href={`/agents/${hostel.agent.id}`}>
-                        <div className="flex items-center text-xs text-muted-foreground hover:text-foreground transition-colors">
-                          <div className="flex items-center">
-                            <span className="font-medium">
-                              {hostel.agent.firstName} {hostel.agent.lastName}
-                            </span>
-                            <InstagramVerificationBadge 
-                              verified={hostel.agent.verifiedStatus} 
-                              size="sm" 
-                              className="ml-1"
-                            />
+                    <div className="flex items-center justify-between">
+                      {hostel.agent?.verifiedStatus && (
+                        <Link href={`/agents/${hostel.agent.id}`}>
+                          <div className="flex items-center text-xs text-muted-foreground hover:text-foreground transition-colors">
+                            <div className="flex items-center">
+                              <span className="font-medium">
+                                {hostel.agent.firstName} {hostel.agent.lastName}
+                              </span>
+                              <InstagramVerificationBadge 
+                                verified={hostel.agent.verifiedStatus} 
+                                size="sm" 
+                                className="ml-1"
+                              />
+                            </div>
+                          </div>
+                        </Link>
+                      )}
+                      
+                      <div className="flex items-center text-xs text-muted-foreground">
+                        <Clock className="w-3 h-3 mr-1" />
+                        {formatRelativeTime(hostel.created_at || hostel.updated_at)}
+                        {isWithinLast24Hours(hostel.created_at || hostel.updated_at) && (
+                          <CheckCircle className="w-3 h-3 ml-1 text-green-600" />
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Safety Notice for Students */}
+                    {hostel.agent?.verifiedStatus && !hostel.agent?.profileImage && (
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-md p-2">
+                        <div className="flex items-start space-x-2">
+                          <AlertTriangle className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="text-xs font-medium text-yellow-800">
+                              Agent is verified but no profile photo
+                            </p>
+                            <p className="text-xs text-yellow-700">
+                              We advise you to get to know them better in person before booking
+                            </p>
                           </div>
                         </div>
-                      </Link>
+                      </div>
                     )}
-                    
-                    <div className="flex items-center text-xs text-muted-foreground">
-                      <Clock className="w-3 h-3 mr-1" />
-                      {formatRelativeTime(hostel.created_at || hostel.updated_at)}
-                      {isWithinLast24Hours(hostel.created_at || hostel.updated_at) && (
-                        <CheckCircle className="w-3 h-3 ml-1 text-green-600" />
-                      )}
-                    </div>
                   </div>
                 </CardContent>
               </Card>

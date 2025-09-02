@@ -25,6 +25,7 @@ import {
   Phone
 } from "lucide-react"
 import { InstagramVerificationBadge } from '@/components/ui/verification-badge'
+import ProfilePhotoUpload from '@/components/ProfilePhotoUpload'
 import Link from "next/link"
 import { signOut } from 'next-auth/react'
 import { toast } from 'sonner'
@@ -53,6 +54,7 @@ export default function DashboardPage() {
   const [recentBookings, setRecentBookings] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [isResubmitting, setIsResubmitting] = useState(false)
+  const [showProfileUpload, setShowProfileUpload] = useState(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -130,6 +132,14 @@ export default function DashboardPage() {
     } finally {
       setIsResubmitting(false)
     }
+  }
+
+  const handleProfilePhotoUploaded = (photoUrl: string) => {
+    // Refresh the page to update the session with new photo
+    toast.success('Profile photo updated! Refreshing...')
+    setTimeout(() => {
+      window.location.reload()
+    }, 1500)
   }
 
   if (status === 'loading' || loading) {
@@ -269,7 +279,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  {/* Status Indicator */}
+                  {/* Status Indicators */}
                   {!user.verifiedStatus && (
                     <Card className="bg-yellow-50 border-yellow-200 mt-4">
                       <CardContent className="p-3">
@@ -278,6 +288,29 @@ export default function DashboardPage() {
                           <span className="text-sm font-medium text-yellow-800">
                             Pending Verification - You can list properties after admin approval
                           </span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                  
+                  {/* Profile Photo Trust Indicator for Agents */}
+                  {user.role === 'agent' && user.verifiedStatus && !user.profileImage && !user.facePhoto && (
+                    <Card className="bg-yellow-50 border-yellow-200 mt-4">
+                      <CardContent className="p-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <AlertTriangle className="w-5 h-5 text-yellow-600 mr-2" />
+                            <span className="text-sm font-medium text-yellow-800">
+                              Upload your profile photo to gain more trust
+                            </span>
+                          </div>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setShowProfileUpload(true)}
+                          >
+                            Upload Photo
+                          </Button>
                         </div>
                       </CardContent>
                     </Card>
@@ -763,6 +796,35 @@ export default function DashboardPage() {
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {/* Profile Photo Upload Modal */}
+        {showProfileUpload && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-background rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold">Update Profile Photo</h2>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setShowProfileUpload(false)}
+                  >
+                    ✕
+                  </Button>
+                </div>
+                
+                <ProfilePhotoUpload
+                  currentPhotoUrl={user.profileImage || user.facePhoto}
+                  onPhotoUploaded={(photoUrl) => {
+                    handleProfilePhotoUploaded(photoUrl)
+                    setShowProfileUpload(false)
+                  }}
+                  userRole={user.role as any}
+                />
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Account Information */}
