@@ -301,127 +301,142 @@ export default function HostelsPage() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {hostels.map((hostel) => (
-              <Card key={hostel.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                {/* Hostel Image */}
-                {hostel.images && hostel.images.length > 0 && (
-                  <img 
-                    src={hostel.images[0]} 
-                    alt={hostel.title}
-                    className="w-full h-48 object-cover"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none'
-                    }}
-                  />
-                )}
+            {(hostels || []).map((hostel) => {
+              // Safe data extraction with fallbacks
+              const hostelId = hostel?.id || 'unknown'
+              const title = hostel?.title || 'Untitled Hostel'
+              const price = hostel?.price || 0
+              const priceType = hostel?.price_type || hostel?.priceType || 'semester'
+              const roomType = hostel?.room_type || hostel?.roomType || 'Unknown'
+              const description = hostel?.description || ''
+              const images = hostel?.images || []
+              const amenities = hostel?.amenities || []
+              const location = hostel?.location || {}
+              const agent = hostel?.agent || {}
+              const createdAt = hostel?.created_at || hostel?.updated_at || new Date().toISOString()
 
-                <CardContent className="p-4">
-                  <h3 className="font-bold text-lg mb-2 line-clamp-2">
-                    {hostel.title}
-                  </h3>
-                  
-                  <div className="flex items-center text-muted-foreground mb-2">
-                    <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
-                    <span className="text-sm truncate">
-                      {hostel.location?.name || 'Location not specified'}
-                    </span>
-                  </div>
+              return (
+                <Card key={hostelId} className="overflow-hidden hover:shadow-lg transition-shadow">
+                  {/* Hostel Image */}
+                  {images && images.length > 0 && (
+                    <img 
+                      src={images[0]} 
+                      alt={title}
+                      className="w-full h-48 object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none'
+                      }}
+                    />
+                  )}
 
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="text-xl font-bold text-primary">
-                      ₦{hostel.price?.toLocaleString() || '0'}
-                      <span className="text-sm text-muted-foreground font-normal">
-                        /{hostel.priceType || 'semester'}
+                  <CardContent className="p-4">
+                    <h3 className="font-bold text-lg mb-2 line-clamp-2">
+                      {title}
+                    </h3>
+                    
+                    <div className="flex items-center text-muted-foreground mb-2">
+                      <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
+                      <span className="text-sm truncate">
+                        {location?.name || 'Location not specified'}
                       </span>
                     </div>
-                    <Badge variant="outline">
-                      {hostel.roomType || 'Unknown'}
-                    </Badge>
-                  </div>
 
-                  {hostel.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                      {hostel.description}
-                    </p>
-                  )}
-
-                  {/* Amenities */}
-                  {hostel.amenities && hostel.amenities.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mb-3">
-                      {hostel.amenities.slice(0, 3).map((amenity) => (
-                        <Badge key={amenity} variant="outline" className="text-xs">
-                          {amenity}
-                        </Badge>
-                      ))}
-                      {hostel.amenities.length > 3 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{hostel.amenities.length - 3} more
-                        </Badge>
-                      )}
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="text-xl font-bold text-primary">
+                        ₦{price.toLocaleString()}
+                        <span className="text-sm text-muted-foreground font-normal">
+                          /{priceType}
+                        </span>
+                      </div>
+                      <Badge variant="outline">
+                        {roomType}
+                      </Badge>
                     </div>
-                  )}
 
-                  {/* Book Inspection Button */}
-                  <div className="mb-3">
-                    <Button 
-                      className="w-full"
-                      onClick={() => handleBookInspection(hostel.id)}
-                      disabled={!session?.user || session.user.role !== 'student'}
-                    >
-                      <Calendar className="w-4 h-4 mr-2" />
-                      {!session?.user ? 'Sign In to Book' : 'Book Inspection'}
-                    </Button>
-                  </div>
+                    {description && (
+                      <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                        {description}
+                      </p>
+                    )}
 
-                  <div className="mt-3 space-y-2">
-                    {/* Agent Profile Link with Verification Badge */}
-                    <div className="flex items-center justify-between">
-                      {hostel.agent?.verifiedStatus && (
-                        <Link href={`/agents/${hostel.agent.id}`}>
-                          <div className="flex items-center text-xs text-muted-foreground hover:text-foreground transition-colors">
-                            <div className="flex items-center">
-                              <span className="font-medium">
-                                {hostel.agent.firstName} {hostel.agent.lastName}
-                              </span>
-                              <InstagramVerificationBadge 
-                                verified={hostel.agent.verifiedStatus} 
-                                size="sm" 
-                                className="ml-1"
-                              />
-                            </div>
-                          </div>
-                        </Link>
-                      )}
-                      
-                      <div className="flex items-center text-xs text-muted-foreground">
-                        <Clock className="w-3 h-3 mr-1" />
-                        {formatTimeAgo(hostel.created_at || hostel.updated_at)}
-                        {isNewPost(hostel.created_at || hostel.updated_at) && (
-                          <CheckCircle className="w-3 h-3 ml-1 text-green-600" />
+                    {/* Amenities */}
+                    {amenities && amenities.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        {amenities.slice(0, 3).map((amenity, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {amenity}
+                          </Badge>
+                        ))}
+                        {amenities.length > 3 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{amenities.length - 3} more
+                          </Badge>
                         )}
                       </div>
+                    )}
+
+                    {/* Book Inspection Button */}
+                    <div className="mb-3">
+                      <Button 
+                        className="w-full"
+                        onClick={() => handleBookInspection(hostelId)}
+                        disabled={!session?.user || session.user.role !== 'student'}
+                      >
+                        <Calendar className="w-4 h-4 mr-2" />
+                        {!session?.user ? 'Sign In to Book' : 'Book Inspection'}
+                      </Button>
                     </div>
-                    
-                    {/* Safety Notice for Students */}
-                    {hostel.agent?.verifiedStatus && !hostel.agent?.profileImage && (
-                      <div className="bg-yellow-50 border border-yellow-200 rounded-md p-2">
-                        <div className="flex items-start space-x-2">
-                          <AlertTriangle className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
-                          <div>
-                            <p className="text-xs font-medium text-yellow-800">
-                              Agent is verified but no profile photo
-                            </p>
-                            <p className="text-xs text-yellow-700">
-                              We advise you to get to know them better in person before booking
-                            </p>
-                          </div>
+
+                    <div className="mt-3 space-y-2">
+                      {/* Agent Profile Link with Verification Badge */}
+                      <div className="flex items-center justify-between">
+                        {agent?.verified_status && (
+                          <Link href={`/agents/${agent.id}`}>
+                            <div className="flex items-center text-xs text-muted-foreground hover:text-foreground transition-colors">
+                              <div className="flex items-center">
+                                <span className="font-medium">
+                                  {agent.first_name} {agent.last_name}
+                                </span>
+                                <InstagramVerificationBadge 
+                                  verified={agent.verified_status} 
+                                  size="sm" 
+                                  className="ml-1"
+                                />
+                              </div>
+                            </div>
+                          </Link>
+                        )}
+                        
+                        <div className="flex items-center text-xs text-muted-foreground">
+                          <Clock className="w-3 h-3 mr-1" />
+                          {formatTimeAgo(createdAt)}
+                          {isNewPost(createdAt) && (
+                            <CheckCircle className="w-3 h-3 ml-1 text-green-600" />
+                          )}
                         </div>
                       </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                      
+                      {/* Safety Notice for Students */}
+                      {agent?.verified_status && !agent?.profile_image_url && (
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-2">
+                          <div className="flex items-start space-x-2">
+                            <AlertTriangle className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+                            <div>
+                              <p className="text-xs font-medium text-yellow-800">
+                                Agent is verified but no profile photo
+                              </p>
+                              <p className="text-xs text-yellow-700">
+                                We advise you to get to know them better in person before booking
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
           </div>
         )}
       </div>
