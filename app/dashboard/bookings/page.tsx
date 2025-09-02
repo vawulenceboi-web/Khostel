@@ -38,7 +38,7 @@ export default function BookingsPage() {
   const [updatingBooking, setUpdatingBooking] = useState<string | null>(null)
 
   useEffect(() => {
-    if (session?.user?.role === 'agent') {
+    if (session?.user) {
       fetchBookings()
     } else if (status !== 'loading') {
       setLoading(false)
@@ -140,19 +140,7 @@ export default function BookingsPage() {
     )
   }
 
-  if (!session?.user || session.user.role !== 'agent') {
-    return (
-      <div className="max-w-7xl mx-auto p-4">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <h2 className="text-xl font-bold text-red-600 mb-2">Access Denied</h2>
-            <p className="text-gray-600">This page is for agents only.</p>
-            <p className="text-gray-600 mt-2">Students should use the main bookings page to view their requests.</p>
-          </div>
-        </div>
-      </div>
-    )
-  }
+  // Allow both students and agents, but show different content
 
   if (loading) {
     return (
@@ -171,9 +159,14 @@ export default function BookingsPage() {
     <div className="max-w-7xl mx-auto p-4">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-black">Booking Requests</h1>
+        <h1 className="text-3xl font-bold text-black">
+          {session?.user?.role === 'agent' ? 'Booking Requests' : 'My Booking Status'}
+        </h1>
         <p className="text-gray-600 mt-2">
-          Manage inspection requests from students
+          {session?.user?.role === 'agent' 
+            ? 'Manage inspection requests from students'
+            : 'Track your hostel inspection requests'
+          }
         </p>
       </div>
 
@@ -290,41 +283,81 @@ export default function BookingsPage() {
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                {booking.status === 'pending' && (
-                  <div className="flex gap-2 pt-4 border-t">
-                    <Button
-                      onClick={() => updateBookingStatus(booking.id, 'confirmed')}
-                      className="bg-green-600 hover:bg-green-700 text-white"
-                    >
-                      Confirm
-                    </Button>
-                    <Button
-                      onClick={() => updateBookingStatus(booking.id, 'cancelled')}
-                      variant="outline"
-                      className="border-red-300 text-red-600 hover:bg-red-50"
-                    >
-                      Decline
-                    </Button>
-                  </div>
-                )}
+                {/* Role-based content */}
+                {session?.user?.role === 'agent' ? (
+                  // Agent buttons
+                  <>
+                    {booking.status === 'pending' && (
+                      <div className="flex gap-2 pt-4 border-t">
+                        <Button
+                          onClick={() => updateBookingStatus(booking.id, 'confirmed')}
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          Confirm
+                        </Button>
+                        <Button
+                          onClick={() => updateBookingStatus(booking.id, 'cancelled')}
+                          variant="outline"
+                          className="border-red-300 text-red-600 hover:bg-red-50"
+                        >
+                          Decline
+                        </Button>
+                      </div>
+                    )}
 
-                {booking.status === 'confirmed' && (
-                  <div className="flex gap-2 pt-4 border-t">
-                    <Button
-                      onClick={() => updateBookingStatus(booking.id, 'completed')}
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      Mark Completed
-                    </Button>
-                    <Button
-                      onClick={() => updateBookingStatus(booking.id, 'cancelled')}
-                      variant="outline"
-                      className="border-red-300 text-red-600 hover:bg-red-50"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
+                    {booking.status === 'confirmed' && (
+                      <div className="flex gap-2 pt-4 border-t">
+                        <Button
+                          onClick={() => updateBookingStatus(booking.id, 'completed')}
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          Mark Completed
+                        </Button>
+                        <Button
+                          onClick={() => updateBookingStatus(booking.id, 'cancelled')}
+                          variant="outline"
+                          className="border-red-300 text-red-600 hover:bg-red-50"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  // Student status messages (no buttons)
+                  <>
+                    {booking.status === 'pending' && (
+                      <div className="pt-4 border-t bg-yellow-50 p-3 rounded-md">
+                        <p className="text-yellow-800 text-sm font-medium">
+                          ⏳ Your request is pending. Waiting for agent confirmation...
+                        </p>
+                      </div>
+                    )}
+
+                    {booking.status === 'confirmed' && (
+                      <div className="pt-4 border-t bg-green-50 p-3 rounded-md">
+                        <p className="text-green-800 text-sm font-medium">
+                          ✅ Great! Your inspection has been confirmed. The agent will contact you soon to arrange the visit.
+                        </p>
+                      </div>
+                    )}
+
+                    {booking.status === 'completed' && (
+                      <div className="pt-4 border-t bg-blue-50 p-3 rounded-md">
+                        <p className="text-blue-800 text-sm font-medium">
+                          🎉 Inspection completed! We hope you found your perfect hostel. Contact the agent if you want to secure your spot!
+                        </p>
+                      </div>
+                    )}
+
+                    {booking.status === 'cancelled' && (
+                      <div className="pt-4 border-t bg-gray-50 p-3 rounded-md">
+                        <p className="text-gray-600 text-sm">
+                          ❌ This inspection request was cancelled.
+                        </p>
+                      </div>
+                    )}
+                  </>
                 )}
               </CardContent>
             </Card>
