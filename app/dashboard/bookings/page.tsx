@@ -32,14 +32,18 @@ interface Booking {
 }
 
 export default function BookingsPage() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
   const [updatingBooking, setUpdatingBooking] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchBookings()
-  }, [])
+    if (session?.user?.role === 'agent') {
+      fetchBookings()
+    } else if (status !== 'loading') {
+      setLoading(false)
+    }
+  }, [session, status])
 
   const fetchBookings = async () => {
     try {
@@ -121,6 +125,33 @@ export default function BookingsPage() {
       default:
         return 'bg-yellow-100 text-yellow-800'
     }
+  }
+
+  if (status === 'loading') {
+    return (
+      <div className="max-w-7xl mx-auto p-4">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto mb-4"></div>
+            <p>Loading...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!session?.user || session.user.role !== 'agent') {
+    return (
+      <div className="max-w-7xl mx-auto p-4">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <h2 className="text-xl font-bold text-red-600 mb-2">Access Denied</h2>
+            <p className="text-gray-600">This page is for agents only.</p>
+            <p className="text-gray-600 mt-2">Students should use the main bookings page to view their requests.</p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (loading) {
