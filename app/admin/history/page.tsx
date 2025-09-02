@@ -195,7 +195,7 @@ export default function AdminHistoryPage() {
                 </div>
                 <div>
                   <h1 className="text-lg sm:text-xl font-bold text-gray-900">Agent History</h1>
-                  <p className="text-xs sm:text-sm text-gray-500">Management & verification records</p>
+                  <p className="text-xs sm:text-sm text-gray-500">Agent management & verification records</p>
                 </div>
               </div>
             </div>
