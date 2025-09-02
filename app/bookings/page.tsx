@@ -59,10 +59,8 @@ export default function BookingsPage() {
     }
   }
 
-  const updateBookingStatus = async (bookingId: string, newStatus: string) => {
+  const cancelBooking = async (bookingId: string) => {
     try {
-      console.log('🔄 Updating booking:', bookingId, 'to status:', newStatus)
-      
       const response = await fetch('/api/bookings', {
         method: 'PUT',
         headers: {
@@ -70,29 +68,19 @@ export default function BookingsPage() {
         },
         body: JSON.stringify({
           id: bookingId,
-          status: newStatus
+          status: 'cancelled'
         })
       })
-
-      console.log('📡 API Response status:', response.status)
       
       if (response.ok) {
-        const data = await response.json()
-        console.log('✅ Booking updated successfully:', data)
-        
-        // Refresh bookings to show updated status
+        // Refresh bookings
         await fetchBookings()
-        
-        // Show success feedback
-        alert(`Booking ${newStatus === 'completed' ? 'marked as completed' : newStatus} successfully!`)
+        alert('Booking cancelled successfully!')
       } else {
-        const errorData = await response.json()
-        console.error('❌ API Error:', errorData)
-        alert(`Error: ${errorData.message || 'Failed to update booking'}`)
+        alert('Failed to cancel booking')
       }
     } catch (error) {
-      console.error('❌ Error updating booking:', error)
-      alert('Network error: Failed to update booking')
+      alert('Network error: Failed to cancel booking')
     }
   }
 
@@ -263,7 +251,7 @@ export default function BookingsPage() {
                 {booking.status === 'pending' && (
                   <div className="flex gap-2 pt-4 border-t">
                     <Button
-                      onClick={() => updateBookingStatus(booking.id, 'cancelled')}
+                      onClick={() => cancelBooking(booking.id)}
                       variant="outline"
                       className="border-red-300 text-red-600 hover:bg-red-50"
                     >
