@@ -16,15 +16,23 @@ export default function HostelsClient() {
   const [hostels, setHostels] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const [selectedLocation, setSelectedLocation] = useState('')
 
-  // Simple, reliable search filter
-  const filteredHostels = (hostels || []).filter(
-    (h) =>
+  // Get unique locations from hostels
+  const uniqueLocations = [...new Set((hostels || []).map(h => h?.location?.name).filter(Boolean))]
+
+  // Simple, reliable search and location filter
+  const filteredHostels = (hostels || []).filter((h) => {
+    const matchesSearch = 
       h?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       h?.location?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       h?.agent?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       h?.agent?.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+    
+    const matchesLocation = !selectedLocation || h?.location?.name === selectedLocation
+    
+    return matchesSearch && matchesLocation
+  })
 
   useEffect(() => {
     fetchHostels()
@@ -147,16 +155,35 @@ export default function HostelsClient() {
       </div>
 
       <div className="max-w-7xl mx-auto p-4">
-        {/* Step 8a: Add just search bar */}
+        {/* Step 9: Add search bar + location filter */}
         <div className="mb-6">
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search hostels..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+          <div className="flex flex-col sm:flex-row gap-4">
+            {/* Search Bar */}
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search hostels..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            
+            {/* Location Filter */}
+            <div className="sm:w-48">
+              <select
+                value={selectedLocation}
+                onChange={(e) => setSelectedLocation(e.target.value)}
+                className="w-full h-10 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent bg-white text-black text-sm"
+              >
+                <option value="">All Locations</option>
+                {uniqueLocations.map((location) => (
+                  <option key={location} value={location}>
+                    {location}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 
