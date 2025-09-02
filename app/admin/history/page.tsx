@@ -300,37 +300,44 @@ export default function AdminHistoryPage() {
                         </div>
                       </div>
 
-                      {/* Agent Details */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div className="space-y-2">
-                          <div className="flex items-center space-x-2 text-sm">
-                            <Phone className="w-4 h-4 text-muted-foreground" />
-                            <span><strong>Phone:</strong> {agent.phone || 'Not provided'}</span>
-                          </div>
-                          
-                          <div className="flex items-center space-x-2 text-sm">
-                            <Building className="w-4 h-4 text-muted-foreground" />
-                            <span><strong>CAC:</strong> {agent.cac_number || 'Not provided'}</span>
+                      {/* Agent Details - Mobile Friendly */}
+                      <div className="grid grid-cols-1 gap-3 mb-4">
+                        <div className="flex items-start space-x-2 text-sm">
+                          <Phone className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <span className="font-medium text-gray-700">Phone:</span>
+                            <span className="ml-1 text-gray-600 break-words">{agent.phone || 'Not provided'}</span>
                           </div>
                         </div>
                         
-                        <div className="space-y-2">
-                          <div className="flex items-center space-x-2 text-sm">
-                            <MapPin className="w-4 h-4 text-muted-foreground" />
-                            <span><strong>Address:</strong> {agent.address || 'Not provided'}</span>
+                        <div className="flex items-start space-x-2 text-sm">
+                          <Building className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <span className="font-medium text-gray-700">CAC:</span>
+                            <span className="ml-1 text-gray-600 break-all font-mono text-xs">{agent.cac_number || 'Not provided'}</span>
                           </div>
-                          
-                          <div className="flex items-center space-x-2 text-sm">
-                            <Clock className="w-4 h-4 text-muted-foreground" />
-                            <span><strong>Last Updated:</strong> {
-                              new Date(agent.updated_at).toLocaleDateString('en-US', {
-                                year: 'numeric',
+                        </div>
+                        
+                        <div className="flex items-start space-x-2 text-sm">
+                          <MapPin className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <span className="font-medium text-gray-700">Address:</span>
+                            <span className="ml-1 text-gray-600 break-words">{agent.address || 'Not provided'}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-start space-x-2 text-sm">
+                          <Clock className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <span className="font-medium text-gray-700">Updated:</span>
+                            <span className="ml-1 text-gray-600 break-words">
+                              {new Date(agent.updated_at).toLocaleDateString('en-US', {
                                 month: 'short',
                                 day: 'numeric',
                                 hour: '2-digit',
                                 minute: '2-digit'
-                              })
-                            }</span>
+                              })}
+                            </span>
                           </div>
                         </div>
                       </div>
