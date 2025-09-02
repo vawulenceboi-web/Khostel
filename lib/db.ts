@@ -37,6 +37,8 @@ function isWithinLast24Hours(dateString: string): boolean {
 
 // Database operations using ONLY Supabase client (no direct PostgreSQL)
 export const db = {
+  // Export supabase client for direct access when needed
+  supabase,
   // Users operations
   users: {
     async findByEmail(email: string) {

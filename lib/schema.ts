@@ -153,7 +153,9 @@ export const registerUserSchema = z.object({
   schoolId: z.string().optional(),
   businessRegNumber: z.string().optional(),
   address: z.string().optional(),
-  profileImageUrl: z.string().url().optional(),
+  profileImageUrl: z.string().optional().refine((val) => !val || z.string().url().safeParse(val).success, {
+    message: "Must be a valid URL if provided"
+  }),
   termsAccepted: z.boolean().refine(val => val === true, {
     message: 'You must accept the terms and conditions'
   }),
