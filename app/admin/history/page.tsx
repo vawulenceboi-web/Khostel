@@ -317,6 +317,18 @@ export default function AdminHistoryPage() {
                           </div>
                         </div>
                         
+                        <div className="flex items-start space-x-2 text-sm">
+                          <Building className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <button
+                              onClick={() => window.open(`https://search.cac.gov.ng/`, '_blank')}
+                              className="font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                            >
+                              Verify user CAC
+                            </button>
+                          </div>
+                        </div>
+                        
 
                         
                         <div className="flex items-start space-x-2 text-sm">
@@ -418,15 +430,6 @@ export default function AdminHistoryPage() {
                           </Link>
                         </div>
                       )}
-                      
-                      <Button
-                        variant="ghost"
-                        onClick={() => window.open(`https://search.cac.gov.ng/`, '_blank')}
-                        className="flex-1 lg:w-full text-xs"
-                      >
-                        <Eye className="w-4 h-4 mr-2" />
-                        Verify CAC: {agent.cac_number}
-                      </Button>
                     </div>
                   </div>
                 </CardContent>
