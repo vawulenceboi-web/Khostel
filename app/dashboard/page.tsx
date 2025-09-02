@@ -10,17 +10,15 @@ import {
   Home, 
   Calendar, 
   Users, 
-  Settings, 
   MapPin, 
   Plus,
   Building,
   GraduationCap,
   Shield,
   Search,
-  BarChart3,
   Clock,
   CheckCircle,
-  AlertCircle,
+  AlertTriangle,
   TrendingUp,
   Phone
 } from "lucide-react"
@@ -73,7 +71,6 @@ export default function DashboardPage() {
     try {
       console.log('📊 Fetching real-time dashboard data...')
       
-      // Fetch real-time stats
       const [statsRes, hostelsRes, bookingsRes] = await Promise.all([
         fetch('/api/stats'),
         fetch('/api/hostels?limit=6'),
@@ -83,19 +80,16 @@ export default function DashboardPage() {
       if (statsRes.ok) {
         const statsData = await statsRes.json()
         setStats(statsData.data)
-        console.log('✅ Real-time stats loaded:', statsData.data)
       }
 
       if (hostelsRes.ok) {
         const hostelsData = await hostelsRes.json()
         setRecentHostels(hostelsData.data || [])
-        console.log('✅ Recent hostels loaded:', hostelsData.data?.length)
       }
 
       if (bookingsRes.ok) {
         const bookingsData = await bookingsRes.json()
         setRecentBookings(bookingsData.data || [])
-        console.log('✅ Recent bookings loaded:', bookingsData.data?.length)
       }
       
     } catch (error) {
@@ -119,7 +113,6 @@ export default function DashboardPage() {
 
       if (result.success) {
         toast.success(result.message)
-        // Refresh user session to get updated data
         setTimeout(() => {
           window.location.reload()
         }, 2000)
@@ -135,7 +128,6 @@ export default function DashboardPage() {
   }
 
   const handleProfilePhotoUploaded = (photoUrl: string) => {
-    // Refresh the page to update the session with new photo
     toast.success('Profile photo updated! Refreshing...')
     setTimeout(() => {
       window.location.reload()
@@ -158,10 +150,10 @@ export default function DashboardPage() {
     return null
   }
 
-  const user = session.user || {}
-  
-  // Safety check for user data
-  if (!user.id || !user.email) {
+  const user = session.user
+
+  // Safety check for essential user data
+  if (!user?.id || !user?.email) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -193,7 +185,7 @@ export default function DashboardPage() {
                 {user.role === 'agent' && <Building className="w-3 h-3 mr-1" />}
                 {user.role === 'admin' && <Shield className="w-3 h-3 mr-1" />}
                 {user.role?.charAt(0).toUpperCase() + user.role?.slice(1)}
-                {user.verifiedStatus && <CheckCircle className="w-3 h-3 ml-1 text-green-600" />}
+                {user.verifiedStatus && <InstagramVerificationBadge verified={true} size="sm" className="ml-1" />}
               </Badge>
             </div>
             
@@ -201,14 +193,6 @@ export default function DashboardPage() {
               <span className="text-sm text-muted-foreground hidden sm:block">
                 {user.firstName || user.name || 'User'}
               </span>
-              {user.role === 'admin' && (
-                <Link href="/admin/login">
-                  <Button variant="ghost" size="sm">
-                    <Shield className="w-4 h-4 mr-2" />
-                    Admin Panel
-                  </Button>
-                </Link>
-              )}
               <Button variant="outline" onClick={() => signOut({ callbackUrl: '/' })}>
                 Sign Out
               </Button>
@@ -463,7 +447,7 @@ export default function DashboardPage() {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Pending Agents</CardTitle>
-                  <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                  <AlertTriangle className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{stats.pendingAgents || 0}</div>
@@ -494,82 +478,12 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Recent Activity with Real Data */}
+        {/* Quick Actions */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Recent Bookings */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Bookings</CardTitle>
-              <CardDescription>
-                {user.role === 'student' ? 'Your latest booking requests' : 'Recent booking activity'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {!recentBookings || recentBookings.length === 0 ? (
-                <div className="text-center py-8">
-                  <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No recent bookings</h3>
-                  <p className="text-muted-foreground mb-4">
-                    {user.role === 'student' 
-                      ? 'Start by browsing hostels and booking inspections'
-                      : 'Booking requests will appear here'
-                    }
-                  </p>
-                  {user.role === 'student' && (
-                    <Link href="/hostels">
-                      <Button>
-                        <Search className="w-4 h-4 mr-2" />
-                        Browse Hostels
-                      </Button>
-                    </Link>
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {recentBookings.map((booking: any) => (
-                    <div key={booking?.id || Math.random()} className="flex items-center justify-between p-4 border border-border rounded-lg">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center">
-                          <Calendar className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <h4 className="font-semibold">
-                            {booking?.hostel?.title || 'Hostel Booking'}
-                          </h4>
-                          <p className="text-sm text-muted-foreground">
-                            {booking?.preferred_date 
-                              ? new Date(booking.preferred_date).toLocaleDateString()
-                              : 'Date not specified'
-                            }
-                          </p>
-                          {user.role === 'agent' && booking?.student && (
-                            <p className="text-xs text-muted-foreground">
-                              by {booking.student.first_name} {booking.student.last_name}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <Badge variant={
-                        booking?.status === 'confirmed' ? 'default' :
-                        booking?.status === 'pending' ? 'secondary' :
-                        'outline'
-                      }>
-                        {booking?.status || 'unknown'}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Quick Actions */}
           <Card>
             <CardHeader>
               <CardTitle>Quick Actions</CardTitle>
-              <CardDescription>
-                Common tasks and shortcuts
-              </CardDescription>
+              <CardDescription>Common tasks and shortcuts</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {user.role === 'student' && (
@@ -607,7 +521,7 @@ export default function DashboardPage() {
                   ) : (
                     <Card className="bg-secondary/50 border-dashed">
                       <CardContent className="p-4 text-center">
-                        <AlertCircle className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                        <AlertTriangle className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
                         <p className="text-sm text-muted-foreground mb-3">
                           Account pending verification. You can list properties after admin approval.
                         </p>
@@ -643,21 +557,12 @@ export default function DashboardPage() {
 
               {user.role === 'admin' && (
                 <>
-                  <Link href="/admin/agents">
+                  <Link href="/admin/login">
                     <Button className="w-full justify-start h-12">
                       <Users className="w-4 h-4 mr-2" />
-                      Verify Pending Agents
+                      Admin Panel
                       <Badge variant="outline" className="ml-auto">
                         {stats?.pendingAgents || 0} pending
-                      </Badge>
-                    </Button>
-                  </Link>
-                  <Link href="/admin/overview">
-                    <Button variant="outline" className="w-full justify-start h-12">
-                      <BarChart3 className="w-4 h-4 mr-2" />
-                      Platform Overview
-                      <Badge variant="outline" className="ml-auto">
-                        {stats?.totalUsers || 0} users
                       </Badge>
                     </Button>
                   </Link>
@@ -674,147 +579,69 @@ export default function DashboardPage() {
               </Button>
             </CardContent>
           </Card>
-        </div>
 
-        {/* Role-Specific Content */}
-        {user.role === 'agent' && user.verifiedStatus && (
+          {/* Recent Activity */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>My Hostel Listings</CardTitle>
-                <CardDescription>
-                  Manage your property listings and track performance
-                </CardDescription>
-              </div>
-              <Link href="/hostels/create">
-                <Button>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add New Listing
-                </Button>
-              </Link>
+            <CardHeader>
+              <CardTitle>Recent Activity</CardTitle>
+              <CardDescription>
+                {user.role === 'student' ? 'Your latest booking requests' : 'Recent platform activity'}
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              {recentHostels && recentHostels.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {recentHostels.slice(0, 4).map((hostel: any) => (
-                    <Card key={hostel?.id || Math.random()} className="overflow-hidden">
-                      {hostel?.images?.[0] && (
-                        <img 
-                          src={hostel.images[0]} 
-                          alt={hostel?.title || 'Hostel'}
-                          className="w-full h-32 object-cover"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none'
-                          }}
-                        />
-                      )}
-                      <CardContent className="p-4">
-                        <h3 className="font-semibold mb-2 line-clamp-1">
-                          {hostel?.title || 'Unnamed Hostel'}
-                        </h3>
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold">
-                            ₦{hostel?.price?.toLocaleString() || '0'}
-                          </span>
-                          <Badge variant={hostel?.availability ? 'default' : 'secondary'}>
-                            {hostel?.availability ? 'Available' : 'Unavailable'}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center mt-2 text-xs text-muted-foreground">
-                          <Clock className="w-3 h-3 mr-1" />
-                          {hostel?.timeAgo || 'Recently posted'}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+              {!recentBookings || recentBookings.length === 0 ? (
+                <div className="text-center py-8">
+                  <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No recent activity</h3>
+                  <p className="text-muted-foreground mb-4">
+                    {user.role === 'student' 
+                      ? 'Start by browsing hostels and booking inspections'
+                      : 'Activity will appear here'
+                    }
+                  </p>
+                  {user.role === 'student' && (
+                    <Link href="/hostels">
+                      <Button>
+                        <Search className="w-4 h-4 mr-2" />
+                        Browse Hostels
+                      </Button>
+                    </Link>
+                  )}
                 </div>
               ) : (
-                <div className="text-center py-8">
-                  <Home className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No Listings Yet</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Start by creating your first hostel listing with photos and videos
-                  </p>
-                  <Link href="/hostels/create">
-                    <Button>
-                      <Plus className="w-4 h-4 mr-2" />
-                      Create First Listing
-                    </Button>
-                  </Link>
+                <div className="space-y-4">
+                  {recentBookings.slice(0, 3).map((booking: any) => (
+                    <div key={booking?.id || Math.random()} className="flex items-center justify-between p-4 border border-border rounded-lg">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center">
+                          <Calendar className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold">
+                            {booking?.hostel?.title || 'Hostel Booking'}
+                          </h4>
+                          <p className="text-sm text-muted-foreground">
+                            {booking?.preferred_date 
+                              ? new Date(booking.preferred_date).toLocaleDateString()
+                              : 'Date not specified'
+                            }
+                          </p>
+                        </div>
+                      </div>
+                      <Badge variant={
+                        booking?.status === 'confirmed' ? 'default' :
+                        booking?.status === 'pending' ? 'secondary' :
+                        'outline'
+                      }>
+                        {booking?.status || 'unknown'}
+                      </Badge>
+                    </div>
+                  ))}
                 </div>
               )}
             </CardContent>
           </Card>
-        )}
-
-        {/* Student Hostel Discovery */}
-        {user.role === 'student' && recentHostels && recentHostels.length > 0 && (
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Latest Hostels</CardTitle>
-                <CardDescription>
-                  Recently posted properties from verified agents
-                </CardDescription>
-              </div>
-              <Link href="/hostels">
-                <Button variant="outline">View All</Button>
-              </Link>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {recentHostels.slice(0, 6).map((hostel: any) => (
-                  <Card key={hostel?.id || Math.random()} className="overflow-hidden hover:shadow-lg transition-shadow">
-                    {hostel?.images?.[0] && (
-                      <img 
-                        src={hostel.images[0]} 
-                        alt={hostel?.title || 'Hostel'}
-                        className="w-full h-32 object-cover"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none'
-                        }}
-                      />
-                    )}
-                    <CardContent className="p-4">
-                      <h3 className="font-semibold mb-2 line-clamp-1">
-                        {hostel?.title || 'Unnamed Hostel'}
-                      </h3>
-                      <div className="flex items-center text-muted-foreground mb-2">
-                        <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
-                        <span className="text-sm truncate">
-                          {hostel?.location?.name || 'Location not specified'}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold">
-                          ₦{hostel?.price?.toLocaleString() || '0'}
-                          <span className="text-xs text-muted-foreground">
-                            /{hostel?.price_type || 'semester'}
-                          </span>
-                        </span>
-                        <Badge variant={hostel?.availability ? 'default' : 'secondary'}>
-                          {hostel?.availability ? 'Available' : 'Unavailable'}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center justify-between mt-2">
-                        {hostel?.agent?.verified_status && (
-                          <div className="flex items-center text-xs text-muted-foreground">
-                            <Shield className="w-3 h-3 mr-1" />
-                            Verified Agent
-                          </div>
-                        )}
-                        <div className="flex items-center text-xs text-muted-foreground">
-                          <Clock className="w-3 h-3 mr-1" />
-                          {hostel?.timeAgo || 'Recently posted'}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        </div>
 
         {/* Profile Photo Upload Modal */}
         {showProfileUpload && (
@@ -849,9 +676,7 @@ export default function DashboardPage() {
         <Card className="mt-8">
           <CardHeader>
             <CardTitle>Account Information</CardTitle>
-            <CardDescription>
-              Your current account details and status
-            </CardDescription>
+            <CardDescription>Your current account details and status</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -873,9 +698,14 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Status:</span>
-                      <Badge variant={user.verifiedStatus ? 'default' : 'secondary'}>
-                        {user.verifiedStatus ? 'Verified' : 'Pending Verification'}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={user.verifiedStatus ? 'default' : 'secondary'}>
+                          {user.verifiedStatus ? 'Verified' : 'Pending Verification'}
+                        </Badge>
+                        {user.verifiedStatus && (
+                          <InstagramVerificationBadge verified={true} size="sm" />
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
