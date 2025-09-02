@@ -18,6 +18,7 @@ import {
   Search,
   Clock,
   CheckCircle,
+  X,
   AlertTriangle,
   TrendingUp,
   Phone
@@ -236,8 +237,33 @@ export default function DashboardPage() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Banned Agent Warning */}
+        {user.role === 'agent' && freshUserData?.banned && (
+          <Card className="mb-8 border-2 border-red-500 bg-red-50">
+            <CardContent className="p-6 text-center">
+              <div className="flex items-center justify-center space-x-3 mb-4">
+                <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center">
+                  <X className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-red-800">Account Suspended</h2>
+                  <p className="text-red-600">Your agent account has been suspended by admin</p>
+                </div>
+              </div>
+              <div className="bg-white p-4 rounded-lg border border-red-200">
+                <p className="text-sm text-red-700 mb-2">
+                  <strong>Reason:</strong> Policy violation or administrative action
+                </p>
+                <p className="text-sm text-red-600">
+                  Contact support if you believe this is an error. Your account access is temporarily restricted.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Agent Profile Section (Top Priority) */}
-        {user.role === 'agent' && (
+        {user.role === 'agent' && !freshUserData?.banned && (
           <Card className="mb-8 border-2 border-primary/20">
             <CardContent className="p-6">
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">

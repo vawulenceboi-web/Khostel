@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
         face_photo_url,
         role,
         verified_status,
+        banned,
         face_verification_status,
         school_id,
         created_at,
