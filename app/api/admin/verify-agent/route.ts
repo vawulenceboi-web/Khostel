@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
       .from('users')
       .update(updateData)
       .eq('id', agentId)
-      .select()
+      .select('id, email, first_name, last_name, verified_status, banned, updated_at')
       .single()
 
     if (updateError) {
@@ -89,6 +89,8 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       )
     }
+
+    console.log('✅ Database update successful. Updated agent:', JSON.stringify(updatedAgent))
 
     // Log admin action
     try {
