@@ -96,7 +96,10 @@ export default function DashboardPage() {
       
     } catch (error) {
       console.error('❌ Error fetching real-time data:', error)
-      toast.error('Failed to load dashboard data')
+      // Don't show error toast, just log it
+      setRecentHostels([])
+      setRecentBookings([])
+      setStats(null)
     } finally {
       setLoading(false)
     }
@@ -214,7 +217,7 @@ export default function DashboardPage() {
                 {user.role === 'student' && <GraduationCap className="w-3 h-3 mr-1" />}
                 {user.role === 'agent' && <Building className="w-3 h-3 mr-1" />}
                 {user.role === 'admin' && <Shield className="w-3 h-3 mr-1" />}
-                {user.role?.charAt(0).toUpperCase() + user.role?.slice(1)}
+                {user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'User'}
                 {user.verifiedStatus && <InstagramVerificationBadge verified={true} size="sm" className="ml-1" />}
               </Badge>
             </div>
@@ -643,7 +646,7 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {recentBookings.slice(0, 3).map((booking: any) => (
+                  {(recentBookings || []).slice(0, 3).map((booking: any) => (
                     <div key={booking?.id || Math.random()} className="flex items-center justify-between p-4 border border-border rounded-lg">
                       <div className="flex items-center space-x-4">
                         <div className="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center">
@@ -654,10 +657,15 @@ export default function DashboardPage() {
                             {booking?.hostel?.title || 'Hostel Booking'}
                           </h4>
                           <p className="text-sm text-muted-foreground">
-                            {booking?.preferred_date 
-                              ? new Date(booking.preferred_date).toLocaleDateString()
-                              : 'Date not specified'
-                            }
+                            {(() => {
+                              try {
+                                return booking?.preferred_date 
+                                  ? new Date(booking.preferred_date).toLocaleDateString()
+                                  : 'Date not specified'
+                              } catch (error) {
+                                return 'Date not specified'
+                              }
+                            })()}
                           </p>
                         </div>
                       </div>
