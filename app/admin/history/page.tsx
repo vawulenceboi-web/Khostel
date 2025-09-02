@@ -128,6 +128,9 @@ export default function AdminHistoryPage() {
 
       if (result.success) {
         toast.success(newBanStatus ? 'Agent banned successfully' : 'Agent unbanned successfully')
+        
+        // Refresh data from database to ensure sync
+        fetchAgentHistory()
       } else {
         toast.error(result.message || 'Failed to update ban status')
         
