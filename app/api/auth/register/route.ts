@@ -75,13 +75,23 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ User created successfully:', newUser.email)
 
+    // For agents, the trigger should automatically add them to verification queue
+    // If it fails due to RLS, we'll handle it gracefully
+    if (validatedData.role === 'agent') {
+      console.log('🔄 Agent registered - should be added to verification queue by trigger')
+    }
+
     // Remove password hash from response
     const { password_hash: _, ...userWithoutPassword } = newUser
+
+    const message = validatedData.role === 'agent' 
+      ? 'Agent registration successful! Your application is under review. You will be notified within 30 minutes.'
+      : 'Registration successful! You can now sign in.'
 
     return NextResponse.json({
       success: true,
       user: userWithoutPassword,
-      message: 'Registration successful'
+      message
     }, { status: 201 })
 
   } catch (error) {
