@@ -168,6 +168,12 @@ export default function AdminDashboardPage() {
             </div>
             
             <div className="flex items-center space-x-4">
+              <Link href="/admin/history">
+                <Button variant="ghost">
+                  <Users className="w-4 h-4 mr-2" />
+                  Agent History
+                </Button>
+              </Link>
               <Button variant="outline" onClick={fetchPendingAgents}>
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Refresh

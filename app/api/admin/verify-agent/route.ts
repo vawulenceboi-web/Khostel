@@ -67,10 +67,12 @@ export async function POST(request: NextRequest) {
       // Could add a banned flag here if needed
     }
 
-    const { error: updateError } = await db.supabase
+    const { data: updatedAgent, error: updateError } = await db.supabase
       .from('users')
       .update(updateData)
       .eq('id', agentId)
+      .select()
+      .single()
 
     if (updateError) {
       console.error('❌ Error updating agent:', updateError)
