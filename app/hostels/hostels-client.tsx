@@ -317,7 +317,7 @@ export default function HostelsClient() {
                                 {hostel.agent.first_name} {hostel.agent.last_name}
                               </span>
                               <InstagramVerificationBadge 
-                                verified={true} 
+                                verified={hostel.agent.verified_status} 
                                 size="sm" 
                                 className="ml-1"
                               />

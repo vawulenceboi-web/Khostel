@@ -162,9 +162,10 @@ export const db = {
         .from('hostels')
         .select(`
           *,
-          location:locations(*),
-          agent:users(id, first_name, last_name, phone, verified_status)
+          location:locations(id, name, latitude, longitude, school_id),
+          agent:users(id, first_name, last_name, phone, verified_status, profile_image_url)
         `)
+        .order('created_at', { ascending: false })
 
       // Apply filters
       if (filters.locationId) {
