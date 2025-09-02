@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
+import { MdVerified } from "react-icons/md"
 
 export default function HostelsClient() {
   const [hostels, setHostels] = useState([])
@@ -88,14 +89,7 @@ export default function HostelsClient() {
                   <div className="flex items-center space-x-2">
                     <span>Agent: {hostel.agent?.first_name} {hostel.agent?.last_name}</span>
                     {hostel.agent?.verified_status && (
-                      <svg
-                        className="w-4 h-4"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                      >
-                        <circle cx="12" cy="12" r="11" fill="#1DA1F2" stroke="white" strokeWidth="1" />
-                        <path d="M9 12l2 2 4-4" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
+                      <MdVerified className="text-blue-500 w-4 h-4" />
                     )}
                   </div>
                 </CardContent>
