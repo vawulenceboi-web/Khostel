@@ -9,9 +9,10 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { MapPin, Star, Wifi, Car, Utensils, Search, Filter, ArrowLeft, Calendar, Clock, CheckCircle } from "lucide-react"
+import { MapPin, Star, Wifi, Car, Utensils, Search, Filter, ArrowLeft, Calendar, Clock, CheckCircle, Users } from "lucide-react"
 import { toast } from 'sonner'
 import { formatRelativeTime, isWithinLast24Hours } from '@/lib/timeUtils'
+import { InstagramVerificationBadge } from '@/components/ui/verification-badge'
 
 interface Hostel {
   id: string
@@ -146,9 +147,19 @@ export default function HostelsPage() {
                 <ArrowLeft className="h-5 w-5" />
                 <span className="text-xl font-bold">k-H</span>
               </Link>
+              <span className="text-lg font-semibold text-muted-foreground">Browse Hostels</span>
             </div>
             
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <Link href="/agents">
+                <Button variant="outline" size="sm">
+                  <Users className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">View Agents</span>
+                </Button>
+              </Link>
+            </div>
+            
+            <div className="flex items-center space-x-4 ml-auto">
               {session?.user ? (
                 <>
                   <span className="text-sm text-muted-foreground hidden sm:block">
@@ -321,11 +332,22 @@ export default function HostelsPage() {
                   </div>
 
                   <div className="mt-3 flex items-center justify-between">
+                    {/* Agent Profile Link with Verification Badge */}
                     {hostel.agent?.verifiedStatus && (
-                      <div className="flex items-center text-xs text-muted-foreground">
-                        <Shield className="w-3 h-3 mr-1" />
-                        Verified Agent
-                      </div>
+                      <Link href={`/agents/${hostel.agent.id}`}>
+                        <div className="flex items-center text-xs text-muted-foreground hover:text-foreground transition-colors">
+                          <div className="flex items-center">
+                            <span className="font-medium">
+                              {hostel.agent.firstName} {hostel.agent.lastName}
+                            </span>
+                            <InstagramVerificationBadge 
+                              verified={hostel.agent.verifiedStatus} 
+                              size="sm" 
+                              className="ml-1"
+                            />
+                          </div>
+                        </div>
+                      </Link>
                     )}
                     
                     <div className="flex items-center text-xs text-muted-foreground">
