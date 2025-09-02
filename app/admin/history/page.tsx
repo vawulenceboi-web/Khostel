@@ -292,7 +292,14 @@ export default function AdminHistoryPage() {
                                   </>
                                 )}
                               </Badge>
-                              <Badge variant="outline">
+                              <button
+                                onClick={() => window.open(`/agents/${agent.id}`, '_blank')}
+                                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                                title="View full agent details & CAC"
+                              >
+                                <Eye className="w-4 h-4 text-gray-500 hover:text-gray-700" />
+                              </button>
+                              <Badge variant="outline" className="text-xs">
                                 {agent.registrationAge} days old
                               </Badge>
                             </div>
@@ -310,13 +317,7 @@ export default function AdminHistoryPage() {
                           </div>
                         </div>
                         
-                        <div className="flex items-start space-x-2 text-sm">
-                          <Building className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
-                          <div className="min-w-0 flex-1">
-                            <span className="font-medium text-gray-700">CAC:</span>
-                            <span className="ml-1 text-gray-600 break-all font-mono text-xs">{agent.cac_number || 'Not provided'}</span>
-                          </div>
-                        </div>
+
                         
                         <div className="flex items-start space-x-2 text-sm">
                           <MapPin className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
