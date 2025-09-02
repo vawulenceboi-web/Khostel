@@ -33,7 +33,10 @@ export default function AdminLoginPage() {
 
       if (result.success) {
         toast.success('Admin login successful')
-        router.push('/admin/dashboard')
+        // Add a small delay to ensure cookie is set
+        setTimeout(() => {
+          router.push('/admin/dashboard')
+        }, 500)
       } else {
         toast.error(result.message || 'Invalid admin credentials')
       }

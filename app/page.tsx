@@ -197,6 +197,16 @@ export default function HomePage() {
               </CardContent>
             </Card>
           </div>
+          
+          {/* Admin Access */}
+          <div className="mt-16 text-center">
+            <Link href="/admin/login">
+              <Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-foreground">
+                <Shield className="w-3 h-3 mr-1" />
+                Admin Access
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
 

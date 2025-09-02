@@ -57,22 +57,40 @@ export default function AdminDashboardPage() {
 
   const checkAdminAuth = async () => {
     try {
-      const response = await fetch('/api/admin/verify')
+      const response = await fetch('/api/admin/verify', {
+        credentials: 'include' // Ensure cookies are sent
+      })
+      
       if (!response.ok) {
-        router.push('/admin/login')
+        console.log('❌ Admin auth failed, redirecting to login')
+        toast.error('Admin session expired. Please login again.')
+        setTimeout(() => {
+          router.push('/admin/login')
+        }, 2000)
+      } else {
+        console.log('✅ Admin authenticated successfully')
       }
     } catch (error) {
-      router.push('/admin/login')
+      console.error('❌ Admin auth error:', error)
+      toast.error('Authentication check failed')
+      setTimeout(() => {
+        router.push('/admin/login')
+      }, 2000)
     }
   }
 
   const fetchPendingAgents = async () => {
     try {
-      const response = await fetch('/api/admin/pending-agents')
+      const response = await fetch('/api/admin/pending-agents', {
+        credentials: 'include' // Ensure cookies are sent
+      })
       if (response.ok) {
         const data = await response.json()
         setPendingAgents(data.data || [])
         console.log('📋 Loaded pending agents:', data.data?.length)
+      } else {
+        console.error('Failed to fetch pending agents:', response.status)
+        toast.error('Failed to load pending agents')
       }
     } catch (error) {
       console.error('Error fetching pending agents:', error)

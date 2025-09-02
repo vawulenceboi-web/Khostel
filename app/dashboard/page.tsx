@@ -142,6 +142,14 @@ export default function DashboardPage() {
               <span className="text-sm text-muted-foreground hidden sm:block">
                 {user.firstName || user.name || 'User'}
               </span>
+              {user.role === 'admin' && (
+                <Link href="/admin/login">
+                  <Button variant="ghost" size="sm">
+                    <Shield className="w-4 h-4 mr-2" />
+                    Admin Panel
+                  </Button>
+                </Link>
+              )}
               <Button variant="outline" onClick={() => signOut({ callbackUrl: '/' })}>
                 Sign Out
               </Button>
