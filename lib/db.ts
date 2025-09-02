@@ -15,8 +15,12 @@ function getDatabaseUrl() {
     const match = supabaseUrl.match(/https:\/\/([^.]+)\.supabase\.co/)
     if (match) {
       const projectRef = match[1]
-      // Auto-generate database URL (user will need to provide password)
-      return `postgresql://postgres:[YOUR-PASSWORD]@db.${projectRef}.supabase.co:5432/postgres`
+      // For production, use pooled connection to avoid timeouts
+      const isProduction = process.env.NODE_ENV === 'production'
+      const host = isProduction ? `aws-0-us-east-1.pooler.supabase.com` : `db.${projectRef}.supabase.co`
+      const port = isProduction ? '6543' : '5432'
+      
+      return `postgresql://postgres.${projectRef}:[YOUR-PASSWORD]@${host}:${port}/postgres`
     }
   }
   
@@ -51,12 +55,35 @@ export function getSupabaseClient() {
   )
 }
 
+// Global connection cache to prevent timeouts
+let cachedDb: any = null
+
 // Create database connection (only when needed)
 export function getDb() {
+  // Return cached connection if available
+  if (cachedDb) {
+    return cachedDb
+  }
+  
   validateEnv()
   const databaseUrl = getDatabaseUrl()
-  const client = postgres(databaseUrl)
-  return drizzle(client, { schema })
+  
+  // Simplified connection for serverless with timeout protection
+  const client = postgres(databaseUrl, {
+    prepare: false,
+    ssl: 'require',
+    max: 1,
+    connect_timeout: 5, // Shorter timeout
+    command_timeout: 10, // Shorter command timeout
+    idle_timeout: 20,
+  })
+  
+  const db = drizzle(client, { schema })
+  
+  // Cache the connection
+  cachedDb = db
+  
+  return db
 }
 
 // For easy access (validates on first use)

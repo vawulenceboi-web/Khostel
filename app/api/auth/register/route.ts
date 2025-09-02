@@ -37,6 +37,15 @@ export async function POST(request: NextRequest) {
     const db = getDb()
     console.log('✅ Database connection established')
     
+    // Test connection with a simple query
+    try {
+      await db.select().from(users).limit(1)
+      console.log('✅ Database query test successful')
+    } catch (dbError) {
+      console.error('❌ Database query test failed:', dbError)
+      throw new Error(`Database connection test failed: ${dbError.message}`)
+    }
+    
     // Check if user already exists
     const [existingUser] = await db
       .select()

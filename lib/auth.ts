@@ -79,25 +79,39 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, user }) {
-      if (user) {
-        token.role = user.role
-        token.verifiedStatus = user.verifiedStatus
-        token.firstName = user.firstName
-        token.lastName = user.lastName
-        token.schoolId = user.schoolId
+      try {
+        if (user) {
+          console.log('🔑 JWT callback - adding user data to token')
+          token.role = user.role
+          token.verifiedStatus = user.verifiedStatus
+          token.firstName = user.firstName
+          token.lastName = user.lastName
+          token.schoolId = user.schoolId
+          console.log('✅ JWT token updated successfully')
+        }
+        return token
+      } catch (error) {
+        console.error('❌ JWT callback error:', error)
+        return token
       }
-      return token
     },
     async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.sub!
-        session.user.role = token.role as string
-        session.user.verifiedStatus = token.verifiedStatus as boolean
-        session.user.firstName = token.firstName as string
-        session.user.lastName = token.lastName as string
-        session.user.schoolId = token.schoolId as string
+      try {
+        if (session.user && token.sub) {
+          console.log('👤 Session callback - creating user session')
+          session.user.id = token.sub
+          session.user.role = (token.role as string) || 'student'
+          session.user.verifiedStatus = (token.verifiedStatus as boolean) || false
+          session.user.firstName = (token.firstName as string) || ''
+          session.user.lastName = (token.lastName as string) || ''
+          session.user.schoolId = (token.schoolId as string) || ''
+          console.log('✅ Session created successfully for:', session.user.email)
+        }
+        return session
+      } catch (error) {
+        console.error('❌ Session callback error:', error)
+        return session
       }
-      return session
     }
   },
   pages: {
