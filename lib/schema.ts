@@ -144,14 +144,40 @@ export type NewBooking = typeof bookings.$inferInsert
 
 // Validation schemas
 export const registerUserSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-  firstName: z.string().min(1),
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  firstName: z.string().min(2, 'First name must be at least 2 characters'),
   lastName: z.string().optional(),
   phone: z.string().optional(),
-  role: z.enum(['student', 'agent', 'admin']).default('student'),
+  role: z.enum(['student', 'agent']).default('student'),
   schoolId: z.string().optional(),
-  businessRegNumber: z.string().optional(), // Required for agents
+  businessRegNumber: z.string().optional(),
+  address: z.string().optional(),
+  profileImageUrl: z.string().url().optional(),
+  termsAccepted: z.boolean().refine(val => val === true, {
+    message: 'You must accept the terms and conditions'
+  }),
+}).refine((data) => {
+  // Enhanced validation for agents
+  if (data.role === 'agent') {
+    return (
+      data.businessRegNumber && 
+      data.businessRegNumber.match(/^RC\d{6,7}$/) &&
+      data.address &&
+      data.phone &&
+      data.lastName
+    )
+  }
+  return true
+}, {
+  message: 'Agents must provide valid CAC number (RC format), address, phone, and last name',
+  path: ['businessRegNumber']
+})
+
+// Admin login schema (hardcoded credentials)
+export const adminLoginSchema = z.object({
+  username: z.string().min(1, 'Username is required'),
+  password: z.string().min(1, 'Password is required'),
 })
 
 export const createHostelSchema = z.object({

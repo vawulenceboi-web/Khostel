@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -8,8 +8,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
-import { Eye, EyeOff, ArrowLeft, UserCheck, Building, GraduationCap } from 'lucide-react'
+import { 
+  Eye, 
+  EyeOff, 
+  ArrowLeft, 
+  UserCheck, 
+  Building, 
+  GraduationCap, 
+  Upload,
+  MapPin,
+  Phone,
+  FileText,
+  CheckCircle,
+  AlertCircle
+} from 'lucide-react'
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -19,277 +34,446 @@ export default function RegisterPage() {
     firstName: '',
     lastName: '',
     phone: '',
-    role: 'student' as 'student' | 'agent' | 'admin',
+    role: 'student' as 'student' | 'agent',
     schoolId: '',
     businessRegNumber: '',
+    address: '',
+    profileImageUrl: '',
+    termsAccepted: false
   })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [schools, setSchools] = useState<any[]>([])
   const router = useRouter()
+
+  useEffect(() => {
+    fetchSchools()
+  }, [])
+
+  const fetchSchools = async () => {
+    try {
+      const response = await fetch('/api/schools')
+      if (response.ok) {
+        const data = await response.json()
+        setSchools(data.data || [])
+      }
+    } catch (error) {
+      console.error('Error fetching schools:', error)
+    }
+  }
+
+  const validateForm = () => {
+    if (formData.password !== formData.confirmPassword) {
+      toast.error('Passwords do not match')
+      return false
+    }
+
+    if (formData.password.length < 8) {
+      toast.error('Password must be at least 8 characters')
+      return false
+    }
+
+    if (!formData.termsAccepted) {
+      toast.error('You must accept the terms and conditions')
+      return false
+    }
+
+    // Enhanced agent validation
+    if (formData.role === 'agent') {
+      if (!formData.businessRegNumber) {
+        toast.error('CAC registration number is required for agents')
+        return false
+      }
+      
+      if (!formData.businessRegNumber.match(/^RC\d{6,7}$/)) {
+        toast.error('CAC number must be in format: RC followed by 6-7 digits (e.g., RC123456)')
+        return false
+      }
+
+      if (!formData.lastName) {
+        toast.error('Last name is required for agents')
+        return false
+      }
+
+      if (!formData.phone) {
+        toast.error('Phone number is required for agents')
+        return false
+      }
+
+      if (!formData.address || formData.address.length < 10) {
+        toast.error('Full business address is required for agents (minimum 10 characters)')
+        return false
+      }
+    }
+
+    return true
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (formData.password !== formData.confirmPassword) {
-      toast.error('Passwords do not match')
-      return
-    }
-
-    if (formData.role === 'agent' && !formData.businessRegNumber) {
-      toast.error('CAC registration number is required for agents')
-      return
-    }
+    if (!validateForm()) return
 
     setIsLoading(true)
 
     try {
+      const submitData = {
+        ...formData,
+        termsAcceptedAt: new Date().toISOString()
+      }
+      delete (submitData as any).confirmPassword
+
       const response = await fetch('/api/auth/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          phone: formData.phone,
-          role: formData.role,
-          schoolId: formData.schoolId || undefined,
-          businessRegNumber: formData.businessRegNumber || undefined,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(submitData)
       })
 
-      const data = await response.json()
+      const result = await response.json()
 
-      if (data.success) {
-        toast.success('Registration successful!', {
-          description: formData.role === 'agent' 
-            ? 'Your account will be verified by admin before you can list properties'
-            : 'You can now sign in to your account'
-        })
+      if (result.success) {
+        if (formData.role === 'agent') {
+          toast.success('Agent registration successful! Your application is under review. You will be notified within 30 minutes.')
+        } else {
+          toast.success('Registration successful! You can now sign in.')
+        }
         router.push('/auth/login')
       } else {
-        toast.error('Registration failed', {
-          description: data.message || 'Please try again'
-        })
+        toast.error(result.message || 'Registration failed')
       }
     } catch (error) {
-      toast.error('Registration failed', {
-        description: 'An unexpected error occurred'
-      })
+      console.error('Registration error:', error)
+      toast.error('Registration failed. Please try again.')
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-  }
-
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
-      <div className="p-4 border-b border-border">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center space-x-2">
-            <ArrowLeft className="h-5 w-5" />
-            <span className="text-xl font-bold">k-H</span>
-          </Link>
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="w-full max-w-2xl">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-foreground mb-2">Join k-H</h1>
+          <p className="text-muted-foreground">
+            Create your account to access Nigeria's premier student housing platform
+          </p>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-foreground mb-2">Join k-H</h1>
-            <p className="text-muted-foreground">Create your account to get started</p>
-          </div>
-
-          <Card className="border-2 border-border/50 shadow-lg">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl">Create Account</CardTitle>
-              <CardDescription>
-                Choose your role and fill in your details
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Role Selection */}
-                <div className="space-y-2">
-                  <Label>I am a...</Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button
-                      type="button"
-                      variant={formData.role === 'student' ? 'default' : 'outline'}
-                      onClick={() => handleInputChange('role', 'student')}
-                      className="h-16 flex flex-col items-center justify-center"
-                    >
-                      <GraduationCap className="h-6 w-6 mb-1" />
-                      <span className="text-sm">Student</span>
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={formData.role === 'agent' ? 'default' : 'outline'}
-                      onClick={() => handleInputChange('role', 'agent')}
-                      className="h-16 flex flex-col items-center justify-center"
-                    >
-                      <Building className="h-6 w-6 mb-1" />
-                      <span className="text-sm">Agent/Owner</span>
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Personal Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Create Account</CardTitle>
+            <CardDescription>
+              {formData.role === 'agent' 
+                ? 'Register as a property agent to list hostels (requires verification)'
+                : 'Register as a student to book hostel inspections'
+              }
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Role Selection */}
+              <div className="space-y-2">
+                <Label>Account Type</Label>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName">First Name</Label>
-                    <Input
-                      id="firstName"
-                      value={formData.firstName}
-                      onChange={(e) => handleInputChange('firstName', e.target.value)}
-                      placeholder="First name"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName">Last Name</Label>
-                    <Input
-                      id="lastName"
-                      value={formData.lastName}
-                      onChange={(e) => handleInputChange('lastName', e.target.value)}
-                      placeholder="Last name"
-                    />
-                  </div>
+                  <Card 
+                    className={`cursor-pointer transition-all ${
+                      formData.role === 'student' ? 'ring-2 ring-primary' : ''
+                    }`}
+                    onClick={() => setFormData(prev => ({ ...prev, role: 'student' }))}
+                  >
+                    <CardContent className="p-4 text-center">
+                      <GraduationCap className="w-8 h-8 mx-auto mb-2" />
+                      <h3 className="font-semibold">Student</h3>
+                      <p className="text-xs text-muted-foreground">Book hostel inspections</p>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card 
+                    className={`cursor-pointer transition-all ${
+                      formData.role === 'agent' ? 'ring-2 ring-primary' : ''
+                    }`}
+                    onClick={() => setFormData(prev => ({ ...prev, role: 'agent' }))}
+                  >
+                    <CardContent className="p-4 text-center">
+                      <Building className="w-8 h-8 mx-auto mb-2" />
+                      <h3 className="font-semibold">Agent</h3>
+                      <p className="text-xs text-muted-foreground">List properties</p>
+                    </CardContent>
+                  </Card>
                 </div>
+              </div>
 
+              {/* Basic Information */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
+                  <Label htmlFor="firstName">First Name *</Label>
                   <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    placeholder="Enter your email"
+                    id="firstName"
+                    value={formData.firstName}
+                    onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
                     required
                   />
                 </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
+                  <Label htmlFor="lastName">
+                    Last Name {formData.role === 'agent' && '*'}
+                  </Label>
+                  <Input
+                    id="lastName"
+                    value={formData.lastName}
+                    onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                    required={formData.role === 'agent'}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phone">
+                  Phone Number {formData.role === 'agent' && '*'}
+                </Label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="phone"
                     type="tel"
+                    placeholder="+234 800 000 0000"
+                    className="pl-10"
                     value={formData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    placeholder="Enter your phone number"
+                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                    required={formData.role === 'agent'}
                   />
                 </div>
+              </div>
 
-                {/* University Selection for Students */}
-                {formData.role === 'student' && (
+              {/* Agent-specific fields */}
+              {formData.role === 'agent' && (
+                <>
                   <div className="space-y-2">
-                    <Label>University</Label>
-                    <Select value={formData.schoolId} onValueChange={(value) => handleInputChange('schoolId', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select your university" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="kwasu">Kwara State University (KWASU)</SelectItem>
-                        <SelectItem value="unilorin">University of Ilorin</SelectItem>
-                        <SelectItem value="oau">Obafemi Awolowo University</SelectItem>
-                        <SelectItem value="ui">University of Ibadan</SelectItem>
-                        <SelectItem value="unn">University of Nigeria, Nsukka</SelectItem>
-                        <SelectItem value="uniben">University of Benin</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-
-                {/* CAC Registration for Agents */}
-                {formData.role === 'agent' && (
-                  <div className="space-y-2">
-                    <Label htmlFor="businessRegNumber">CAC Registration Number</Label>
-                    <Input
-                      id="businessRegNumber"
-                      value={formData.businessRegNumber}
-                      onChange={(e) => handleInputChange('businessRegNumber', e.target.value)}
-                      placeholder="Enter your CAC registration number"
-                      required
-                    />
+                    <Label htmlFor="businessRegNumber">CAC Registration Number *</Label>
+                    <div className="relative">
+                      <FileText className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="businessRegNumber"
+                        placeholder="RC1234567"
+                        className="pl-10"
+                        value={formData.businessRegNumber}
+                        onChange={(e) => setFormData(prev => ({ 
+                          ...prev, 
+                          businessRegNumber: e.target.value.toUpperCase() 
+                        }))}
+                        required
+                      />
+                    </div>
                     <p className="text-xs text-muted-foreground">
-                      Required for verification. Your account will be reviewed by admin.
+                      Format: RC followed by 6-7 digits (e.g., RC123456)
                     </p>
                   </div>
-                )}
 
+                  <div className="space-y-2">
+                    <Label htmlFor="address">Business Address *</Label>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Textarea
+                        id="address"
+                        placeholder="Full business address including street, city, state"
+                        className="pl-10 min-h-[80px]"
+                        value={formData.address}
+                        onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="profileImageUrl">Profile Picture URL (Optional)</Label>
+                    <div className="relative">
+                      <Upload className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="profileImageUrl"
+                        type="url"
+                        placeholder="https://example.com/your-photo.jpg"
+                        className="pl-10"
+                        value={formData.profileImageUrl}
+                        onChange={(e) => setFormData(prev => ({ ...prev, profileImageUrl: e.target.value }))}
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Professional photo recommended for faster verification
+                    </p>
+                  </div>
+                </>
+              )}
+
+              {/* School selection for students */}
+              {formData.role === 'student' && (
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="schoolId">University (Optional)</Label>
+                  <Select value={formData.schoolId} onValueChange={(value) => 
+                    setFormData(prev => ({ ...prev, schoolId: value }))
+                  }>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select your university" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {schools.map((school) => (
+                        <SelectItem key={school.id} value={school.id}>
+                          {school.name} - {school.city}, {school.state}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Password fields */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password *</Label>
                   <div className="relative">
                     <Input
                       id="password"
-                      type={showPassword ? 'text' : 'password'}
+                      type={showPassword ? "text" : "password"}
                       value={formData.password}
-                      onChange={(e) => handleInputChange('password', e.target.value)}
-                      placeholder="Create a password"
+                      onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
                       required
-                      minLength={6}
-                      className="pr-10"
                     />
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
+                    </Button>
                   </div>
+                  <p className="text-xs text-muted-foreground">Minimum 8 characters</p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Label htmlFor="confirmPassword">Confirm Password *</Label>
                   <div className="relative">
                     <Input
                       id="confirmPassword"
-                      type={showConfirmPassword ? 'text' : 'password'}
+                      type={showConfirmPassword ? "text" : "password"}
                       value={formData.confirmPassword}
-                      onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                      placeholder="Confirm your password"
+                      onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
                       required
-                      minLength={6}
-                      className="pr-10"
                     />
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     >
                       {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Terms and Conditions */}
+              <div className="space-y-4">
+                <div className="flex items-start space-x-3">
+                  <Checkbox
+                    id="termsAccepted"
+                    checked={formData.termsAccepted}
+                    onCheckedChange={(checked) => 
+                      setFormData(prev => ({ ...prev, termsAccepted: checked as boolean }))
+                    }
+                    required
+                  />
+                  <div className="grid gap-1.5 leading-none">
+                    <Label 
+                      htmlFor="termsAccepted"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      I accept the Terms and Conditions *
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      By registering, you agree to our{' '}
+                      <Link href="/terms" className="underline hover:text-foreground">
+                        Terms of Service
+                      </Link>{' '}
+                      and{' '}
+                      <Link href="/privacy" className="underline hover:text-foreground">
+                        Privacy Policy
+                      </Link>
+                    </p>
                   </div>
                 </div>
 
-                <Button
-                  type="submit"
-                  className="w-full h-12 text-base font-semibold"
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Creating Account...' : 'Create Account'}
-                </Button>
-              </form>
-
-              <div className="mt-6 text-center">
-                <p className="text-sm text-muted-foreground">
-                  Already have an account?{' '}
-                  <Link href="/auth/login" className="text-primary hover:underline font-medium">
-                    Sign in here
-                  </Link>
-                </p>
+                {/* Agent verification notice */}
+                {formData.role === 'agent' && (
+                  <Card className="bg-secondary/50 border-dashed">
+                    <CardContent className="p-4">
+                      <div className="flex items-start space-x-3">
+                        <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
+                        <div>
+                          <h4 className="font-semibold text-sm mb-1">Agent Verification Process</h4>
+                          <div className="text-xs text-muted-foreground space-y-1">
+                            <p>• Your application will be reviewed by our admin team</p>
+                            <p>• Verification decision will be made within 30 minutes</p>
+                            <p>• You can only list properties after verification approval</p>
+                            <p>• Ensure all information is accurate and verifiable</p>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
-            </CardContent>
-          </Card>
+
+              <Button 
+                type="submit" 
+                className="w-full h-12" 
+                disabled={isLoading || !formData.termsAccepted}
+              >
+                {isLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
+                    {formData.role === 'agent' ? 'Submitting for Verification...' : 'Creating Account...'}
+                  </>
+                ) : (
+                  <>
+                    <UserCheck className="w-4 h-4 mr-2" />
+                    {formData.role === 'agent' ? 'Submit for Verification' : 'Create Account'}
+                  </>
+                )}
+              </Button>
+            </form>
+
+            <div className="mt-6 text-center">
+              <p className="text-sm text-muted-foreground">
+                Already have an account?{' '}
+                <Link href="/auth/login" className="text-primary hover:underline font-medium">
+                  Sign in here
+                </Link>
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="text-center mt-6">
+          <Link href="/">
+            <Button variant="ghost">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Home
+            </Button>
+          </Link>
         </div>
       </div>
     </div>

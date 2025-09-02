@@ -66,6 +66,10 @@ export async function POST(request: NextRequest) {
       role: validatedData.role,
       school_id: validatedData.schoolId,
       business_reg_number: validatedData.businessRegNumber,
+      address: validatedData.address,
+      profile_image_url: validatedData.profileImageUrl,
+      terms_accepted: validatedData.termsAccepted,
+      terms_accepted_at: new Date().toISOString(),
       verified_status: validatedData.role === 'agent' ? false : true, // Agents need verification
     })
 

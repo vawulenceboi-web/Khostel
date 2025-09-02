@@ -9,8 +9,9 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { MapPin, Star, Wifi, Car, Utensils, Search, Filter, ArrowLeft, Calendar } from "lucide-react"
+import { MapPin, Star, Wifi, Car, Utensils, Search, Filter, ArrowLeft, Calendar, Clock, CheckCircle } from "lucide-react"
 import { toast } from 'sonner'
+import { formatRelativeTime, isWithinLast24Hours } from '@/lib/timeUtils'
 
 interface Hostel {
   id: string
@@ -23,6 +24,10 @@ interface Hostel {
   amenities: string[]
   availability: boolean
   address: string
+  created_at: string
+  updated_at: string
+  timeAgo?: string
+  isNew?: boolean
   location: {
     id: string
     name: string
@@ -315,12 +320,22 @@ export default function HostelsPage() {
                     </Button>
                   </div>
 
-                  {hostel.agent?.verifiedStatus && (
-                    <div className="mt-3 flex items-center text-xs text-muted-foreground">
-                      <Shield className="w-3 h-3 mr-1" />
-                      Verified Agent
+                  <div className="mt-3 flex items-center justify-between">
+                    {hostel.agent?.verifiedStatus && (
+                      <div className="flex items-center text-xs text-muted-foreground">
+                        <Shield className="w-3 h-3 mr-1" />
+                        Verified Agent
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center text-xs text-muted-foreground">
+                      <Clock className="w-3 h-3 mr-1" />
+                      {formatRelativeTime(hostel.created_at || hostel.updated_at)}
+                      {isWithinLast24Hours(hostel.created_at || hostel.updated_at) && (
+                        <CheckCircle className="w-3 h-3 ml-1 text-green-600" />
+                      )}
                     </div>
-                  )}
+                  </div>
                 </CardContent>
               </Card>
             ))}

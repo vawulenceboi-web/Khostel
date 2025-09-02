@@ -14,6 +14,27 @@ export const supabase = createClient(
   process.env.SUPABASE_ANON_KEY
 )
 
+// Utility functions for real-time timestamps
+function calculateTimeAgo(dateString: string): string {
+  const now = new Date()
+  const date = new Date(dateString)
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+
+  if (diffInSeconds < 60) return `${diffInSeconds}s ago`
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`
+  if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}d ago`
+  if (diffInSeconds < 31536000) return `${Math.floor(diffInSeconds / 2592000)}mo ago`
+  return `${Math.floor(diffInSeconds / 31536000)}y ago`
+}
+
+function isWithinLast24Hours(dateString: string): boolean {
+  const now = new Date()
+  const date = new Date(dateString)
+  const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+  return diffInHours <= 24
+}
+
 // Database operations using ONLY Supabase client (no direct PostgreSQL)
 export const db = {
   // Users operations
@@ -44,6 +65,10 @@ export const db = {
       role: string
       school_id?: string
       business_reg_number?: string
+      address?: string
+      profile_image_url?: string
+      terms_accepted?: boolean
+      terms_accepted_at?: string
       verified_status: boolean
     }) {
       console.log('👤 Creating user:', userData.email)
@@ -73,6 +98,57 @@ export const db = {
         throw error
       }
       
+      return data
+    },
+
+    async findPendingAgents() {
+      console.log('📋 Finding pending agents...')
+      const { data, error } = await supabase
+        .from('users')
+        .select(`
+          id,
+          email,
+          first_name,
+          last_name,
+          phone,
+          address,
+          business_reg_number,
+          profile_image_url,
+          created_at,
+          terms_accepted,
+          terms_accepted_at
+        `)
+        .eq('role', 'agent')
+        .eq('verified_status', false)
+        .order('created_at', { ascending: true })
+      
+      if (error) {
+        console.error('❌ Error finding pending agents:', error)
+        throw error
+      }
+      
+      console.log(`✅ Found ${data?.length || 0} pending agents`)
+      return data || []
+    },
+
+    async updateVerificationStatus(userId: string, verified: boolean) {
+      console.log(`🔄 Updating verification status for ${userId}:`, verified)
+      const { data, error } = await supabase
+        .from('users')
+        .update({ 
+          verified_status: verified,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId)
+        .select()
+        .single()
+      
+      if (error) {
+        console.error('❌ Error updating verification status:', error)
+        throw error
+      }
+      
+      console.log('✅ Verification status updated')
       return data
     }
   },
