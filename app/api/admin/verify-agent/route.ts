@@ -73,6 +73,8 @@ export async function POST(request: NextRequest) {
       updateData.banned = false
     }
 
+    console.log('🔍 Final update data:', JSON.stringify(updateData))
+
     const { data: updatedAgent, error: updateError } = await db.supabase
       .from('users')
       .update(updateData)
