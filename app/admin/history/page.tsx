@@ -36,6 +36,7 @@ interface AgentWithHistory {
   cac_number: string
   profile_image_url: string
   verified_status: boolean
+  banned: boolean
   created_at: string
   updated_at: string
   status: string
@@ -94,63 +95,53 @@ export default function AdminHistoryPage() {
     }
   }
 
-  const handleBanAgent = async (agentId: string, reason: string) => {
+  const toggleBan = async (agentId: string, newBanStatus: boolean) => {
+    // 1. Optimistic update (instant switch)
+    setAgents(prev =>
+      prev.map(agent =>
+        agent.id === agentId ? { ...agent, banned: newBanStatus } : agent
+      )
+    )
+
     setProcessingAgent(agentId)
-    
+
     try {
+      // 2. Call API
       const response = await fetch('/api/admin/verify-agent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
           agentId,
-          action: 'ban',
-          reason: reason || 'Policy violation - banned by admin'
+          action: newBanStatus ? 'ban' : 'unban',
+          reason: newBanStatus ? 'Policy violation - banned by admin' : 'Agent unbanned by admin'
         })
       })
 
       const result = await response.json()
 
       if (result.success) {
-        toast.success('Agent banned successfully')
-        fetchAgentHistory() // Refresh list
+        toast.success(newBanStatus ? 'Agent banned successfully' : 'Agent unbanned successfully')
       } else {
-        toast.error(result.message || 'Failed to ban agent')
+        toast.error(result.message || 'Failed to update ban status')
+        
+        // 3. Rollback if failed
+        setAgents(prev =>
+          prev.map(agent =>
+            agent.id === agentId ? { ...agent, banned: !newBanStatus } : agent
+          )
+        )
       }
     } catch (error) {
-      console.error('Error banning agent:', error)
-      toast.error('Failed to ban agent')
-    } finally {
-      setProcessingAgent(null)
-    }
-  }
-
-  const handleUnbanAgent = async (agentId: string) => {
-    setProcessingAgent(agentId)
-    
-    try {
-      const response = await fetch('/api/admin/verify-agent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          agentId,
-          action: 'unban',
-          reason: 'Agent unbanned by admin'
-        })
-      })
-
-      const result = await response.json()
-
-      if (result.success) {
-        toast.success('Agent unbanned successfully')
-        fetchAgentHistory() // Refresh list
-      } else {
-        toast.error(result.message || 'Failed to unban agent')
-      }
-    } catch (error) {
-      console.error('Error unbanning agent:', error)
-      toast.error('Failed to unban agent')
+      console.error('Error updating ban status:', error)
+      toast.error('Failed to update ban status')
+      
+      // 3. Rollback if failed
+      setAgents(prev =>
+        prev.map(agent =>
+          agent.id === agentId ? { ...agent, banned: !newBanStatus } : agent
+        )
+      )
     } finally {
       setProcessingAgent(null)
     }
@@ -424,10 +415,10 @@ export default function AdminHistoryPage() {
                       {agent.verified_status ? (
                         // Actions for verified agents
                         <>
-                          {(agent as any).banned ? (
+                          {agent.banned ? (
                             <Button
                               variant="outline"
-                              onClick={() => handleUnbanAgent(agent.id)}
+                              onClick={() => toggleBan(agent.id, false)}
                               disabled={processingAgent === agent.id}
                               className="flex-1 lg:w-full border-green-300 text-green-600 hover:bg-green-50"
                             >
@@ -441,7 +432,7 @@ export default function AdminHistoryPage() {
                           ) : (
                             <Button
                               variant="destructive"
-                              onClick={() => handleBanAgent(agent.id, 'Policy violation detected by admin')}
+                              onClick={() => toggleBan(agent.id, true)}
                               disabled={processingAgent === agent.id}
                               className="flex-1 lg:w-full"
                             >
