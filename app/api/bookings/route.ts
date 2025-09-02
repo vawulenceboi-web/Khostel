@@ -81,3 +81,51 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
+export async function PUT(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user) {
+      return NextResponse.json(
+        { success: false, message: 'Authentication required' },
+        { status: 401 }
+      )
+    }
+
+    if (session.user.role !== 'agent') {
+      return NextResponse.json(
+        { success: false, message: 'Agent role required' },
+        { status: 403 }
+      )
+    }
+
+    const body = await request.json()
+    const { id, status } = body
+    
+    if (!id || !status) {
+      return NextResponse.json(
+        { success: false, message: 'Booking ID and status are required' },
+        { status: 400 }
+      )
+    }
+    
+    console.log('📅 Updating booking:', id, 'to status:', status)
+    
+    const updatedBooking = await db.bookings.updateStatus(id, status)
+    console.log('✅ Booking updated successfully')
+
+    return NextResponse.json({
+      success: true,
+      data: updatedBooking,
+      message: 'Booking status updated successfully'
+    })
+
+  } catch (error) {
+    console.error('Update booking error:', error)
+    return NextResponse.json(
+      { success: false, message: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}

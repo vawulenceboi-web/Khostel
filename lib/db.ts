@@ -250,6 +250,25 @@ export const db = {
       }
 
       return data
+    },
+
+    async updateStatus(bookingId: string, status: string) {
+      const { data, error } = await supabase
+        .from('bookings')
+        .update({ status })
+        .eq('id', bookingId)
+        .select(`
+          *,
+          hostel:hostels(id, title, price, price_type, images),
+          student:users(id, first_name, last_name, email, phone)
+        `)
+        .single()
+
+      if (error) {
+        throw error
+      }
+
+      return data
     }
   },
 

@@ -10,10 +10,10 @@ import { Calendar, Phone, Mail, User, MapPin, Clock } from 'lucide-react'
 interface Booking {
   id: string
   hostel_id: string
-  student_name: string
-  student_phone: string
-  student_email: string
-  inspection_date: string
+  student_id: string
+  preferred_date: string
+  preferred_time: string
+  message: string
   status: string
   created_at: string
   hostel?: {
@@ -21,6 +21,13 @@ interface Booking {
     location: {
       name: string
     }
+  }
+  student?: {
+    id: string
+    first_name: string
+    last_name: string
+    email: string
+    phone: string
   }
 }
 
@@ -197,15 +204,20 @@ export default function BookingsPage() {
                     <div className="space-y-1 text-sm">
                       <div className="flex items-center">
                         <User className="h-4 w-4 mr-2 text-gray-500" />
-                        <span>{booking.student_name || 'Name not provided'}</span>
+                        <span>
+                          {booking.student 
+                            ? `${booking.student.first_name || ''} ${booking.student.last_name || ''}`.trim()
+                            : 'Name not available'
+                          }
+                        </span>
                       </div>
                       <div className="flex items-center">
                         <Phone className="h-4 w-4 mr-2 text-gray-500" />
-                        <span>{booking.student_phone || 'Phone not provided'}</span>
+                        <span>{booking.student?.phone || 'Phone not available'}</span>
                       </div>
                       <div className="flex items-center">
                         <Mail className="h-4 w-4 mr-2 text-gray-500" />
-                        <span>{booking.student_email || 'Email not provided'}</span>
+                        <span>{booking.student?.email || 'Email not available'}</span>
                       </div>
                     </div>
                   </div>
@@ -217,8 +229,8 @@ export default function BookingsPage() {
                       <div className="flex items-center">
                         <Calendar className="h-4 w-4 mr-2 text-gray-500" />
                         <span>
-                          {booking.inspection_date 
-                            ? formatDate(booking.inspection_date)
+                          {booking.preferred_date 
+                            ? formatDate(booking.preferred_date)
                             : 'Date to be scheduled'
                           }
                         </span>
