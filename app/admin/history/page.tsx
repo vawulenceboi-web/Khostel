@@ -98,12 +98,16 @@ export default function AdminHistoryPage() {
   }
 
   const toggleBan = async (agentId: string, newBanStatus: boolean) => {
+    console.log('🔄 Toggle ban - Agent:', agentId, 'New status:', newBanStatus)
+    
     // 1. Optimistic update (instant switch)
-    setAgents(prev =>
-      prev.map(agent =>
+    setAgents(prev => {
+      const updated = prev.map(agent =>
         agent.id === agentId ? { ...agent, banned: newBanStatus } : agent
       )
-    )
+      console.log('🔄 Optimistic update applied. Agent banned status:', updated.find(a => a.id === agentId)?.banned)
+      return updated
+    })
 
     setProcessingAgent(agentId)
 
