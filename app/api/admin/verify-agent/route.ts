@@ -26,6 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`🔍 Admin ${action}ing agent:`, agentId)
+    console.log('🔍 Action type:', action, 'Will bypass 30min window?', action === 'ban' || action === 'unban')
 
     // Check if agent exists and is pending
     const { data: agent, error: fetchError } = await db.supabase
@@ -42,8 +43,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check 30-minute window only for approve/reject, not for ban
-    if (action !== 'ban') {
+    // Check 30-minute window only for approve/reject, not for ban/unban
+    if (action !== 'ban' && action !== 'unban') {
       const registeredAt = new Date(agent.created_at)
       const deadline = new Date(registeredAt.getTime() + (30 * 60 * 1000))
       const now = new Date()
