@@ -8,12 +8,11 @@ import {
   Upload, 
   Camera, 
   Video, 
-  X, 
   Plus,
   FileImage,
-  Play,
   Trash2,
-  Eye
+  CheckCircle,
+  Clock
 } from "lucide-react"
 import { toast } from 'sonner'
 
@@ -21,7 +20,7 @@ interface MediaFile {
   file: File
   preview: string
   type: 'image' | 'video'
-  uploaded?: boolean
+  uploaded: boolean
   url?: string
 }
 
@@ -39,9 +38,8 @@ export default function MediaUpload({
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([])
   const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const videoInputRef = useRef<HTMLInputElement>(null)
 
-  const handleFileSelect = (files: FileList | null, type?: 'image' | 'video') => {
+  const handleFileSelect = async (files: FileList | null) => {
     if (!files) return
 
     const newFiles: MediaFile[] = []
@@ -62,13 +60,13 @@ export default function MediaUpload({
       }
 
       // Validate file size
-      const maxSize = fileType === 'video' ? 50 * 1024 * 1024 : 10 * 1024 * 1024 // 50MB for video, 10MB for image
+      const maxSize = fileType === 'video' ? 50 * 1024 * 1024 : 10 * 1024 * 1024
       if (file.size > maxSize) {
-        toast.error(`File too large: ${file.name} (max ${maxSize / (1024 * 1024)}MB)`)
+        toast.error(`File too large: ${file.name}`)
         return
       }
 
-      // Check if we're at the limit
+      // Check file limit
       if (mediaFiles.length + newFiles.length >= maxFiles) {
         toast.error(`Maximum ${maxFiles} files allowed`)
         return
@@ -84,95 +82,91 @@ export default function MediaUpload({
 
     if (newFiles.length > 0) {
       setMediaFiles(prev => [...prev, ...newFiles])
-      toast.success(`${newFiles.length} file(s) added`)
+      toast.success(`${newFiles.length} file(s) selected`)
       
-      // Automatically upload files after selection
-      setTimeout(() => {
-        uploadNewFiles(newFiles)
-      }, 500)
+      // Auto-upload the new files
+      uploadFiles(newFiles)
     }
   }
 
-  const uploadNewFiles = async (filesToUpload: MediaFile[]) => {
+  const uploadFiles = async (filesToUpload?: MediaFile[]) => {
+    const targetFiles = filesToUpload || mediaFiles.filter(mf => !mf.uploaded)
+    
+    if (targetFiles.length === 0) {
+      return
+    }
+
     setIsUploading(true)
 
     try {
-      console.log('📤 Auto-uploading', filesToUpload.length, 'files...')
+      console.log('📤 Uploading', targetFiles.length, 'files...')
 
-      const uploadPromises = filesToUpload.map(async (mediaFile) => {
-        const formData = new FormData()
-        formData.append('file', mediaFile.file)
-        formData.append('type', 'hostel-media')
+      for (const mediaFile of targetFiles) {
+        try {
+          const formData = new FormData()
+          formData.append('file', mediaFile.file)
+          formData.append('type', 'hostel-media')
 
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData
-        })
+          const response = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData
+          })
 
-        const result = await response.json()
+          const result = await response.json()
 
-        if (result.success) {
-          console.log('✅ File uploaded:', mediaFile.file.name, '→', result.data.publicUrl)
-          return {
-            ...mediaFile,
-            uploaded: true,
-            url: result.data.publicUrl
+          if (result.success) {
+            console.log('✅ Uploaded:', mediaFile.file.name)
+            
+            // Update the specific file as uploaded
+            setMediaFiles(prev => prev.map(mf => 
+              mf.file.name === mediaFile.file.name 
+                ? { ...mf, uploaded: true, url: result.data.publicUrl }
+                : mf
+            ))
+          } else {
+            console.error('❌ Upload failed:', mediaFile.file.name, result.message)
+            toast.error(`Failed to upload ${mediaFile.file.name}`)
           }
-        } else {
-          console.error('❌ Upload failed for:', mediaFile.file.name, result.message)
-          throw new Error(`Upload failed for ${mediaFile.file.name}: ${result.message}`)
+        } catch (fileError) {
+          console.error('❌ File upload error:', fileError)
+          toast.error(`Error uploading ${mediaFile.file.name}`)
         }
-      })
+      }
 
-      const uploadedFiles = await Promise.all(uploadPromises)
-      
-      // Update media files with uploaded URLs
-      setMediaFiles(prev => prev.map(mf => {
-        const uploaded = uploadedFiles.find(uf => uf.file.name === mf.file.name)
-        return uploaded || mf
-      }))
+      // Update parent component with all uploaded URLs
+      setTimeout(() => {
+        updateParentComponent()
+      }, 1000)
 
-      // Immediately notify parent component with uploaded URLs
-      const allFiles = [...mediaFiles.filter(mf => mf.uploaded), ...uploadedFiles]
-      const urls = allFiles.map(mf => mf.url).filter(Boolean) as string[]
-      const types = allFiles.map(mf => mf.type)
-      
-      console.log('📊 Notifying parent with URLs:', urls)
-      onMediaChange(urls, types)
-
-      toast.success(`${uploadedFiles.length} file(s) uploaded successfully!`)
+      toast.success('Files uploaded successfully!')
 
     } catch (error) {
-      console.error('❌ Auto-upload error:', error)
-      toast.error('Some files failed to upload. Please try again.')
+      console.error('❌ Upload error:', error)
+      toast.error('Upload failed')
     } finally {
       setIsUploading(false)
     }
   }
 
-  const uploadFiles = async () => {
-    const unuploadedFiles = mediaFiles.filter(mf => !mf.uploaded)
+  const updateParentComponent = () => {
+    const uploadedFiles = mediaFiles.filter(mf => mf.uploaded)
+    const urls = uploadedFiles.map(mf => mf.url).filter(Boolean) as string[]
+    const types = uploadedFiles.map(mf => mf.type)
     
-    if (unuploadedFiles.length === 0) {
-      toast.error('No new files to upload')
-      return
-    }
-
-    await uploadNewFiles(unuploadedFiles)
+    console.log('📊 Sending to parent:', urls.length, 'URLs')
+    onMediaChange(urls, types)
   }
 
   const removeFile = (index: number) => {
     const fileToRemove = mediaFiles[index]
-    
-    // Revoke object URL to prevent memory leaks
     URL.revokeObjectURL(fileToRemove.preview)
     
     const newFiles = mediaFiles.filter((_, i) => i !== index)
     setMediaFiles(newFiles)
     
-    // Update parent component
-    const urls = newFiles.map(mf => mf.url).filter(Boolean) as string[]
-    const types = newFiles.map(mf => mf.type)
+    // Update parent immediately
+    const urls = newFiles.filter(mf => mf.uploaded).map(mf => mf.url).filter(Boolean) as string[]
+    const types = newFiles.filter(mf => mf.uploaded).map(mf => mf.type)
     onMediaChange(urls, types)
     
     toast.success('File removed')
@@ -180,70 +174,35 @@ export default function MediaUpload({
 
   return (
     <div className="space-y-6">
-      {/* Upload Controls */}
-      <div className="flex flex-col sm:flex-row gap-4">
+      {/* Upload Button */}
+      <div className="text-center">
         <Button
           type="button"
           variant="outline"
           onClick={() => fileInputRef.current?.click()}
-          className="flex-1"
+          className="w-full sm:w-auto"
         >
-          <FileImage className="w-4 h-4 mr-2" />
-          Add Photos
+          <Plus className="w-4 h-4 mr-2" />
+          Add Photos & Videos
         </Button>
         
-        {acceptVideo && (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => videoInputRef.current?.click()}
-            className="flex-1"
-          >
-            <Video className="w-4 h-4 mr-2" />
-            Add Videos
-          </Button>
-        )}
-
-        {mediaFiles.some(mf => !mf.uploaded) && (
-          <Button
-            type="button"
-            onClick={uploadFiles}
-            disabled={isUploading}
-            className="flex-1"
-          >
-            {isUploading ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
-                Uploading...
-              </>
-            ) : (
-              <>
-                <Upload className="w-4 h-4 mr-2" />
-                Upload Files ({mediaFiles.filter(mf => !mf.uploaded).length})
-              </>
-            )}
-          </Button>
-        )}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept={acceptVideo ? "image/*,video/*" : "image/*"}
+          multiple
+          onChange={(e) => handleFileSelect(e.target.files)}
+          className="hidden"
+        />
       </div>
 
-      {/* Hidden file inputs */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        multiple
-        onChange={(e) => handleFileSelect(e.target.files)}
-        className="hidden"
-      />
-      
-      <input
-        ref={videoInputRef}
-        type="file"
-        accept="video/*"
-        multiple
-        onChange={(e) => handleFileSelect(e.target.files)}
-        className="hidden"
-      />
+      {/* Upload Status */}
+      {isUploading && (
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto mb-2"></div>
+          <p className="text-sm text-muted-foreground">Uploading files...</p>
+        </div>
+      )}
 
       {/* Media Preview Grid */}
       {mediaFiles.length > 0 && (
@@ -266,7 +225,7 @@ export default function MediaUpload({
                     />
                   )}
                   
-                  {/* Upload Status Badge */}
+                  {/* Upload Status */}
                   <div className="absolute top-2 left-2">
                     <Badge variant={mediaFile.uploaded ? 'default' : 'secondary'}>
                       {mediaFile.uploaded ? (
@@ -276,14 +235,14 @@ export default function MediaUpload({
                         </>
                       ) : (
                         <>
-                          <Upload className="w-3 h-3 mr-1" />
-                          Pending
+                          <Clock className="w-3 h-3 mr-1" />
+                          Uploading...
                         </>
                       )}
                     </Badge>
                   </div>
 
-                  {/* File Type Badge */}
+                  {/* File Type */}
                   <div className="absolute top-2 right-2">
                     <Badge variant="outline">
                       {mediaFile.type === 'video' ? (
@@ -325,25 +284,11 @@ export default function MediaUpload({
       <Card className="bg-secondary/50">
         <CardContent className="p-4">
           <h4 className="font-semibold mb-2">Media Guidelines</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
-            <div>
-              <h5 className="font-medium text-green-600 mb-1">✅ Good Photos:</h5>
-              <ul className="space-y-1">
-                <li>• Well-lit, clear images</li>
-                <li>• Multiple room angles</li>
-                <li>• Bathroom and kitchen views</li>
-                <li>• Exterior building shots</li>
-              </ul>
-            </div>
-            <div>
-              <h5 className="font-medium text-blue-600 mb-1">🎥 Video Tips:</h5>
-              <ul className="space-y-1">
-                <li>• Virtual room tours</li>
-                <li>• Smooth camera movement</li>
-                <li>• Good lighting and audio</li>
-                <li>• Max 50MB per video</li>
-              </ul>
-            </div>
+          <div className="text-sm text-muted-foreground space-y-1">
+            <p>• Upload high-quality photos and videos of your hostel</p>
+            <p>• Include room interiors, bathrooms, kitchen, and exterior views</p>
+            <p>• Videos are great for virtual tours (max 50MB)</p>
+            <p>• Photos should be clear and well-lit (max 10MB)</p>
           </div>
         </CardContent>
       </Card>
