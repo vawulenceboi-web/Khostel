@@ -66,7 +66,19 @@ export default function HostelsClient() {
         ) : (
           <div className="space-y-4">
             {hostels.map((hostel, index) => (
-              <Card key={hostel.id || index}>
+              <Card key={hostel.id || index} className="overflow-hidden">
+                {/* Step 2: Add simple image display */}
+                {hostel.images && Array.isArray(hostel.images) && hostel.images.length > 0 && (
+                  <img 
+                    src={hostel.images[0]} 
+                    alt={hostel.title}
+                    className="w-full h-48 object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none'
+                    }}
+                  />
+                )}
+                
                 <CardContent className="p-4">
                   <h3 className="text-lg font-bold">{hostel.title}</h3>
                   <p>Price: ₦{hostel.price?.toLocaleString()} / {hostel.price_type}</p>
