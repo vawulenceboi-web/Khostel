@@ -17,22 +17,44 @@ export default function HostelsClient() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedLocation, setSelectedLocation] = useState('')
+  const [selectedRoomType, setSelectedRoomType] = useState('')
+  const [minPrice, setMinPrice] = useState('')
+  const [maxPrice, setMaxPrice] = useState('')
+  const [sortBy, setSortBy] = useState('newest') // 'newest', 'price-low', 'price-high'
 
-  // Get unique locations from hostels
+  // Get unique values from hostels
   const uniqueLocations = [...new Set((hostels || []).map(h => h?.location?.name).filter(Boolean))]
+  const uniqueRoomTypes = [...new Set((hostels || []).map(h => h?.room_type).filter(Boolean))]
 
-  // Simple, reliable search and location filter
-  const filteredHostels = (hostels || []).filter((h) => {
-    const matchesSearch = 
-      h?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      h?.location?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      h?.agent?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      h?.agent?.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    const matchesLocation = !selectedLocation || h?.location?.name === selectedLocation
-    
-    return matchesSearch && matchesLocation
-  })
+  // Complete filter and sort system
+  const filteredAndSortedHostels = (hostels || [])
+    .filter((h) => {
+      const matchesSearch = 
+        h?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        h?.location?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        h?.agent?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        h?.agent?.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
+      
+      const matchesLocation = !selectedLocation || h?.location?.name === selectedLocation
+      const matchesRoomType = !selectedRoomType || h?.room_type === selectedRoomType
+      
+      const price = parseFloat(h?.price_per_semester || 0)
+      const matchesMinPrice = !minPrice || price >= parseFloat(minPrice)
+      const matchesMaxPrice = !maxPrice || price <= parseFloat(maxPrice)
+      
+      return matchesSearch && matchesLocation && matchesRoomType && matchesMinPrice && matchesMaxPrice
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'price-low':
+          return parseFloat(a?.price_per_semester || 0) - parseFloat(b?.price_per_semester || 0)
+        case 'price-high':
+          return parseFloat(b?.price_per_semester || 0) - parseFloat(a?.price_per_semester || 0)
+        case 'newest':
+        default:
+          return new Date(b?.created_at || 0).getTime() - new Date(a?.created_at || 0).getTime()
+      }
+    })
 
   useEffect(() => {
     fetchHostels()
@@ -155,8 +177,9 @@ export default function HostelsClient() {
       </div>
 
       <div className="max-w-7xl mx-auto p-4">
-        {/* Step 9: Add search bar + location filter */}
-        <div className="mb-6">
+        {/* Steps 9-12: Complete search, filter, and sort system */}
+        <div className="mb-6 space-y-4">
+          {/* Row 1: Search + Location + Room Type */}
           <div className="flex flex-col sm:flex-row gap-4">
             {/* Search Bar */}
             <div className="relative flex-1 max-w-md">
@@ -184,19 +207,99 @@ export default function HostelsClient() {
                 ))}
               </select>
             </div>
+
+            {/* Room Type Filter */}
+            <div className="sm:w-48">
+              <select
+                value={selectedRoomType}
+                onChange={(e) => setSelectedRoomType(e.target.value)}
+                className="w-full h-10 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent bg-white text-black text-sm"
+              >
+                <option value="">All Room Types</option>
+                {uniqueRoomTypes.map((roomType) => (
+                  <option key={roomType} value={roomType}>
+                    {roomType}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Row 2: Price Range + Sort */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            {/* Price Range */}
+            <div className="flex gap-2 flex-1 max-w-md">
+              <input
+                type="number"
+                placeholder="Min price"
+                value={minPrice}
+                onChange={(e) => setMinPrice(e.target.value)}
+                className="flex-1 h-10 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent bg-white text-black text-sm"
+              />
+              <span className="flex items-center text-gray-500">-</span>
+              <input
+                type="number"
+                placeholder="Max price"
+                value={maxPrice}
+                onChange={(e) => setMaxPrice(e.target.value)}
+                className="flex-1 h-10 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent bg-white text-black text-sm"
+              />
+            </div>
+
+            {/* Sort Options */}
+            <div className="sm:w-48">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="w-full h-10 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent bg-white text-black text-sm"
+              >
+                <option value="newest">Newest First</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+              </select>
+            </div>
+
+            {/* Clear Filters Button */}
+            <button
+              onClick={() => {
+                setSearchTerm('')
+                setSelectedLocation('')
+                setSelectedRoomType('')
+                setMinPrice('')
+                setMaxPrice('')
+                setSortBy('newest')
+              }}
+              className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-black border border-gray-300 rounded-md transition-colors"
+            >
+              Clear All
+            </button>
           </div>
         </div>
 
-        {filteredHostels.length === 0 ? (
+        {/* Results count */}
+        <div className="mb-4">
+          <p className="text-sm text-gray-600">
+            Showing {filteredAndSortedHostels.length} of {hostels.length} hostels
+            {(searchTerm || selectedLocation || selectedRoomType || minPrice || maxPrice) && (
+              <span className="ml-2 text-blue-600">• Filters applied</span>
+            )}
+          </p>
+        </div>
+
+        {filteredAndSortedHostels.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center">
               <h3>No hostels found</h3>
-              {searchTerm && <p className="text-sm text-muted-foreground mt-2">No results for "{searchTerm}"</p>}
+              {(searchTerm || selectedLocation || selectedRoomType || minPrice || maxPrice) && (
+                <p className="text-sm text-muted-foreground mt-2">
+                  Try adjusting your filters or search terms
+                </p>
+              )}
             </CardContent>
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredHostels.map((hostel, index) => (
+            {filteredAndSortedHostels.map((hostel, index) => (
               <Card key={hostel.id || index} className="overflow-hidden hover:shadow-lg transition-shadow">
                 {/* Step 2: Professional image display */}
                 {hostel.images && Array.isArray(hostel.images) && hostel.images.length > 0 && (
