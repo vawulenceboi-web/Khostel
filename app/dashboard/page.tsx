@@ -50,6 +50,7 @@ export default function DashboardPage() {
   const [recentHostels, setRecentHostels] = useState<any[]>([])
   const [recentBookings, setRecentBookings] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [isResubmitting, setIsResubmitting] = useState(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -98,6 +99,34 @@ export default function DashboardPage() {
       toast.error('Failed to load dashboard data')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleResubmitVerification = async () => {
+    setIsResubmitting(true)
+    
+    try {
+      const response = await fetch('/api/agent/resubmit-verification', {
+        method: 'POST',
+        credentials: 'include'
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        toast.success(result.message)
+        // Refresh user session to get updated data
+        setTimeout(() => {
+          window.location.reload()
+        }, 2000)
+      } else {
+        toast.error(result.message || 'Resubmission failed')
+      }
+    } catch (error) {
+      console.error('Resubmission error:', error)
+      toast.error('Failed to resubmit verification')
+    } finally {
+      setIsResubmitting(false)
     }
   }
 
@@ -427,9 +456,24 @@ export default function DashboardPage() {
                     <Card className="bg-secondary/50 border-dashed">
                       <CardContent className="p-4 text-center">
                         <AlertCircle className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-muted-foreground mb-3">
                           Account pending verification. You can list properties after admin approval.
                         </p>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={handleResubmitVerification}
+                          disabled={isResubmitting}
+                        >
+                          {isResubmitting ? (
+                            <>
+                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary mr-2"></div>
+                              Resubmitting...
+                            </>
+                          ) : (
+                            'Resubmit for Verification'
+                          )}
+                        </Button>
                       </CardContent>
                     </Card>
                   )}
@@ -480,14 +524,85 @@ export default function DashboardPage() {
           </Card>
         </div>
 
-        {/* Live Hostels Preview */}
-        {recentHostels && recentHostels.length > 0 && (
+        {/* Role-Specific Content */}
+        {user.role === 'agent' && user.verifiedStatus && (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>My Hostel Listings</CardTitle>
+                <CardDescription>
+                  Manage your property listings and track performance
+                </CardDescription>
+              </div>
+              <Link href="/hostels/create">
+                <Button>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add New Listing
+                </Button>
+              </Link>
+            </CardHeader>
+            <CardContent>
+              {recentHostels && recentHostels.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {recentHostels.slice(0, 4).map((hostel: any) => (
+                    <Card key={hostel?.id || Math.random()} className="overflow-hidden">
+                      {hostel?.images?.[0] && (
+                        <img 
+                          src={hostel.images[0]} 
+                          alt={hostel?.title || 'Hostel'}
+                          className="w-full h-32 object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none'
+                          }}
+                        />
+                      )}
+                      <CardContent className="p-4">
+                        <h3 className="font-semibold mb-2 line-clamp-1">
+                          {hostel?.title || 'Unnamed Hostel'}
+                        </h3>
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold">
+                            ₦{hostel?.price?.toLocaleString() || '0'}
+                          </span>
+                          <Badge variant={hostel?.availability ? 'default' : 'secondary'}>
+                            {hostel?.availability ? 'Available' : 'Unavailable'}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center mt-2 text-xs text-muted-foreground">
+                          <Clock className="w-3 h-3 mr-1" />
+                          {hostel?.timeAgo || 'Recently posted'}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Home className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No Listings Yet</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Start by creating your first hostel listing with photos and videos
+                  </p>
+                  <Link href="/hostels/create">
+                    <Button>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create First Listing
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Student Hostel Discovery */}
+        {user.role === 'student' && recentHostels && recentHostels.length > 0 && (
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>Latest Hostels</CardTitle>
                 <CardDescription>
-                  Recently added properties on the platform
+                  Recently posted properties from verified agents
                 </CardDescription>
               </div>
               <Link href="/hostels">
@@ -496,7 +611,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {recentHostels.map((hostel: any) => (
+                {recentHostels.slice(0, 6).map((hostel: any) => (
                   <Card key={hostel?.id || Math.random()} className="overflow-hidden hover:shadow-lg transition-shadow">
                     {hostel?.images?.[0] && (
                       <img 
@@ -529,12 +644,18 @@ export default function DashboardPage() {
                           {hostel?.availability ? 'Available' : 'Unavailable'}
                         </Badge>
                       </div>
-                      {hostel?.agent?.verified_status && (
-                        <div className="flex items-center mt-2 text-xs text-muted-foreground">
-                          <Shield className="w-3 h-3 mr-1" />
-                          Verified Agent
+                      <div className="flex items-center justify-between mt-2">
+                        {hostel?.agent?.verified_status && (
+                          <div className="flex items-center text-xs text-muted-foreground">
+                            <Shield className="w-3 h-3 mr-1" />
+                            Verified Agent
+                          </div>
+                        )}
+                        <div className="flex items-center text-xs text-muted-foreground">
+                          <Clock className="w-3 h-3 mr-1" />
+                          {hostel?.timeAgo || 'Recently posted'}
                         </div>
-                      )}
+                      </div>
                     </CardContent>
                   </Card>
                 ))}

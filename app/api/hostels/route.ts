@@ -77,14 +77,37 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validatedData = createHostelSchema.parse(body)
     
-    const db = getDb()
-    const [newHostel] = await db
-      .insert(hostels)
-      .values({
-        ...validatedData,
-        agentId: session.user.id,
-      })
-      .returning()
+    // Create hostel using Supabase client
+    const hostelData = {
+      title: body.title,
+      description: body.description || null,
+      price: parseFloat(body.price),
+      price_type: body.priceType || 'semester',
+      room_type: body.roomType || 'single',
+      location_id: body.locationId,
+      agent_id: session.user.id,
+      images: body.mediaUrls || body.images || [],
+      amenities: body.amenities || [],
+      address: body.address || null,
+      availability: body.availability !== false,
+      media_urls: body.mediaUrls || [],
+      media_types: body.mediaTypes || [],
+      status: 'published'
+    }
+
+    const { data: newHostel, error } = await db.supabase
+      .from('hostels')
+      .insert(hostelData)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('❌ Error creating hostel:', error)
+      return NextResponse.json(
+        { success: false, message: 'Failed to create hostel listing' },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json({
       success: true,
