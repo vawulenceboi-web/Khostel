@@ -533,7 +533,7 @@ export default function DashboardPage() {
                       </Badge>
                     </Button>
                   </Link>
-                  <Link href="/bookings">
+                  <Link href="/dashboard/bookings">
                     <Button variant="outline" className="w-full justify-start h-12">
                       <Calendar className="w-4 h-4 mr-2" />
                       Manage My Bookings
@@ -579,7 +579,7 @@ export default function DashboardPage() {
                       </CardContent>
                     </Card>
                   )}
-                  <Link href="/bookings">
+                  <Link href="/dashboard/bookings">
                     <Button variant="outline" className="w-full justify-start h-12">
                       <Calendar className="w-4 h-4 mr-2" />
                       View Booking Requests
