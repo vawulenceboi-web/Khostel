@@ -17,6 +17,15 @@ export default function HostelsClient() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
 
+  // Simple, reliable search filter
+  const filteredHostels = (hostels || []).filter(
+    (h) =>
+      h?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      h?.location?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      h?.agent?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      h?.agent?.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
   useEffect(() => {
     fetchHostels()
   }, [])
@@ -151,15 +160,16 @@ export default function HostelsClient() {
           </div>
         </div>
 
-        {hostels.length === 0 ? (
+        {filteredHostels.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center">
               <h3>No hostels found</h3>
+              {searchTerm && <p className="text-sm text-muted-foreground mt-2">No results for "{searchTerm}"</p>}
             </CardContent>
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {hostels.map((hostel, index) => (
+            {filteredHostels.map((hostel, index) => (
               <Card key={hostel.id || index} className="overflow-hidden hover:shadow-lg transition-shadow">
                 {/* Step 2: Professional image display */}
                 {hostel.images && Array.isArray(hostel.images) && hostel.images.length > 0 && (
