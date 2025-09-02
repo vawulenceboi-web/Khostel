@@ -8,7 +8,9 @@
     "lint": "next lint",
     "start": "next start",
     "db:push": "drizzle-kit push",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate",
+    "setup": "node scripts/setup.js",
+    "seed": "curl -X POST http://localhost:3000/api/seed"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
