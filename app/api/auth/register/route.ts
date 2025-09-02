@@ -68,6 +68,9 @@ export async function POST(request: NextRequest) {
       business_reg_number: validatedData.businessRegNumber || null,
       address: validatedData.address || null,
       profile_image_url: validatedData.profileImageUrl || null,
+      face_photo_url: validatedData.facePhotoUrl || null,
+      face_verification_status: validatedData.role === 'agent' ? 'pending' : 'approved',
+      face_verification_attempts: 0,
       terms_accepted: validatedData.termsAccepted,
       terms_accepted_at: new Date().toISOString(),
       verified_status: validatedData.role === 'agent' ? false : true, // Agents need verification

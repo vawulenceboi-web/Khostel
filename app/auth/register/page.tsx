@@ -23,8 +23,11 @@ import {
   Phone,
   FileText,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Camera,
+  User
 } from 'lucide-react'
+import FaceVerification from '@/components/FaceVerification'
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -45,6 +48,9 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [schools, setSchools] = useState<any[]>([])
+  const [showFaceVerification, setShowFaceVerification] = useState(false)
+  const [facePhotoUrl, setFacePhotoUrl] = useState('')
+  const [currentStep, setCurrentStep] = useState<'form' | 'face-verification' | 'complete'>('form')
   const router = useRouter()
 
   useEffect(() => {
@@ -110,16 +116,34 @@ export default function RegisterPage() {
     return true
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (!validateForm()) return
 
+    // For agents, proceed to face verification
+    if (formData.role === 'agent') {
+      setCurrentStep('face-verification')
+      return
+    }
+
+    // For students, register directly
+    await completeRegistration()
+  }
+
+  const handleFaceVerificationComplete = (photoUrl: string) => {
+    setFacePhotoUrl(photoUrl)
+    setCurrentStep('complete')
+    completeRegistration(photoUrl)
+  }
+
+  const completeRegistration = async (facePhotoUrl?: string) => {
     setIsLoading(true)
 
     try {
       const submitData = {
         ...formData,
+        facePhotoUrl: facePhotoUrl || '',
         termsAcceptedAt: new Date().toISOString()
       }
       delete (submitData as any).confirmPassword
@@ -134,20 +158,61 @@ export default function RegisterPage() {
 
       if (result.success) {
         if (formData.role === 'agent') {
-          toast.success('Agent registration successful! Your application is under review. You will be notified within 30 minutes.')
+          toast.success('Agent registration with face verification successful! Your application is under review.')
         } else {
           toast.success('Registration successful! You can now sign in.')
         }
-        router.push('/auth/login')
+        setTimeout(() => {
+          router.push('/auth/login')
+        }, 2000)
       } else {
         toast.error(result.message || 'Registration failed')
+        if (formData.role === 'agent') {
+          setCurrentStep('form') // Go back to form if registration fails
+        }
       }
     } catch (error) {
       console.error('Registration error:', error)
       toast.error('Registration failed. Please try again.')
+      if (formData.role === 'agent') {
+        setCurrentStep('form')
+      }
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Show face verification step for agents
+  if (currentStep === 'face-verification') {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="w-full max-w-4xl">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-foreground mb-2">Face Verification</h1>
+            <p className="text-muted-foreground">
+              Complete your agent registration with identity verification
+            </p>
+          </div>
+          
+          <FaceVerification 
+            onVerificationComplete={handleFaceVerificationComplete}
+            currentStatus="pending"
+            attempts={0}
+          />
+          
+          <div className="text-center mt-6">
+            <Button 
+              variant="ghost" 
+              onClick={() => setCurrentStep('form')}
+              disabled={isLoading}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Registration Form
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -171,7 +236,7 @@ export default function RegisterPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleFormSubmit} className="space-y-6">
               {/* Role Selection */}
               <div className="space-y-2">
                 <Label>Account Type</Label>
@@ -450,7 +515,7 @@ export default function RegisterPage() {
                 ) : (
                   <>
                     <UserCheck className="w-4 h-4 mr-2" />
-                    {formData.role === 'agent' ? 'Submit for Verification' : 'Create Account'}
+                    {formData.role === 'agent' ? 'Continue to Face Verification' : 'Create Account'}
                   </>
                 )}
               </Button>

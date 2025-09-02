@@ -26,6 +26,7 @@ import {
 } from "lucide-react"
 import { toast } from 'sonner'
 import Link from 'next/link'
+import MediaUpload from '@/components/MediaUpload'
 
 export default function CreateHostelPage() {
   const { data: session, status } = useSession()
@@ -46,8 +47,8 @@ export default function CreateHostelPage() {
   const [locations, setLocations] = useState<any[]>([])
   const [schools, setSchools] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [newMediaUrl, setNewMediaUrl] = useState('')
-  const [newMediaType, setNewMediaType] = useState<'image' | 'video'>('image')
+  const [uploadedMediaUrls, setUploadedMediaUrls] = useState<string[]>([])
+  const [uploadedMediaTypes, setUploadedMediaTypes] = useState<string[]>([])
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -93,38 +94,7 @@ export default function CreateHostelPage() {
     }
   }
 
-  const addMedia = () => {
-    if (!newMediaUrl.trim()) {
-      toast.error('Please enter a valid media URL')
-      return
-    }
 
-    // Basic URL validation
-    try {
-      new URL(newMediaUrl)
-    } catch {
-      toast.error('Please enter a valid URL')
-      return
-    }
-
-    setFormData(prev => ({
-      ...prev,
-      mediaUrls: [...prev.mediaUrls, newMediaUrl.trim()],
-      mediaTypes: [...prev.mediaTypes, newMediaType]
-    }))
-
-    setNewMediaUrl('')
-    toast.success(`${newMediaType === 'image' ? 'Photo' : 'Video'} added successfully`)
-  }
-
-  const removeMedia = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      mediaUrls: prev.mediaUrls.filter((_, i) => i !== index),
-      mediaTypes: prev.mediaTypes.filter((_, i) => i !== index)
-    }))
-    toast.success('Media removed')
-  }
 
   const toggleAmenity = (amenity: string) => {
     setFormData(prev => ({
@@ -153,7 +123,7 @@ export default function CreateHostelPage() {
       return
     }
 
-    if (formData.mediaUrls.length === 0) {
+    if (uploadedMediaUrls.length === 0) {
       toast.error('At least one photo or video is required')
       return
     }
@@ -165,9 +135,9 @@ export default function CreateHostelPage() {
         ...formData,
         price: parseFloat(formData.price),
         agentId: session?.user?.id,
-        images: formData.mediaUrls, // Backward compatibility
-        media_urls: formData.mediaUrls,
-        media_types: formData.mediaTypes
+        images: uploadedMediaUrls, // Backward compatibility
+        mediaUrls: uploadedMediaUrls,
+        mediaTypes: uploadedMediaTypes
       }
 
       const response = await fetch('/api/hostels', {
@@ -364,98 +334,14 @@ export default function CreateHostelPage() {
               <div className="space-y-6">
                 <h3 className="text-lg font-semibold">Photos & Videos</h3>
                 
-                <div className="space-y-4">
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <div className="flex-1">
-                      <Input
-                        placeholder="Paste photo or video URL here"
-                        value={newMediaUrl}
-                        onChange={(e) => setNewMediaUrl(e.target.value)}
-                      />
-                    </div>
-                    <div className="flex gap-2">
-                      <Select value={newMediaType} onValueChange={(value: any) => setNewMediaType(value)}>
-                        <SelectTrigger className="w-32">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="image">
-                            <div className="flex items-center">
-                              <Camera className="w-4 h-4 mr-2" />
-                              Photo
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="video">
-                            <div className="flex items-center">
-                              <Video className="w-4 h-4 mr-2" />
-                              Video
-                            </div>
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Button type="button" onClick={addMedia}>
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Media Preview */}
-                  {formData.mediaUrls.length > 0 && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {formData.mediaUrls.map((url, index) => (
-                        <Card key={index} className="relative">
-                          <CardContent className="p-4">
-                            <div className="aspect-video bg-secondary rounded-lg mb-3 overflow-hidden">
-                              {formData.mediaTypes[index] === 'video' ? (
-                                <video 
-                                  src={url} 
-                                  className="w-full h-full object-cover"
-                                  controls
-                                  onError={(e) => {
-                                    e.currentTarget.style.display = 'none'
-                                  }}
-                                />
-                              ) : (
-                                <img 
-                                  src={url} 
-                                  alt={`Hostel media ${index + 1}`}
-                                  className="w-full h-full object-cover"
-                                  onError={(e) => {
-                                    e.currentTarget.style.display = 'none'
-                                  }}
-                                />
-                              )}
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <Badge variant="outline">
-                                {formData.mediaTypes[index] === 'video' ? (
-                                  <Video className="w-3 h-3 mr-1" />
-                                ) : (
-                                  <Camera className="w-3 h-3 mr-1" />
-                                )}
-                                {formData.mediaTypes[index]}
-                              </Badge>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => removeMedia(index)}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
-
-                  <p className="text-sm text-muted-foreground">
-                    💡 <strong>Tips:</strong> Use high-quality photos and videos. Include room interiors, 
-                    bathrooms, kitchen, and exterior views. Videos are great for virtual tours!
-                  </p>
-                </div>
+                <MediaUpload 
+                  onMediaChange={(urls, types) => {
+                    setUploadedMediaUrls(urls)
+                    setUploadedMediaTypes(types)
+                  }}
+                  maxFiles={10}
+                  acceptVideo={true}
+                />
               </div>
 
               {/* Amenities */}
