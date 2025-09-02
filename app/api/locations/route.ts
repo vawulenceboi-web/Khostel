@@ -12,8 +12,9 @@ export async function GET(request: NextRequest) {
       console.log('🔍 Fetching locations for school:', schoolId)
       result = await db.locations.findBySchool(schoolId)
     } else {
-      // For now, return empty array if no school specified
-      result = []
+      // Return all locations if no school specified (for hostel creation)
+      console.log('🔍 Fetching all locations')
+      result = await db.locations.findAll()
     }
     
     console.log('✅ Locations fetched successfully:', result.length)

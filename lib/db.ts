@@ -269,6 +269,22 @@ export const db = {
 
   // Locations operations
   locations: {
+    async findAll() {
+      const { data, error } = await supabase
+        .from('locations')
+        .select(`
+          *,
+          school:schools(id, name, city, state)
+        `)
+        .order('name', { ascending: true })
+
+      if (error) {
+        throw error
+      }
+
+      return data || []
+    },
+
     async findBySchool(schoolId: string) {
       const { data, error } = await supabase
         .from('locations')

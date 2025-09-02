@@ -87,7 +87,11 @@ export default function CreateHostelPage() {
 
       if (locationsRes.ok) {
         const locationsData = await locationsRes.json()
+        console.log('📍 Locations API response:', locationsData)
         setLocations(locationsData.data || [])
+        console.log('📍 Locations set in state:', locationsData.data?.length || 0)
+      } else {
+        console.error('❌ Locations API failed:', locationsRes.status)
       }
     } catch (error) {
       console.error('Error fetching data:', error)
@@ -277,7 +281,7 @@ export default function CreateHostelPage() {
                       <SelectContent>
                         {locations.map((location) => (
                           <SelectItem key={location.id} value={location.id}>
-                            {location.name}
+                            {location.name} {location.school?.name && `(${location.school.name})`}
                           </SelectItem>
                         ))}
                       </SelectContent>
