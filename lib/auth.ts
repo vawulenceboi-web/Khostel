@@ -19,6 +19,12 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
+          // Check if environment variables are set
+          if (!process.env.DATABASE_URL || !process.env.SUPABASE_URL) {
+            console.error('Database configuration missing. Please check your environment variables.')
+            throw new Error('Database not configured')
+          }
+
           const db = getDb()
           const [user] = await db
             .select()
@@ -27,15 +33,19 @@ export const authOptions: NextAuthOptions = {
             .limit(1)
           
           if (!user) {
+            console.log(`Login attempt failed: User not found for email ${credentials.email}`)
             return null
           }
 
           const isValidPassword = await bcrypt.compare(credentials.password, user.passwordHash)
           
           if (!isValidPassword) {
+            console.log(`Login attempt failed: Invalid password for email ${credentials.email}`)
             return null
           }
 
+          console.log(`Login successful for user: ${user.email} (${user.role})`)
+          
           return {
             id: user.id,
             email: user.email,
@@ -47,7 +57,17 @@ export const authOptions: NextAuthOptions = {
             schoolId: user.schoolId || undefined,
           }
         } catch (error) {
-          console.error('Auth error:', error)
+          console.error('Auth error details:', error)
+          
+          // Return specific error messages for different scenarios
+          if (error.message?.includes('Database not configured')) {
+            throw new Error('Database configuration error. Please check environment variables.')
+          }
+          
+          if (error.message?.includes('connect')) {
+            throw new Error('Database connection failed. Please check your DATABASE_URL.')
+          }
+          
           return null
         }
       }

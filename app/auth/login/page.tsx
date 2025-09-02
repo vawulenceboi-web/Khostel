@@ -32,9 +32,22 @@ export default function LoginPage() {
       })
 
       if (result?.error) {
-        toast.error('Login failed', {
-          description: 'Invalid email or password',
-        })
+        console.error('Login error:', result.error)
+        
+        // Handle different types of errors
+        if (result.error === 'CredentialsSignin') {
+          toast.error('Login failed', {
+            description: 'Invalid email or password. Please check your credentials.',
+          })
+        } else if (result.error.includes('Database')) {
+          toast.error('Server Error', {
+            description: 'Database connection issue. Please try again or contact support.',
+          })
+        } else {
+          toast.error('Login failed', {
+            description: 'Server error occurred. Please try again.',
+          })
+        }
       } else {
         toast.success('Login successful', {
           description: 'Welcome back to k-H!',
