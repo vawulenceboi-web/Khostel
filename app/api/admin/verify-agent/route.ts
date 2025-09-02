@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
 
     const { agentId, action, reason } = await request.json()
     
-    if (!agentId || !action || !['approve', 'reject', 'ban'].includes(action)) {
+    if (!agentId || !action || !['approve', 'reject', 'ban', 'unban'].includes(action)) {
       return NextResponse.json(
         { success: false, message: 'Invalid verification data' },
         { status: 400 }
@@ -42,16 +42,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if still within 30-minute window
-    const registeredAt = new Date(agent.created_at)
-    const deadline = new Date(registeredAt.getTime() + (30 * 60 * 1000))
-    const now = new Date()
+    // Check 30-minute window only for approve/reject, not for ban
+    if (action !== 'ban') {
+      const registeredAt = new Date(agent.created_at)
+      const deadline = new Date(registeredAt.getTime() + (30 * 60 * 1000))
+      const now = new Date()
 
-    if (now > deadline) {
-      return NextResponse.json(
-        { success: false, message: 'Verification window expired (30 minutes)' },
-        { status: 400 }
-      )
+      if (now > deadline) {
+        return NextResponse.json(
+          { success: false, message: 'Verification window expired (30 minutes)' },
+          { status: 400 }
+        )
+      }
     }
 
     // Update agent verification status
@@ -64,7 +66,10 @@ export async function POST(request: NextRequest) {
       // Keep agent account but unverified
     } else if (action === 'ban') {
       updateData.verified_status = false
-      // Could add a banned flag here if needed
+      updateData.banned = true
+    } else if (action === 'unban') {
+      updateData.verified_status = false
+      updateData.banned = false
     }
 
     const { data: updatedAgent, error: updateError } = await db.supabase
