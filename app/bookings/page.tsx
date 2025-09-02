@@ -32,7 +32,7 @@ export default function StudentBookingsPage() {
 
   const fetchBookings = async () => {
     try {
-      const response = await fetch('/api/bookings')
+      const response = await fetch('/api/student-bookings')
       if (response.ok) {
         const data = await response.json()
         if (data.success && Array.isArray(data.data)) {
@@ -52,7 +52,7 @@ export default function StudentBookingsPage() {
     }
 
     try {
-      const response = await fetch('/api/bookings', {
+      const response = await fetch('/api/student-bookings', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
