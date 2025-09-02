@@ -45,6 +45,9 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    console.log('🔍 Raw agent data (first agent):', allAgents?.[0])
+    console.log('🔍 Banned field in first agent:', allAgents?.[0]?.banned)
+
     // Get admin actions for each agent
     const { data: adminActions, error: actionsError } = await db.supabase
       .from('admin_actions')
