@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
         business_reg_number,
         profile_image_url,
         verified_status,
+        banned,
         created_at,
         updated_at
       `)
