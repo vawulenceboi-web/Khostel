@@ -13,15 +13,16 @@ export async function POST(request: NextRequest) {
     console.log('🔐 Admin login attempt for:', validatedData.email)
 
     // Validate admin credentials
+    console.log('🔐 Validating credentials for:', validatedData.email)
     const isValid = await validateAdminCredentials(
       validatedData.email, 
       validatedData.password
     )
 
     if (!isValid) {
-      console.log('❌ Invalid admin credentials')
+      console.log('❌ Invalid admin credentials for:', validatedData.email)
       return NextResponse.json(
-        { success: false, message: 'Invalid admin credentials' },
+        { success: false, message: 'Invalid admin email or password' },
         { status: 401 }
       )
     }
@@ -29,14 +30,14 @@ export async function POST(request: NextRequest) {
     // Create admin session
     const adminSession = createAdminSession()
     
-    // Set admin session cookie (secure, httpOnly)
+    // Set admin session cookie (secure, httpOnly) - extended duration
     const cookieStore = cookies()
     cookieStore.set('admin-session', JSON.stringify(adminSession), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 8, // 8 hours
-      path: '/admin'
+      maxAge: 60 * 60 * 24, // 24 hours (longer session)
+      path: '/', // Available site-wide, not just /admin
     })
 
     console.log('✅ Admin login successful:', adminSession.email)

@@ -32,12 +32,15 @@ export default function AdminLoginPage() {
       const result = await response.json()
 
       if (result.success) {
+        console.log('✅ Admin login successful, redirecting to dashboard...')
         toast.success('Admin login successful')
         // Add a small delay to ensure cookie is set
         setTimeout(() => {
+          console.log('🔄 Redirecting to admin dashboard...')
           router.push('/admin/dashboard')
-        }, 500)
+        }, 1000) // Increased delay
       } else {
+        console.error('❌ Admin login failed:', result.message)
         toast.error(result.message || 'Invalid admin credentials')
       }
     } catch (error) {
@@ -75,7 +78,7 @@ export default function AdminLoginPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="admin@k-h.com"
+                  placeholder="your-email@gmail.com"
                   value={formData.email}
                   onChange={(e) => setFormData(prev => ({
                     ...prev,
@@ -91,7 +94,7 @@ export default function AdminLoginPage() {
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Admin password"
+                    placeholder="Your password"
                     value={formData.password}
                     onChange={(e) => setFormData(prev => ({
                       ...prev,
@@ -137,7 +140,6 @@ export default function AdminLoginPage() {
             <div className="mt-6 pt-6 border-t border-border">
               <div className="text-center">
                 <p className="text-xs text-muted-foreground mb-2">
-                  <strong>Admin Email:</strong> admin@k-h.com<br/>
                   Admin credentials can only be changed in the database
                 </p>
                 <div className="text-xs text-muted-foreground">

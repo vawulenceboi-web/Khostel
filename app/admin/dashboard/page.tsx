@@ -47,8 +47,11 @@ export default function AdminDashboardPage() {
   const [processingAgent, setProcessingAgent] = useState<string | null>(null)
 
   useEffect(() => {
-    checkAdminAuth()
-    fetchPendingAgents()
+    // Add delay to allow page to load properly
+    setTimeout(() => {
+      checkAdminAuth()
+      fetchPendingAgents()
+    }, 1000)
     
     // Auto-refresh every 30 seconds
     const interval = setInterval(fetchPendingAgents, 30000)
@@ -57,7 +60,7 @@ export default function AdminDashboardPage() {
 
   const checkAdminAuth = async () => {
     try {
-      const response = await fetch('/api/admin/verify', {
+      const response = await fetch('/api/admin/simple-verify', {
         credentials: 'include' // Ensure cookies are sent
       })
       
