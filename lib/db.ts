@@ -1,100 +1,207 @@
 import { createClient } from '@supabase/supabase-js'
-import { drizzle } from 'drizzle-orm/postgres-js'
-import postgres from 'postgres'
-import * as schema from './schema'
 
-// Auto-generate database URL from Supabase URL if not provided
-function getDatabaseUrl() {
-  if (process.env.DATABASE_URL) {
-    return process.env.DATABASE_URL
-  }
-  
-  if (process.env.SUPABASE_URL) {
-    // Extract project ref from Supabase URL
-    const supabaseUrl = process.env.SUPABASE_URL
-    const match = supabaseUrl.match(/https:\/\/([^.]+)\.supabase\.co/)
-    if (match) {
-      const projectRef = match[1]
-      // For production, use pooled connection to avoid timeouts
-      const isProduction = process.env.NODE_ENV === 'production'
-      const host = isProduction ? `aws-0-us-east-1.pooler.supabase.com` : `db.${projectRef}.supabase.co`
-      const port = isProduction ? '6543' : '5432'
+if (!process.env.SUPABASE_URL) {
+  throw new Error('SUPABASE_URL must be set')
+}
+
+if (!process.env.SUPABASE_ANON_KEY) {
+  throw new Error('SUPABASE_ANON_KEY must be set')
+}
+
+// Create Supabase client - this is the ONLY database connection we use
+export const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+)
+
+// Database operations using ONLY Supabase client (no direct PostgreSQL)
+export const db = {
+  // Users operations
+  users: {
+    async findByEmail(email: string) {
+      console.log('🔍 Finding user by email:', email)
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', email)
+        .maybeSingle()
       
-      return `postgresql://postgres.${projectRef}:[YOUR-PASSWORD]@${host}:${port}/postgres`
+      if (error) {
+        console.error('❌ Error finding user:', error)
+        throw error
+      }
+      
+      console.log('✅ User query completed:', data ? 'User found' : 'User not found')
+      return data
+    },
+
+    async create(userData: {
+      email: string
+      password_hash: string
+      first_name: string
+      last_name?: string
+      phone?: string
+      role: string
+      school_id?: string
+      business_reg_number?: string
+      verified_status: boolean
+    }) {
+      console.log('👤 Creating user:', userData.email)
+      const { data, error } = await supabase
+        .from('users')
+        .insert(userData)
+        .select()
+        .single()
+      
+      if (error) {
+        console.error('❌ Error creating user:', error)
+        throw error
+      }
+      
+      console.log('✅ User created successfully')
+      return data
+    },
+
+    async findById(id: string) {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle()
+      
+      if (error) {
+        throw error
+      }
+      
+      return data
+    }
+  },
+
+  // Hostels operations
+  hostels: {
+    async findAll(filters: any = {}) {
+      let query = supabase
+        .from('hostels')
+        .select(`
+          *,
+          location:locations(*),
+          agent:users(id, first_name, last_name, phone, verified_status)
+        `)
+
+      // Apply filters
+      if (filters.locationId) {
+        query = query.eq('location_id', filters.locationId)
+      }
+      if (filters.minPrice) {
+        query = query.gte('price', filters.minPrice)
+      }
+      if (filters.maxPrice) {
+        query = query.lte('price', filters.maxPrice)
+      }
+      if (filters.roomType) {
+        query = query.eq('room_type', filters.roomType)
+      }
+      if (filters.availability !== undefined) {
+        query = query.eq('availability', filters.availability)
+      }
+      if (filters.search) {
+        query = query.ilike('title', `%${filters.search}%`)
+      }
+
+      const { data, error } = await query
+
+      if (error) {
+        throw error
+      }
+
+      return data || []
+    },
+
+    async create(hostelData: any) {
+      const { data, error } = await supabase
+        .from('hostels')
+        .insert(hostelData)
+        .select()
+        .single()
+
+      if (error) {
+        throw error
+      }
+
+      return data
+    }
+  },
+
+  // Bookings operations
+  bookings: {
+    async findByUser(userId: string, userRole: string) {
+      let query = supabase
+        .from('bookings')
+        .select(`
+          *,
+          hostel:hostels(id, title, price, price_type, images),
+          student:users(id, first_name, last_name, email, phone)
+        `)
+
+      if (userRole === 'student') {
+        query = query.eq('student_id', userId)
+      } else if (userRole === 'agent') {
+        // For agents, get bookings for their hostels
+        query = query.eq('hostels.agent_id', userId)
+      }
+
+      const { data, error } = await query
+
+      if (error) {
+        throw error
+      }
+
+      return data || []
+    },
+
+    async create(bookingData: any) {
+      const { data, error } = await supabase
+        .from('bookings')
+        .insert(bookingData)
+        .select()
+        .single()
+
+      if (error) {
+        throw error
+      }
+
+      return data
+    }
+  },
+
+  // Schools operations
+  schools: {
+    async findAll() {
+      const { data, error } = await supabase
+        .from('schools')
+        .select('*')
+
+      if (error) {
+        throw error
+      }
+
+      return data || []
+    }
+  },
+
+  // Locations operations
+  locations: {
+    async findBySchool(schoolId: string) {
+      const { data, error } = await supabase
+        .from('locations')
+        .select('*')
+        .eq('school_id', schoolId)
+
+      if (error) {
+        throw error
+      }
+
+      return data || []
     }
   }
-  
-  throw new Error('Either DATABASE_URL or SUPABASE_URL must be set')
 }
-
-// Validate required environment variables
-function validateEnv() {
-  if (!process.env.SUPABASE_URL) {
-    throw new Error('SUPABASE_URL must be set - get this from your Supabase dashboard')
-  }
-
-  if (!process.env.SUPABASE_ANON_KEY) {
-    throw new Error('SUPABASE_ANON_KEY must be set - get this from your Supabase dashboard')
-  }
-
-  const dbUrl = getDatabaseUrl()
-  if (dbUrl.includes('[YOUR-PASSWORD]')) {
-    throw new Error('Please replace [YOUR-PASSWORD] in your DATABASE_URL with your actual Supabase database password')
-  }
-}
-
-// Create Supabase client (only when needed)
-export function getSupabaseClient() {
-  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
-    throw new Error('Supabase credentials not configured')
-  }
-  
-  return createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_ANON_KEY
-  )
-}
-
-// Global connection cache to prevent timeouts
-let cachedDb: any = null
-
-// Create database connection (only when needed)
-export function getDb() {
-  // Return cached connection if available
-  if (cachedDb) {
-    return cachedDb
-  }
-  
-  validateEnv()
-  const databaseUrl = getDatabaseUrl()
-  
-  // Simplified connection for serverless with timeout protection
-  const client = postgres(databaseUrl, {
-    prepare: false,
-    ssl: 'require',
-    max: 1,
-    connect_timeout: 5, // Shorter timeout
-    command_timeout: 10, // Shorter command timeout
-    idle_timeout: 20,
-  })
-  
-  const db = drizzle(client, { schema })
-  
-  // Cache the connection
-  cachedDb = db
-  
-  return db
-}
-
-// For easy access (validates on first use)
-export const supabase = process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY 
-  ? getSupabaseClient() 
-  : null
-
-export const db = (() => {
-  try {
-    return process.env.SUPABASE_URL ? getDb() : null
-  } catch {
-    return null // Return null during build time
-  }
-})()

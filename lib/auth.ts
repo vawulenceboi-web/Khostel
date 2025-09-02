@@ -1,9 +1,7 @@
 import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
-import { getDb } from './db'
-import { users } from './schema'
-import { eq } from 'drizzle-orm'
+import { db } from './db'
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -20,24 +18,20 @@ export const authOptions: NextAuthOptions = {
 
         try {
           // Check if environment variables are set
-          if (!process.env.DATABASE_URL || !process.env.SUPABASE_URL) {
-            console.error('Database configuration missing. Please check your environment variables.')
-            throw new Error('Database not configured')
+          if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+            console.error('Supabase configuration missing. Please check your environment variables.')
+            throw new Error('Supabase not configured')
           }
 
-          const db = getDb()
-          const [user] = await db
-            .select()
-            .from(users)
-            .where(eq(users.email, credentials.email))
-            .limit(1)
+          console.log('🔍 Looking up user:', credentials.email)
+          const user = await db.users.findByEmail(credentials.email)
           
           if (!user) {
             console.log(`Login attempt failed: User not found for email ${credentials.email}`)
             return null
           }
 
-          const isValidPassword = await bcrypt.compare(credentials.password, user.passwordHash)
+          const isValidPassword = await bcrypt.compare(credentials.password, user.password_hash)
           
           if (!isValidPassword) {
             console.log(`Login attempt failed: Invalid password for email ${credentials.email}`)
@@ -49,12 +43,12 @@ export const authOptions: NextAuthOptions = {
           return {
             id: user.id,
             email: user.email,
-            name: `${user.firstName} ${user.lastName || ''}`.trim(),
-            firstName: user.firstName,
-            lastName: user.lastName || undefined,
+            name: `${user.first_name} ${user.last_name || ''}`.trim(),
+            firstName: user.first_name,
+            lastName: user.last_name || undefined,
             role: user.role,
-            verifiedStatus: user.verifiedStatus || false,
-            schoolId: user.schoolId || undefined,
+            verifiedStatus: user.verified_status || false,
+            schoolId: user.school_id || undefined,
           }
         } catch (error) {
           console.error('Auth error details:', error)

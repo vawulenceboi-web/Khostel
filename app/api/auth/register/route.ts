@@ -1,26 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
-import { getDb } from '@/lib/db'
-import { users, registerUserSchema } from '@/lib/schema'
-import { eq } from 'drizzle-orm'
+import { db } from '@/lib/db'
+import { registerUserSchema } from '@/lib/schema'
 
 export async function POST(request: NextRequest) {
   console.log('🔍 Registration API called')
   
   try {
     // Check environment variables first
-    if (!process.env.DATABASE_URL) {
-      console.error('❌ DATABASE_URL not set')
-      return NextResponse.json(
-        { success: false, message: 'Database configuration missing' },
-        { status: 500 }
-      )
-    }
-
     if (!process.env.SUPABASE_URL) {
       console.error('❌ SUPABASE_URL not set')
       return NextResponse.json(
         { success: false, message: 'Supabase configuration missing' },
+        { status: 500 }
+      )
+    }
+
+    if (!process.env.SUPABASE_ANON_KEY) {
+      console.error('❌ SUPABASE_ANON_KEY not set')
+      return NextResponse.json(
+        { success: false, message: 'Supabase anon key missing' },
         { status: 500 }
       )
     }
@@ -34,24 +33,11 @@ export async function POST(request: NextRequest) {
     const validatedData = registerUserSchema.parse(body)
     console.log('✅ Input validation passed')
     
-    const db = getDb()
-    console.log('✅ Database connection established')
-    
-    // Test connection with a simple query
-    try {
-      await db.select().from(users).limit(1)
-      console.log('✅ Database query test successful')
-    } catch (dbError) {
-      console.error('❌ Database query test failed:', dbError)
-      throw new Error(`Database connection test failed: ${dbError.message}`)
-    }
+    console.log('✅ Using Supabase client for database operations')
     
     // Check if user already exists
-    const [existingUser] = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, validatedData.email))
-      .limit(1)
+    console.log('🔍 Checking if user exists...')
+    const existingUser = await db.users.findByEmail(validatedData.email)
     
     if (existingUser) {
       console.log('❌ User already exists:', validatedData.email)
@@ -64,30 +50,29 @@ export async function POST(request: NextRequest) {
     console.log('✅ Email is available')
 
     // Hash password
+    console.log('🔐 Hashing password...')
     const saltRounds = 12
     const passwordHash = await bcrypt.hash(validatedData.password, saltRounds)
     console.log('✅ Password hashed')
 
     // Create user
-    const [newUser] = await db
-      .insert(users)
-      .values({
-        email: validatedData.email,
-        passwordHash,
-        firstName: validatedData.firstName,
-        lastName: validatedData.lastName,
-        phone: validatedData.phone,
-        role: validatedData.role,
-        schoolId: validatedData.schoolId,
-        businessRegNumber: validatedData.businessRegNumber,
-        verifiedStatus: validatedData.role === 'agent' ? false : true, // Agents need verification
-      })
-      .returning()
+    console.log('👤 Creating user in database...')
+    const newUser = await db.users.create({
+      email: validatedData.email,
+      password_hash: passwordHash,
+      first_name: validatedData.firstName,
+      last_name: validatedData.lastName,
+      phone: validatedData.phone,
+      role: validatedData.role,
+      school_id: validatedData.schoolId,
+      business_reg_number: validatedData.businessRegNumber,
+      verified_status: validatedData.role === 'agent' ? false : true, // Agents need verification
+    })
 
     console.log('✅ User created successfully:', newUser.email)
 
     // Remove password hash from response
-    const { passwordHash: _, ...userWithoutPassword } = newUser
+    const { password_hash: _, ...userWithoutPassword } = newUser
 
     return NextResponse.json({
       success: true,
