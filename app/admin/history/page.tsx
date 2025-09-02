@@ -157,8 +157,9 @@ export default function AdminHistoryPage() {
 
   const filteredAgents = agents.filter(agent => {
     if (filter === 'all') return true
-    if (filter === 'verified') return agent.verified_status
-    if (filter === 'pending') return !agent.verified_status
+    if (filter === 'verified') return agent.verified_status && !agent.banned
+    if (filter === 'pending') return !agent.verified_status && !agent.banned
+    if (filter === 'banned') return agent.banned
     return false
   })
 
@@ -253,8 +254,9 @@ export default function AdminHistoryPage() {
           <div className="flex flex-wrap gap-2">
             {[
               { key: 'all', label: 'All', count: agents.length },
-              { key: 'verified', label: 'Verified', count: agents.filter(a => a.verified_status).length },
-              { key: 'pending', label: 'Pending', count: agents.filter(a => !a.verified_status).length }
+              { key: 'verified', label: 'Verified', count: agents.filter(a => a.verified_status && !a.banned).length },
+              { key: 'pending', label: 'Pending', count: agents.filter(a => !a.verified_status && !a.banned).length },
+              { key: 'banned', label: 'Banned', count: agents.filter(a => a.banned).length }
             ].map(tab => (
               <Button
                 key={tab.key}
@@ -309,8 +311,16 @@ export default function AdminHistoryPage() {
                             </h3>
                             <p className="text-muted-foreground">{agent.email}</p>
                             <div className="flex items-center space-x-2 mt-1">
-                              <Badge variant={agent.verified_status ? 'default' : 'secondary'}>
-                                {agent.verified_status ? (
+                              <Badge variant={
+                                agent.banned ? 'destructive' : 
+                                agent.verified_status ? 'default' : 'secondary'
+                              }>
+                                {agent.banned ? (
+                                  <>
+                                    <X className="w-3 h-3 mr-1" />
+                                    Banned
+                                  </>
+                                ) : agent.verified_status ? (
                                   <>
                                     <CheckCircle className="w-3 h-3 mr-1" />
                                     Verified
