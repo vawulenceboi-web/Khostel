@@ -112,15 +112,14 @@ export default function AdminHistoryPage() {
     setProcessingAgent(agentId)
 
     try {
-      // 2. Call API
-      const response = await fetch('/api/admin/verify-agent', {
+      // 2. Call simple ban API
+      const response = await fetch('/api/admin/ban-agent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
           agentId,
-          action: newBanStatus ? 'ban' : 'unban',
-          reason: newBanStatus ? 'Policy violation - banned by admin' : 'Agent unbanned by admin'
+          banned: newBanStatus
         })
       })
 
