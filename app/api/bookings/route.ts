@@ -93,9 +93,10 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    if (session.user.role !== 'agent') {
+    // Allow agents to manage all bookings, students to cancel their own
+    if (session.user.role !== 'agent' && session.user.role !== 'student') {
       return NextResponse.json(
-        { success: false, message: 'Agent role required' },
+        { success: false, message: 'Agent or student role required' },
         { status: 403 }
       )
     }
@@ -108,6 +109,30 @@ export async function PUT(request: NextRequest) {
         { success: false, message: 'Booking ID and status are required' },
         { status: 400 }
       )
+    }
+
+    // If student, only allow cancelling their own bookings
+    if (session.user.role === 'student') {
+      if (status !== 'cancelled') {
+        return NextResponse.json(
+          { success: false, message: 'Students can only cancel bookings' },
+          { status: 403 }
+        )
+      }
+      
+      // Verify this booking belongs to the student
+      const { data: booking } = await db.supabase
+        .from('bookings')
+        .select('student_id')
+        .eq('id', id)
+        .single()
+      
+      if (!booking || booking.student_id !== session.user.id) {
+        return NextResponse.json(
+          { success: false, message: 'You can only cancel your own bookings' },
+          { status: 403 }
+        )
+      }
     }
     
     console.log('📅 Updating booking:', id, 'to status:', status)
