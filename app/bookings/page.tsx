@@ -130,7 +130,7 @@ export default function BookingsPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-black">My Bookings</h1>
         <p className="text-gray-600 mt-2">
-          View and manage your hostel inspection requests
+          View your hostel inspection requests
         </p>
       </div>
 
