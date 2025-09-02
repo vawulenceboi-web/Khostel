@@ -1,85 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { getDb } from '@/lib/db'
-import { hostels, locations, users, createHostelSchema } from '@/lib/schema'
-import { eq, and, gte, lte, ilike } from 'drizzle-orm'
+import { db } from '@/lib/db'
+import { createHostelSchema } from '@/lib/schema'
 import { authOptions } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('🏠 Fetching hostels...')
     const { searchParams } = new URL(request.url)
-    const db = getDb()
     
-    // Build query with filters
-    let query = db
-      .select({
-        id: hostels.id,
-        title: hostels.title,
-        description: hostels.description,
-        price: hostels.price,
-        priceType: hostels.priceType,
-        roomType: hostels.roomType,
-        images: hostels.images,
-        amenities: hostels.amenities,
-        availability: hostels.availability,
-        address: hostels.address,
-        createdAt: hostels.createdAt,
-        location: {
-          id: locations.id,
-          name: locations.name,
-          latitude: locations.latitude,
-          longitude: locations.longitude,
-        },
-        agent: {
-          id: users.id,
-          firstName: users.firstName,
-          lastName: users.lastName,
-          phone: users.phone,
-          verifiedStatus: users.verifiedStatus,
-        }
-      })
-      .from(hostels)
-      .leftJoin(locations, eq(hostels.locationId, locations.id))
-      .leftJoin(users, eq(hostels.agentId, users.id))
-
-    // Apply filters
-    const filters = []
+    // Build filters object
+    const filters: any = {}
     
     const locationId = searchParams.get('locationId')
-    if (locationId) {
-      filters.push(eq(hostels.locationId, locationId))
-    }
+    if (locationId) filters.locationId = locationId
 
     const minPrice = searchParams.get('minPrice')
-    if (minPrice) {
-      filters.push(gte(hostels.price, parseInt(minPrice)))
-    }
+    if (minPrice) filters.minPrice = parseInt(minPrice)
 
     const maxPrice = searchParams.get('maxPrice')
-    if (maxPrice) {
-      filters.push(lte(hostels.price, parseInt(maxPrice)))
-    }
+    if (maxPrice) filters.maxPrice = parseInt(maxPrice)
 
     const roomType = searchParams.get('roomType')
-    if (roomType) {
-      filters.push(eq(hostels.roomType, roomType as any))
-    }
+    if (roomType) filters.roomType = roomType
 
     const availability = searchParams.get('availability')
-    if (availability !== null) {
-      filters.push(eq(hostels.availability, availability === 'true'))
-    }
+    if (availability !== null) filters.availability = availability === 'true'
 
     const search = searchParams.get('search')
-    if (search) {
-      filters.push(ilike(hostels.title, `%${search}%`))
-    }
+    if (search) filters.search = search
 
-    if (filters.length > 0) {
-      query = query.where(and(...filters))
-    }
+    console.log('🔍 Applying filters:', filters)
 
-    const result = await query
+    const result = await db.hostels.findAll(filters)
+    console.log('✅ Hostels fetched successfully:', result.length)
 
     return NextResponse.json({
       success: true,

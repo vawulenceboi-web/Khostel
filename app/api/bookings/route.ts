@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { getDb } from '@/lib/db'
-import { bookings, hostels, users, createBookingSchema } from '@/lib/schema'
-import { eq, and } from 'drizzle-orm'
+import { db } from '@/lib/db'
+import { createBookingSchema } from '@/lib/schema'
 import { authOptions } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
@@ -16,46 +15,10 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const { searchParams } = new URL(request.url)
-    const db = getDb()
+    console.log('📅 Fetching bookings for user:', session.user.email, session.user.role)
     
-    let query = db
-      .select({
-        id: bookings.id,
-        preferredDate: bookings.preferredDate,
-        preferredTime: bookings.preferredTime,
-        message: bookings.message,
-        status: bookings.status,
-        agentNotes: bookings.agentNotes,
-        createdAt: bookings.createdAt,
-        hostel: {
-          id: hostels.id,
-          title: hostels.title,
-          price: hostels.price,
-          priceType: hostels.priceType,
-          images: hostels.images,
-        },
-        student: {
-          id: users.id,
-          firstName: users.firstName,
-          lastName: users.lastName,
-          email: users.email,
-          phone: users.phone,
-        }
-      })
-      .from(bookings)
-      .leftJoin(hostels, eq(bookings.hostelId, hostels.id))
-      .leftJoin(users, eq(bookings.studentId, users.id))
-
-    // Filter based on user role
-    if (session.user.role === 'student') {
-      query = query.where(eq(bookings.studentId, session.user.id))
-    } else if (session.user.role === 'agent') {
-      query = query.where(eq(hostels.agentId, session.user.id))
-    }
-    // Admins can see all bookings
-
-    const result = await query
+    const result = await db.bookings.findByUser(session.user.id, session.user.role)
+    console.log('✅ Bookings fetched successfully:', result.length)
 
     return NextResponse.json({
       success: true,
@@ -92,15 +55,17 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validatedData = createBookingSchema.parse(body)
     
-    const db = getDb()
-    const [newBooking] = await db
-      .insert(bookings)
-      .values({
-        ...validatedData,
-        studentId: session.user.id,
-        preferredDate: validatedData.preferredDate ? new Date(validatedData.preferredDate) : null,
-      })
-      .returning()
+    console.log('📅 Creating booking for student:', session.user.id)
+    
+    const newBooking = await db.bookings.create({
+      student_id: session.user.id,
+      hostel_id: validatedData.hostelId,
+      preferred_date: validatedData.preferredDate ? new Date(validatedData.preferredDate).toISOString() : null,
+      preferred_time: validatedData.preferredTime,
+      message: validatedData.message,
+    })
+    
+    console.log('✅ Booking created successfully')
 
     return NextResponse.json({
       success: true,

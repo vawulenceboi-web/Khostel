@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getDb } from '@/lib/db'
-import { schools } from '@/lib/schema'
+import { db } from '@/lib/db'
 
 export async function GET(request: NextRequest) {
   try {
-    const db = getDb()
-    const result = await db.select().from(schools)
+    console.log('🏫 Fetching schools...')
+    const result = await db.schools.findAll()
+    console.log('✅ Schools fetched successfully:', result.length)
 
     return NextResponse.json({
       success: true,

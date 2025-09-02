@@ -1,22 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getDb } from '@/lib/db'
-import { locations } from '@/lib/schema'
-import { eq } from 'drizzle-orm'
+import { db } from '@/lib/db'
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('📍 Fetching locations...')
     const { searchParams } = new URL(request.url)
     const schoolId = searchParams.get('schoolId')
     
-    const db = getDb()
-    
-    let query = db.select().from(locations)
-    
+    let result
     if (schoolId) {
-      query = query.where(eq(locations.schoolId, schoolId))
+      console.log('🔍 Fetching locations for school:', schoolId)
+      result = await db.locations.findBySchool(schoolId)
+    } else {
+      // For now, return empty array if no school specified
+      result = []
     }
     
-    const result = await query
+    console.log('✅ Locations fetched successfully:', result.length)
 
     return NextResponse.json({
       success: true,
