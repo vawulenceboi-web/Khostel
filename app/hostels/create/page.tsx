@@ -26,7 +26,7 @@ import {
 } from "lucide-react"
 import { toast } from 'sonner'
 import Link from 'next/link'
-import MediaUpload from '@/components/MediaUpload'
+import SimpleMediaUpload from '@/components/SimpleMediaUpload'
 
 export default function CreateHostelPage() {
   const { data: session, status } = useSession()
@@ -49,6 +49,7 @@ export default function CreateHostelPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [uploadedMediaUrls, setUploadedMediaUrls] = useState<string[]>([])
   const [uploadedMediaTypes, setUploadedMediaTypes] = useState<string[]>([])
+  const [uploadedFiles, setUploadedFiles] = useState<any[]>([])
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -342,15 +343,15 @@ export default function CreateHostelPage() {
               <div className="space-y-6">
                 <h3 className="text-lg font-semibold">Photos & Videos</h3>
                 
-                <MediaUpload 
-                  onMediaChange={(urls, types) => {
-                    console.log('📊 MediaUpload callback - URLs received:', urls)
-                    console.log('📊 MediaUpload callback - Types received:', types)
+                <SimpleMediaUpload 
+                  uploadedUrls={uploadedMediaUrls}
+                  uploadedTypes={uploadedMediaTypes}
+                  onUrlsChange={(urls, types) => {
+                    console.log('📊 SimpleMediaUpload - URLs received:', urls)
+                    console.log('📊 SimpleMediaUpload - Types received:', types)
                     setUploadedMediaUrls(urls)
                     setUploadedMediaTypes(types)
                   }}
-                  maxFiles={10}
-                  acceptVideo={true}
                 />
               </div>
 
