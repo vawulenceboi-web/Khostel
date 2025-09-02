@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import Link from "next/link"
-import { ArrowLeft, Calendar } from "lucide-react"
+import { ArrowLeft, Calendar, Clock, CheckCircle } from "lucide-react"
 import { MdVerified } from "react-icons/md"
 import { useSession } from 'next-auth/react'
 import { toast } from 'sonner'
@@ -69,6 +69,37 @@ export default function HostelsClient() {
       }
     } catch (error) {
       toast.error('Failed to book inspection')
+    }
+  }
+
+  // Step 7: Add time formatting function
+  const formatTimeAgo = (dateString) => {
+    if (!dateString) return 'Recently posted'
+    
+    try {
+      const now = new Date()
+      const date = new Date(dateString)
+      const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+
+      if (diffInHours < 1) return 'Just posted'
+      if (diffInHours < 24) return `${Math.floor(diffInHours)}h ago`
+      if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d ago`
+      return 'Posted recently'
+    } catch {
+      return 'Recently posted'
+    }
+  }
+
+  const isNewPost = (dateString) => {
+    if (!dateString) return false
+    
+    try {
+      const now = new Date()
+      const date = new Date(dateString)
+      const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+      return diffInHours <= 24
+    } catch {
+      return false
     }
   }
 
@@ -163,12 +194,24 @@ export default function HostelsClient() {
                     </div>
                   )}
                   
-                  {/* Step 3: Agent with verification badge */}
-                  <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                    <span>Agent: {hostel.agent?.first_name} {hostel.agent?.last_name}</span>
-                    {hostel.agent?.verified_status && (
-                      <MdVerified className="text-blue-500 w-4 h-4" />
-                    )}
+                  {/* Step 7: Add timestamp and agent info */}
+                  <div className="border-t pt-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                        <span>Agent: {hostel.agent?.first_name} {hostel.agent?.last_name}</span>
+                        {hostel.agent?.verified_status && (
+                          <MdVerified className="text-blue-500 w-4 h-4" />
+                        )}
+                      </div>
+                      
+                      <div className="flex items-center text-xs text-muted-foreground">
+                        <Clock className="w-3 h-3 mr-1" />
+                        {formatTimeAgo(hostel.created_at)}
+                        {isNewPost(hostel.created_at) && (
+                          <CheckCircle className="w-3 h-3 ml-1 text-green-600" />
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
