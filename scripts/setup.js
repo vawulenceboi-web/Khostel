@@ -2,54 +2,67 @@
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 console.log('🚀 k-H Platform Setup\n');
 
 // Check if .env.local exists
 const envPath = path.join(process.cwd(), '.env.local');
-const envExamplePath = path.join(process.cwd(), '.env.example');
 
 if (!fs.existsSync(envPath)) {
-  if (fs.existsSync(envExamplePath)) {
-    // Copy .env.example to .env.local
-    fs.copyFileSync(envExamplePath, envPath);
-    console.log('✅ Created .env.local from .env.example');
-    console.log('📝 Please update .env.local with your Supabase credentials\n');
-  } else {
-    console.log('❌ .env.example not found');
-  }
+  // Generate a random secret
+  const randomSecret = crypto.randomBytes(32).toString('base64');
+  
+  // Create .env.local with template
+  const envContent = `# k-H Platform Environment Variables
+# Add your Supabase credentials below
+
+# Supabase Configuration (Required)
+SUPABASE_URL=https://your-project-id.supabase.co
+SUPABASE_ANON_KEY=your-supabase-anon-key-here
+
+# Database Configuration (Required)
+DATABASE_URL=postgresql://postgres:your-password@db.your-project-id.supabase.co:5432/postgres
+
+# Authentication (Auto-generated)
+NEXTAUTH_SECRET=${randomSecret}
+NEXTAUTH_URL=http://localhost:3000
+
+# Optional Features
+GOOGLE_MAPS_API_KEY=your-google-maps-api-key
+SENDGRID_API_KEY=your-sendgrid-api-key
+
+# Development
+NODE_ENV=development
+`;
+
+  fs.writeFileSync(envPath, envContent);
+  console.log('✅ Created .env.local with auto-generated NEXTAUTH_SECRET');
+  console.log('📝 Please add your Supabase credentials to .env.local\n');
 } else {
   console.log('✅ .env.local already exists\n');
 }
 
-// Display setup instructions
-console.log('🔑 **Required Environment Variables:**\n');
-console.log('1. SUPABASE_URL - Your Supabase project URL');
-console.log('   Get from: Supabase Dashboard → Settings → API');
-console.log('   Example: https://abcdefgh.supabase.co\n');
+console.log('🔑 **Quick Setup Steps:**\n');
 
-console.log('2. SUPABASE_ANON_KEY - Your Supabase anon key');
-console.log('   Get from: Supabase Dashboard → Settings → API');
-console.log('   Example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\n');
+console.log('1. **Supabase Dashboard** → Settings → API');
+console.log('   Copy: Project URL and anon/public key\n');
 
-console.log('3. DATABASE_URL - Your PostgreSQL connection string');
-console.log('   Get from: Supabase Dashboard → Settings → Database → Connection string');
-console.log('   Example: postgresql://postgres:your-password@db.abcdefgh.supabase.co:5432/postgres\n');
+console.log('2. **Supabase Dashboard** → Settings → Database');
+console.log('   Copy: Connection string (Direct connection)\n');
 
-console.log('4. NEXTAUTH_SECRET - Random secret for authentication');
-console.log('   Generate: openssl rand -base64 32');
-console.log('   Or use any random string\n');
+console.log('3. **SQL Editor** in Supabase');
+console.log('   Paste: Content of sql/schema.sql file');
+console.log('   Click: Run (creates all tables and sample data)\n');
 
-console.log('🗄️ **Database Setup:**\n');
-console.log('After adding your credentials to .env.local:');
-console.log('1. npm run db:push    # Create database tables');
-console.log('2. npm run dev        # Start development server');
-console.log('3. Visit: http://localhost:3000/api/seed  # Seed initial data\n');
+console.log('4. **Update .env.local** with your credentials\n');
 
-console.log('🎯 **Quick Test:**\n');
-console.log('1. Register as a student');
-console.log('2. Browse hostels');
-console.log('3. Book an inspection');
-console.log('4. Check your dashboard\n');
+console.log('5. **Start the platform:**');
+console.log('   npm run dev\n');
 
-console.log('🎊 **That\'s it! Your k-H platform will be fully functional.**');
+console.log('🎯 **Test Accounts (created automatically):**\n');
+console.log('   Admin:   admin@k-hostel.com / admin123');
+console.log('   Agent:   agent@k-hostel.com / admin123');
+console.log('   Student: student@k-hostel.com / admin123\n');
+
+console.log('🎊 **Your k-H platform will be fully functional with real data!**');
