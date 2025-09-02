@@ -414,61 +414,53 @@ export default function AdminHistoryPage() {
 
                     {/* Action Buttons */}
                     <div className="lg:w-64 flex lg:flex-col gap-3">
-                      {agent.verified_status ? (
-                        // Actions for verified agents
-                        <>
-                          {agent.banned ? (
-                            <Button
-                              variant="outline"
-                              onClick={() => toggleBan(agent.id, false)}
-                              disabled={processingAgent === agent.id}
-                              className="flex-1 lg:w-full border-green-300 text-green-600 hover:bg-green-50"
-                            >
-                              {processingAgent === agent.id ? (
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600 mr-2"></div>
-                              ) : (
-                                <CheckCircle className="w-4 h-4 mr-2" />
-                              )}
-                              Unban Agent
-                            </Button>
+                      {/* Ban/Unban available for all agents */}
+                      {agent.banned ? (
+                        <Button
+                          variant="outline"
+                          onClick={() => toggleBan(agent.id, false)}
+                          disabled={processingAgent === agent.id}
+                          className="flex-1 lg:w-full border-green-300 text-green-600 hover:bg-green-50"
+                        >
+                          {processingAgent === agent.id ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600 mr-2"></div>
                           ) : (
-                            <Button
-                              variant="destructive"
-                              onClick={() => toggleBan(agent.id, true)}
-                              disabled={processingAgent === agent.id}
-                              className="flex-1 lg:w-full"
-                            >
-                              {processingAgent === agent.id ? (
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                              ) : (
-                                <Ban className="w-4 h-4 mr-2" />
-                              )}
-                              Ban Agent
-                            </Button>
+                            <CheckCircle className="w-4 h-4 mr-2" />
                           )}
-                          
-                          <Button
-                            variant="outline"
-                            onClick={() => window.open(`mailto:${agent.email}?subject=k-H Platform Notice`, '_blank')}
-                            className="flex-1 lg:w-full"
-                          >
-                            <FileText className="w-4 h-4 mr-2" />
-                            Send Warning
-                          </Button>
-                        </>
+                          Unban Agent
+                        </Button>
                       ) : (
-                        // Actions for pending agents
-                        <div className="text-center p-4 bg-secondary/50 rounded-lg">
-                          <Clock className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                          <p className="text-sm text-muted-foreground">
-                            Pending verification
-                          </p>
-                          <Link href="/admin/dashboard">
-                            <Button variant="outline" size="sm" className="mt-2">
-                              Review in Queue
-                            </Button>
-                          </Link>
-                        </div>
+                        <Button
+                          variant="destructive"
+                          onClick={() => toggleBan(agent.id, true)}
+                          disabled={processingAgent === agent.id}
+                          className="flex-1 lg:w-full"
+                        >
+                          {processingAgent === agent.id ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          ) : (
+                            <Ban className="w-4 h-4 mr-2" />
+                          )}
+                          Ban Agent
+                        </Button>
+                      )}
+                      
+                      <Button
+                        variant="outline"
+                        onClick={() => window.open(`mailto:${agent.email}?subject=k-H Platform Notice`, '_blank')}
+                        className="flex-1 lg:w-full"
+                      >
+                        <FileText className="w-4 h-4 mr-2" />
+                        Send Warning
+                      </Button>
+
+                      {!agent.verified_status && (
+                        <Link href="/admin/dashboard">
+                          <Button variant="outline" size="sm" className="w-full mt-2">
+                            <Clock className="w-4 h-4 mr-2" />
+                            Review in Queue
+                          </Button>
+                        </Link>
                       )}
                     </div>
                   </div>
