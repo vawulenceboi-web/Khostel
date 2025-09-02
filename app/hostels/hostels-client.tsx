@@ -4,10 +4,13 @@ import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import Link from "next/link"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Calendar } from "lucide-react"
 import { MdVerified } from "react-icons/md"
+import { useSession } from 'next-auth/react'
+import { toast } from 'sonner'
 
 export default function HostelsClient() {
+  const { data: session } = useSession()
   const [hostels, setHostels] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -31,6 +34,40 @@ export default function HostelsClient() {
       console.error('❌ Error:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Step 5: Add booking function
+  const handleBookInspection = async (hostelId) => {
+    if (!session?.user) {
+      toast.error('Please sign in to book inspections')
+      return
+    }
+
+    if (session.user.role !== 'student') {
+      toast.error('Only students can book inspections')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          hostelId,
+          preferredDate: new Date().toISOString().split('T')[0],
+          message: 'Inspection booking request'
+        })
+      })
+
+      const result = await response.json()
+      if (result.success) {
+        toast.success('Inspection booked successfully!')
+      } else {
+        toast.error(result.message || 'Booking failed')
+      }
+    } catch (error) {
+      toast.error('Failed to book inspection')
     }
   }
 
@@ -100,6 +137,18 @@ export default function HostelsClient() {
                     <span className="text-sm bg-secondary px-2 py-1 rounded">
                       {hostel.room_type}
                     </span>
+                  </div>
+                  
+                  {/* Step 5: Add booking button */}
+                  <div className="mb-4">
+                    <Button 
+                      className="w-full"
+                      onClick={() => handleBookInspection(hostel.id)}
+                      disabled={!session?.user || session.user.role !== 'student'}
+                    >
+                      <Calendar className="w-4 h-4 mr-2" />
+                      {!session?.user ? 'Sign In to Book' : 'Book Inspection'}
+                    </Button>
                   </div>
                   
                   {/* Step 3: Agent with verification badge */}
