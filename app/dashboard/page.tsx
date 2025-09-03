@@ -113,6 +113,7 @@ export default function DashboardPage() {
         const data = await response.json()
         setFreshUserData(data.data)
         console.log('🔄 Fresh user data loaded:', data.data.profileImage ? 'Has profile image' : 'No profile image')
+        console.log('🔍 User banned status:', data.data.banned)
       }
     } catch (error) {
       console.error('Error fetching fresh user data:', error)
