@@ -140,12 +140,12 @@ export default function BookingsPage() {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <VirusMorphLoader size={140} color="#F59E0B" duration={2000} />
           <div className="mt-6">
-            <div className="text-xl font-bold text-white mb-2">Booking Management</div>
-            <div className="text-gray-300">Loading booking requests...</div>
+            <div className="text-xl font-bold text-black mb-2">Booking Management</div>
+            <div className="text-gray-600">Loading booking requests...</div>
           </div>
         </div>
       </div>
@@ -190,12 +190,12 @@ export default function BookingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <VirusMorphLoader size={140} color="#F59E0B" duration={2000} />
           <div className="mt-6">
-            <div className="text-xl font-bold text-white mb-2">Booking Management</div>
-            <div className="text-gray-300">Loading booking requests...</div>
+            <div className="text-xl font-bold text-black mb-2">Booking Management</div>
+            <div className="text-gray-600">Loading booking requests...</div>
           </div>
         </div>
       </div>
@@ -338,7 +338,7 @@ export default function BookingsPage() {
                       <div className="flex gap-2 pt-4 border-t">
                         <Button
                           onClick={() => updateBookingStatus(booking.id, 'confirmed')}
-                          className="bg-green-600 hover:bg-green-700 text-white"
+                          className="bg-green-600 hover:bg-green-700 text-black"
                         >
                           Confirm
                         </Button>
@@ -356,7 +356,7 @@ export default function BookingsPage() {
                       <div className="flex gap-2 pt-4 border-t">
                         <Button
                           onClick={() => updateBookingStatus(booking.id, 'completed')}
-                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                          className="bg-blue-600 hover:bg-blue-700 text-black"
                         >
                           Mark Completed
                         </Button>

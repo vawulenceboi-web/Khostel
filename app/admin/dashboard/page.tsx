@@ -180,13 +180,13 @@ export default function AdminDashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <VirusMorphLoader size={180} color="#00FFAB" duration={2500} />
           <div className="mt-6">
-            <div className="text-2xl font-bold text-white mb-2">k-H Admin Portal</div>
-            <div className="text-gray-300">Loading verification queue...</div>
-            <div className="text-sm text-gray-400 mt-2">Scanning agent applications</div>
+            <div className="text-2xl font-bold text-black mb-2">k-H Admin Portal</div>
+            <div className="text-gray-600">Loading verification queue...</div>
+            <div className="text-sm text-gray-500 mt-2">Scanning agent applications</div>
           </div>
         </div>
       </div>

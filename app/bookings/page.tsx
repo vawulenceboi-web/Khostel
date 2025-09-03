@@ -107,12 +107,12 @@ export default function StudentBookingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <VirusMorphLoader size={130} color="#EC4899" duration={1800} />
           <div className="mt-6">
-            <div className="text-xl font-bold text-white mb-2">My Bookings</div>
-            <div className="text-gray-300">Loading your requests...</div>
+            <div className="text-xl font-bold text-black mb-2">My Bookings</div>
+            <div className="text-gray-600">Loading your requests...</div>
           </div>
         </div>
       </div>
@@ -215,7 +215,7 @@ export default function StudentBookingsPage() {
                         <Button
                           onClick={() => setShowRatingForm(booking.id)}
                           size="sm"
-                          className="w-full bg-yellow-500 hover:bg-yellow-600 text-white"
+                          className="w-full bg-yellow-500 hover:bg-yellow-600 text-black"
                         >
                           <Star className="w-3 h-3 mr-2" />
                           Rate Agent
@@ -296,7 +296,7 @@ function RatingForm({
         <Button
           onClick={handleSubmit}
           disabled={isSubmitting || rating === 0}
-          className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white"
+          className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black"
           size="sm"
         >
           {isSubmitting ? (

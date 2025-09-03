@@ -90,12 +90,12 @@ export default function AgentProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <VirusMorphLoader size={150} color="#10B981" duration={2400} />
           <div className="mt-6">
-            <div className="text-2xl font-bold text-white mb-2">Agent Profile</div>
-            <div className="text-gray-300">Loading agent details...</div>
+            <div className="text-2xl font-bold text-black mb-2">Agent Profile</div>
+            <div className="text-gray-600">Loading agent details...</div>
             <div className="text-sm text-gray-400 mt-2">Fetching listings & verification</div>
           </div>
         </div>

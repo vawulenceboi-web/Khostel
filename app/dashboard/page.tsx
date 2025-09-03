@@ -171,13 +171,13 @@ export default function DashboardPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <VirusMorphLoader size={170} color="#3B82F6" duration={2800} />
           <div className="mt-6">
-            <div className="text-2xl font-bold text-white mb-2">k-H Dashboard</div>
-            <div className="text-gray-300">Loading real-time data...</div>
-            <div className="text-sm text-gray-400 mt-2">Syncing your profile & stats</div>
+            <div className="text-2xl font-bold text-black mb-2">k-H Dashboard</div>
+            <div className="text-gray-600">Loading real-time data...</div>
+            <div className="text-sm text-gray-500 mt-2">Syncing your profile & stats</div>
           </div>
         </div>
       </div>
