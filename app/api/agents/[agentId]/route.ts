@@ -66,8 +66,7 @@ export async function GET(
         address,
         created_at,
         last_updated,
-        location:locations(id, name, latitude, longitude),
-        school:schools(id, name, city, state)
+        location:locations(id, name, latitude, longitude)
       `)
       .eq('agent_id', agentId)
       .eq('status', 'published')
@@ -126,7 +125,6 @@ export async function GET(
         createdAt: hostel.created_at,
         lastUpdated: hostel.last_updated,
         location: hostel.location,
-        school: hostel.school,
         // Calculate time ago
         timeAgo: calculateTimeAgo(hostel.created_at),
         isNew: isWithinLast24Hours(hostel.created_at)
