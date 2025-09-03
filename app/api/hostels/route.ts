@@ -35,9 +35,34 @@ export async function GET(request: NextRequest) {
     const result = await db.hostels.findAll(filters)
     console.log('✅ Hostels fetched successfully:', result.length)
 
+    // Add rating data to each hostel's agent using your method
+    const hostelsWithRatings = await Promise.all(
+      result.map(async (hostel) => {
+        if (hostel.agent?.id) {
+          // Get ratings for this agent
+          const { data: ratings } = await db.supabase
+            .from('ratings')
+            .select('stars')
+            .eq('agent_id', hostel.agent.id)
+
+          if (ratings && ratings.length > 0) {
+            const avgRating = Number((ratings.reduce((sum, r) => sum + r.stars, 0) / ratings.length).toFixed(1))
+            hostel.agent.average_rating = avgRating
+            hostel.agent.total_ratings = ratings.length
+          } else {
+            hostel.agent.average_rating = 0
+            hostel.agent.total_ratings = 0
+          }
+        }
+        return hostel
+      })
+    )
+
+    console.log('🔍 First hostel with rating:', hostelsWithRatings[0]?.agent)
+
     return NextResponse.json({
       success: true,
-      data: result
+      data: hostelsWithRatings
     })
 
   } catch (error) {

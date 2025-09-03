@@ -70,6 +70,7 @@ export default function HostelsClient() {
         
         if (data.success && Array.isArray(data.data)) {
           setHostels(data.data)
+          console.log('🔍 First hostel agent rating data:', data.data[0]?.agent)
         }
       }
     } catch (error) {
