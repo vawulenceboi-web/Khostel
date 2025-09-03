@@ -31,6 +31,12 @@ export const authOptions: NextAuthOptions = {
             return null
           }
 
+          // Check if email is verified
+          if (!user.email_verified) {
+            console.log(`Login blocked: Email not verified for ${credentials.email}`)
+            throw new Error('Please verify your email address before signing in. Check your inbox for the verification code.')
+          }
+
           const isValidPassword = await bcrypt.compare(credentials.password, user.password_hash)
           
           if (!isValidPassword) {

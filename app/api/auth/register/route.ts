@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { db } from '@/lib/db'
 import { registerUserSchema } from '@/lib/schema'
+import { sendEmail, generateVerificationEmail } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   console.log('🔍 Registration API called')
@@ -71,12 +72,41 @@ export async function POST(request: NextRequest) {
       terms_accepted: validatedData.termsAccepted,
       terms_accepted_at: new Date().toISOString(),
       verified_status: validatedData.role === 'agent' ? false : true, // Agents need verification
+      email_verified: false, // All users need email verification
     })
 
     console.log('✅ User created successfully:', newUser.email)
 
+    // Generate verification code and send email
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString()
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000) // 15 minutes
+
+    // Update user with verification code
+    const { error: updateError } = await db.supabase
+      .from('users')
+      .update({
+        verification_code: verificationCode,
+        verification_code_expires: expiresAt.toISOString()
+      })
+      .eq('id', newUser.id)
+
+    if (updateError) {
+      console.warn('⚠️ Could not store verification code:', updateError)
+    }
+
+    // Send verification email
+    const userName = `${validatedData.firstName} ${validatedData.lastName || ''}`.trim()
+    const emailResult = await sendEmail({
+      to: validatedData.email,
+      subject: 'Verify Your k-H Account',
+      html: generateVerificationEmail(verificationCode, userName)
+    })
+
+    if (!emailResult.success) {
+      console.warn('⚠️ Could not send verification email')
+    }
+
     // For agents, the trigger should automatically add them to verification queue
-    // If it fails due to RLS, we'll handle it gracefully
     if (validatedData.role === 'agent') {
       console.log('🔄 Agent registered - should be added to verification queue by trigger')
     }
@@ -84,9 +114,7 @@ export async function POST(request: NextRequest) {
     // Remove password hash from response
     const { password_hash: _, ...userWithoutPassword } = newUser
 
-    const message = validatedData.role === 'agent' 
-      ? 'Agent registration successful! Your application is under review. You will be notified within 30 minutes.'
-      : 'Registration successful! You can now sign in.'
+    const message = 'Registration successful! Please check your email to verify your account before signing in.'
 
     return NextResponse.json({
       success: true,

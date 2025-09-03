@@ -147,13 +147,9 @@ export default function RegisterPage() {
       const result = await response.json()
 
       if (result.success) {
-        if (formData.role === 'agent') {
-          toast.success('Agent registration with face verification successful! Your application is under review.')
-        } else {
-          toast.success('Registration successful! You can now sign in.')
-        }
+        toast.success('Registration successful! Please check your email to verify your account.')
         setTimeout(() => {
-          router.push('/auth/login')
+          router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`)
         }, 2000)
       } else {
         toast.error(result.message || 'Registration failed')
