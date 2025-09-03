@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
         preferred_date,
         status,
         created_at,
-        hostel:hostels(title, location:locations(name))
+        hostel:hostels(title, agent_id, location:locations(name), agent:users(id, first_name, last_name))
       `)
       .eq('student_id', session.user.id)
 
@@ -99,7 +99,7 @@ export async function PUT(request: NextRequest) {
         preferred_date,
         status,
         created_at,
-        hostel:hostels(title, location:locations(name))
+        hostel:hostels(title, agent_id, location:locations(name), agent:users(id, first_name, last_name))
       `)
       .single()
 
