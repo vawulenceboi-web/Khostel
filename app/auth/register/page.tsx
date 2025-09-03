@@ -27,7 +27,7 @@ import {
   Camera,
   User
 } from 'lucide-react'
-import FaceVerification from '@/components/FaceVerification'
+
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -48,9 +48,9 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [schools, setSchools] = useState<any[]>([])
-  const [showFaceVerification, setShowFaceVerification] = useState(false)
+
   const [facePhotoUrl, setFacePhotoUrl] = useState('')
-  const [currentStep, setCurrentStep] = useState<'form' | 'face-verification' | 'complete'>('form')
+  const [currentStep, setCurrentStep] = useState<'form' | 'complete'>('form')
   const router = useRouter()
 
   useEffect(() => {
@@ -121,21 +121,11 @@ export default function RegisterPage() {
     
     if (!validateForm()) return
 
-    // For agents, proceed to face verification
-    if (formData.role === 'agent') {
-      setCurrentStep('face-verification')
-      return
-    }
-
-    // For students, register directly
+    // Register both students and agents directly (no face verification)
     await completeRegistration()
   }
 
-  const handleFaceVerificationComplete = (photoUrl: string) => {
-    setFacePhotoUrl(photoUrl)
-    setCurrentStep('complete')
-    completeRegistration(photoUrl)
-  }
+
 
   const completeRegistration = async (facePhotoUrl?: string) => {
     setIsLoading(true)
@@ -182,38 +172,7 @@ export default function RegisterPage() {
     }
   }
 
-  // Show face verification step for agents
-  if (currentStep === 'face-verification') {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="w-full max-w-4xl">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-foreground mb-2">Face Verification</h1>
-            <p className="text-muted-foreground">
-              Complete your agent registration with identity verification
-            </p>
-          </div>
-          
-          <FaceVerification 
-            onVerificationComplete={handleFaceVerificationComplete}
-            currentStatus="pending"
-            attempts={0}
-          />
-          
-          <div className="text-center mt-6">
-            <Button 
-              variant="ghost" 
-              onClick={() => setCurrentStep('form')}
-              disabled={isLoading}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Registration Form
-            </Button>
-          </div>
-        </div>
-      </div>
-    )
-  }
+
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
