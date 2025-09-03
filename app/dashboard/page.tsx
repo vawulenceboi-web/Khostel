@@ -222,6 +222,7 @@ export default function DashboardPage() {
               <Badge variant="secondary" className="hidden sm:inline-flex">
                 {user.role === 'student' && <GraduationCap className="w-3 h-3 mr-1" />}
                 {user.role === 'agent' && <Building className="w-3 h-3 mr-1" />}
+                {user.role === 'individual' && <User className="w-3 h-3 mr-1" />}
                 {user.role === 'admin' && <Shield className="w-3 h-3 mr-1" />}
                 {user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'User'}
                 {user.verifiedStatus && <InstagramVerificationBadge verified={true} size="sm" className="ml-1" />}
@@ -398,6 +399,7 @@ export default function DashboardPage() {
             </h1>
             <p className="text-muted-foreground">
               {user.role === 'student' && 'Manage your hostel bookings and discover new accommodations'}
+              {user.role === 'individual' && 'Find and book accommodations as an individual'}
               {user.role === 'admin' && 'Oversee platform operations and verify agents'}
             </p>
           </div>

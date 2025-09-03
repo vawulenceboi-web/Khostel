@@ -218,7 +218,7 @@ export default function HomePage() {
                 <p className="text-muted-foreground mb-6 leading-relaxed">
                   Looking for accommodation as an individual? Browse hostels and connect directly with agents.
                 </p>
-                <Link href="/auth/register?role=individual">
+                <Link href="/auth/register-individual">
                   <Button className="w-full h-12 text-base font-semibold bg-green-600 hover:bg-green-700">
                     Get Started as Individual
                   </Button>
