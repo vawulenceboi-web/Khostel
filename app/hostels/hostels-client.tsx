@@ -366,18 +366,18 @@ export default function HostelsClient() {
                         {hostel.agent?.verified_status && (
                           <MdVerified className="text-blue-500 w-4 h-4" />
                         )}
-                        {/* Agent Rating Display */}
-                        {hostel.agent?.average_rating > 0 && (
-                          <div className="flex items-center space-x-1">
-                            <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                            <span className="text-yellow-600 font-medium text-xs">
-                              {hostel.agent.average_rating.toFixed(1)}
-                            </span>
-                            <span className="text-gray-400 text-xs">
-                              ({hostel.agent.total_ratings})
-                            </span>
-                          </div>
-                        )}
+                        {/* Agent Rating Display - YOUR METHOD */}
+                        <div className="flex items-center mt-1">
+                          <span className="text-yellow-500 text-sm">
+                            {"★".repeat(Math.round(hostel.agent?.average_rating || 0))}
+                          </span>
+                          <span className="text-gray-400 text-sm">
+                            {"★".repeat(5 - Math.round(hostel.agent?.average_rating || 0))}
+                          </span>
+                          <span className="ml-1 text-xs text-gray-600">
+                            {hostel.agent?.average_rating || 0} ({hostel.agent?.total_ratings || 0} reviews)
+                          </span>
+                        </div>
                       </div>
                       
                       <div className="flex items-center text-xs text-muted-foreground">

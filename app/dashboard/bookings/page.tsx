@@ -401,7 +401,7 @@ export default function BookingsPage() {
                         <SimpleRating
                           agentId={booking.hostel?.agent_id || ''}
                           studentId={session?.user?.id || ''}
-                          agentName="Test Agent"
+                                                        agentName={booking.hostel?.agent ? `${booking.hostel.agent.first_name} ${booking.hostel.agent.last_name}` : 'Agent'}
                         />
                       </div>
                     )}
