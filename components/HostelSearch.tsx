@@ -55,8 +55,8 @@ export default function HostelSearch() {
         />
       </div>
 
-      {/* Filters Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+      {/* Filters Row - Mobile Friendly */}
+      <div className="grid grid-cols-1 gap-3 mb-4">
         {/* Location Filter */}
         <div className="relative">
           <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />

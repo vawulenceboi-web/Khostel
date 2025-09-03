@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import Link from "next/link"
@@ -14,6 +15,7 @@ import HostelSearch from "@/components/HostelSearch"
 
 export default function HostelsClient() {
   const { data: session } = useSession()
+  const searchParams = useSearchParams()
   const [hostels, setHostels] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -61,15 +63,11 @@ export default function HostelsClient() {
     fetchHostels()
   }, [])
 
-  // Listen for URL changes to refetch data (your method)
+  // REAL-TIME: Refetch when search params change (your method)
   useEffect(() => {
-    const handlePopState = () => {
-      fetchHostels()
-    }
-    
-    window.addEventListener('popstate', handlePopState)
-    return () => window.removeEventListener('popstate', handlePopState)
-  }, [])
+    console.log('🔄 URL params changed, refetching hostels...')
+    fetchHostels()
+  }, [searchParams])
 
   const fetchHostels = async () => {
     try {
