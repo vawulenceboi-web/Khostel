@@ -1,4 +1,4 @@
-# 🏠 k-H - Nigerian Student Hostel Platform v2
+# 🏠 k-H - Nigerian Student Hostel Platform v2.1
 
 A modern, fully functional platform for Nigerian students to find and book hostels around their universities. Built with **pure black and white design** and **seamless Supabase integration**.
 
