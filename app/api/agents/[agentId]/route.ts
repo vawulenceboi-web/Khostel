@@ -131,11 +131,27 @@ export async function GET(
       }))
     }
 
-    console.log(`✅ Agent profile loaded: ${publicAgentData.fullName} with ${hostelsData.length} listings`)
+    // Get agent ratings using your method
+    const { data: ratingsData } = await db.supabase
+      .from('ratings')
+      .select('stars')
+      .eq('agent_id', agentId)
+
+    const avgRating = ratingsData && ratingsData.length > 0 
+      ? Number((ratingsData.reduce((sum, r) => sum + r.stars, 0) / ratingsData.length).toFixed(1))
+      : 0
+
+    const finalAgentData = {
+      ...publicAgentData,
+      avg_rating: avgRating,
+      total_reviews: ratingsData?.length || 0
+    }
+
+    console.log(`✅ Agent profile loaded: ${finalAgentData.fullName} with ${hostelsData.length} listings, ${avgRating} avg rating`)
 
     return NextResponse.json({
       success: true,
-      data: publicAgentData
+      data: finalAgentData
     })
 
   } catch (error) {

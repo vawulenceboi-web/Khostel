@@ -58,6 +58,15 @@ export default function SimpleRating({
   return (
     <div className="p-4 border rounded">
       <h3 className="mb-2">Rate {agentName}</h3>
+      {stars > 0 && (
+        <p className="text-sm mb-2 font-medium">
+          {stars === 1 && "😞 Poor - Not satisfied"}
+          {stars === 2 && "😐 Fair - Could be better"}
+          {stars === 3 && "😊 Good - Satisfied"}
+          {stars === 4 && "😄 Very Good - Happy"}
+          {stars === 5 && "🤩 Excellent - Highly recommend"}
+        </p>
+      )}
 
       <div className="flex space-x-2 mb-3">
         {[1, 2, 3, 4, 5].map((star) => (

@@ -238,6 +238,23 @@ export default function AgentProfilePage() {
                       })}
                     </span>
                   </div>
+
+                  {/* Agent Rating Display - YOUR METHOD */}
+                  {(agent as any).avg_rating > 0 && (
+                    <div className="flex items-center justify-center sm:justify-start mt-2">
+                      <div className="flex items-center">
+                        <span className="text-yellow-500 text-xl">
+                          {"★".repeat(Math.round((agent as any).avg_rating))}
+                        </span>
+                        <span className="text-gray-400 text-xl">
+                          {"★".repeat(5 - Math.round((agent as any).avg_rating))}
+                        </span>
+                        <span className="ml-2 text-sm text-gray-600">
+                          {(agent as any).avg_rating} ({(agent as any).total_reviews} reviews)
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Quick Stats */}
