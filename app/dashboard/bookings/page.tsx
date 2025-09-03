@@ -391,14 +391,46 @@ export default function BookingsPage() {
                             <h4 className="text-sm font-semibold text-gray-900">Rate Your Experience</h4>
                           </div>
                           
-                          <Button
-                            onClick={() => setShowRatingForm(booking.id)}
-                            size="sm"
-                            className="w-full bg-yellow-500 hover:bg-yellow-600 text-white"
-                          >
-                            <Star className="w-3 h-3 mr-2" />
-                            Rate Agent
-                          </Button>
+                          {showRatingForm === booking.id ? (
+                            <div className="space-y-3">
+                              <div>
+                                <p className="text-sm text-gray-600 mb-2">Rate this agent:</p>
+                                <div className="flex items-center space-x-1">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <button
+                                      key={star}
+                                      className="text-yellow-400 hover:text-yellow-500 transition-colors"
+                                      onClick={() => {
+                                        console.log('Star clicked:', star)
+                                        submitRating('test-agent', star, 'Great agent!')
+                                      }}
+                                    >
+                                      <Star className="w-5 h-5 fill-current" />
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                              <Button
+                                onClick={() => setShowRatingForm(null)}
+                                variant="outline"
+                                size="sm"
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              onClick={() => {
+                                console.log('Rate Agent clicked for booking:', booking.id)
+                                setShowRatingForm(booking.id)
+                              }}
+                              size="sm"
+                              className="w-full bg-yellow-500 hover:bg-yellow-600 text-white"
+                            >
+                              <Star className="w-3 h-3 mr-2" />
+                              Rate Agent
+                            </Button>
+                          )}
                         </div>
                       </div>
                     )}
