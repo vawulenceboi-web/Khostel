@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Calendar, Phone, Mail, User, MapPin, Clock, Star } from 'lucide-react'
 import VirusMorphLoader from '@/components/VirusMorphLoader'
-import StarRating from '@/components/StarRating'
+import RatingForm from '@/components/RatingForm'
 
 interface Booking {
   id: string
@@ -397,94 +397,33 @@ export default function BookingsPage() {
                           </p>
                         </div>
                         
-                        {/* Student Rating Section */}
+                        {/* Clean Rating Section */}
                         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                          <div className="flex items-center space-x-2 mb-2">
-                            <Star className="w-4 h-4 text-yellow-500" />
-                            <h4 className="text-sm font-semibold text-gray-900">Rate Your Experience</h4>
-                          </div>
-                          
                           {showRatingForm === booking.id ? (
-                            <div className="space-y-3">
-                              <div>
-                                <p className="text-sm text-gray-600 mb-2">Rate this agent:</p>
-                                <div className="flex items-center space-x-1">
-                                  {[1, 2, 3, 4, 5].map((star) => (
-                                    <button
-                                      key={star}
-                                      className={`transition-colors ${
-                                        star <= selectedRating 
-                                          ? 'text-yellow-400' 
-                                          : 'text-gray-300 hover:text-yellow-400'
-                                      }`}
-                                      onClick={() => {
-                                        console.log('Star clicked:', star)
-                                        setSelectedRating(star)
-                                      }}
-                                    >
-                                      <Star className={`w-5 h-5 ${star <= selectedRating ? 'fill-current' : ''}`} />
-                                    </button>
-                                  ))}
-                                </div>
-                                
-                                {/* Rating Text */}
-                                {selectedRating > 0 && (
-                                  <p className="text-sm text-gray-600 mt-2">
-                                    {selectedRating === 1 && "😞 Poor - Not satisfied"}
-                                    {selectedRating === 2 && "😐 Fair - Could be better"}
-                                    {selectedRating === 3 && "😊 Good - Satisfied"}
-                                    {selectedRating === 4 && "😄 Very Good - Happy"}
-                                    {selectedRating === 5 && "🤩 Excellent - Highly recommend"}
-                                  </p>
-                                )}
-                              </div>
-                              
-                              <div className="flex space-x-2">
-                                {selectedRating > 0 && (
-                                  <Button
-                                    onClick={() => {
-                                      const agentId = booking.hostel?.agent_id || 'unknown-agent'
-                                      console.log('Submitting rating:', selectedRating, 'for agent:', agentId)
-                                      submitRating(agentId, selectedRating, `${selectedRating} star rating`)
-                                    }}
-                                    disabled={submittingRating}
-                                    className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white"
-                                    size="sm"
-                                  >
-                                    {submittingRating ? (
-                                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-2"></div>
-                                    ) : (
-                                      <Star className="w-3 h-3 mr-2" />
-                                    )}
-                                    Submit {selectedRating} Star{selectedRating !== 1 ? 's' : ''}
-                                  </Button>
-                                )}
-                                
-                                <Button
-                                  onClick={() => {
-                                    setShowRatingForm(null)
-                                    setSelectedRating(0)
-                                  }}
-                                  variant="outline"
-                                  size="sm"
-                                  className="flex-1"
-                                >
-                                  Cancel
-                                </Button>
-                              </div>
-                            </div>
+                            <RatingForm
+                              agentId={booking.hostel?.agent_id || ''}
+                              studentId={session?.user?.id || ''}
+                              agentName={booking.hostel?.agent ? `${booking.hostel.agent.first_name} ${booking.hostel.agent.last_name}` : 'Agent'}
+                              onSuccess={() => setShowRatingForm(null)}
+                            />
                           ) : (
-                            <Button
-                              onClick={() => {
-                                console.log('Rate Agent clicked for booking:', booking.id)
-                                setShowRatingForm(booking.id)
-                              }}
-                              size="sm"
-                              className="w-full bg-yellow-500 hover:bg-yellow-600 text-white"
-                            >
-                              <Star className="w-3 h-3 mr-2" />
-                              Rate Agent
-                            </Button>
+                            <div>
+                              <div className="flex items-center space-x-2 mb-2">
+                                <Star className="w-4 h-4 text-yellow-500" />
+                                <h4 className="text-sm font-semibold text-gray-900">Rate Your Experience</h4>
+                              </div>
+                              <Button
+                                onClick={() => {
+                                  console.log('Rate Agent clicked for booking:', booking.id)
+                                  setShowRatingForm(booking.id)
+                                }}
+                                size="sm"
+                                className="w-full bg-yellow-500 hover:bg-yellow-600 text-white"
+                              >
+                                <Star className="w-3 h-3 mr-2" />
+                                Rate Agent
+                              </Button>
+                            </div>
                           )}
                         </div>
                       </div>

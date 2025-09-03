@@ -25,10 +25,13 @@ export default function RatingForm({
 
     setSubmitting(true);
 
+    const payload = { agentId, studentId, stars, feedback };
+    console.log('🔍 Submitting rating payload:', payload);
+
     try {
       const res = await fetch("/api/ratings", {
         method: "POST",
-        body: JSON.stringify({ agentId, studentId, stars, feedback }),
+        body: JSON.stringify(payload),
         headers: { "Content-Type": "application/json" },
       });
 
