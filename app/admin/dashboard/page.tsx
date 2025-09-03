@@ -190,37 +190,59 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Admin Header */}
-      <header className="border-b border-border bg-background/95 backdrop-blur-md sticky top-0 z-50">
+    <div className="min-h-screen bg-gray-50">
+      {/* Mobile-Friendly Admin Header */}
+      <div className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <div className="text-2xl font-bold text-foreground">k-H Admin</div>
-              <Badge variant="default" className="bg-red-600 text-white">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-4 sm:py-6">
+            {/* Left Section */}
+            <div className="flex items-center space-x-3 mb-3 sm:mb-0">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-pink-600 rounded-lg flex items-center justify-center">
+                  <Shield className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-lg sm:text-xl font-bold text-gray-900">k-H Admin</h1>
+                  <p className="text-xs sm:text-sm text-gray-500">Verification Dashboard</p>
+                </div>
+              </div>
+              <Badge className="bg-red-100 text-red-800 border-red-200 text-xs">
                 <Shield className="w-3 h-3 mr-1" />
                 Administrator
               </Badge>
             </div>
             
-            <div className="flex items-center space-x-4">
+            {/* Right Section - Mobile Responsive */}
+            <div className="flex items-center space-x-2 sm:space-x-3">
               <Link href="/admin/history">
-                <Button variant="ghost">
-                  <Users className="w-4 h-4 mr-2" />
-                  Agent History
+                <Button variant="outline" size="sm" className="border-gray-300 hover:bg-gray-50">
+                  <Users className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Agent History</span>
+                  <span className="sm:hidden">History</span>
                 </Button>
               </Link>
-              <Button variant="outline" onClick={fetchPendingAgents}>
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Refresh
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={fetchPendingAgents}
+                className="border-gray-300 hover:bg-gray-50"
+              >
+                <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Refresh</span>
               </Button>
-              <Button variant="outline" onClick={() => router.push('/admin/login')}>
-                Sign Out
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => router.push('/admin/login')}
+                className="border-gray-300 hover:bg-gray-50"
+              >
+                <span className="hidden sm:inline">Sign Out</span>
+                <span className="sm:hidden">Exit</span>
               </Button>
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -332,8 +354,8 @@ export default function AdminDashboardPage() {
                       minutesRemaining < 30 ? 'border-yellow-500' :
                       'border-border'
                     }`}>
-                      <CardContent className="p-6">
-                        <div className="flex flex-col lg:flex-row gap-6">
+                      <CardContent className="p-4 sm:p-6">
+                        <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
                           {/* Agent Info */}
                           <div className="flex-1">
                             <div className="flex items-start justify-between mb-4">
