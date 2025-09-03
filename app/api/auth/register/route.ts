@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
       profile_image_url: validatedData.profileImageUrl || null,
       terms_accepted: validatedData.termsAccepted,
       terms_accepted_at: new Date().toISOString(),
-      verified_status: validatedData.role === 'agent' ? false : true, // Agents need verification
+      verified_status: validatedData.role === 'agent' ? false : true, // Agents need admin verification, students and individuals are auto-verified
       email_verified: false, // All users need email verification
     })
 

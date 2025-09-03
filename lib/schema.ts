@@ -20,7 +20,7 @@ export const users = pgTable('users', {
   firstName: varchar('first_name').notNull(),
   lastName: varchar('last_name'),
   phone: varchar('phone'),
-  role: varchar('role', { enum: ['student', 'agent', 'admin'] }).notNull().default('student'),
+  role: varchar('role', { enum: ['student', 'agent', 'individual', 'admin'] }).notNull().default('student'),
   schoolId: varchar('school_id'),
   verifiedStatus: boolean('verified_status').default(false),
   businessRegNumber: varchar('business_reg_number'), // CAC number for agents
@@ -149,7 +149,7 @@ export const registerUserSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
   lastName: z.string().optional(),
   phone: z.string().optional(),
-  role: z.enum(['student', 'agent']).default('student'),
+  role: z.enum(['student', 'agent', 'individual']).default('student'),
   schoolId: z.string().optional(),
   businessRegNumber: z.string().optional(),
   address: z.string().optional(),

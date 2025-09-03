@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { MapPin, Shield, Clock, Users, Star, Search, GraduationCap, Building } from "lucide-react"
+import { MapPin, Shield, Clock, Users, Star, Search, GraduationCap, Building, User } from "lucide-react"
 import Link from "next/link"
 
 export default function HomePage() {
@@ -174,7 +174,7 @@ export default function HomePage() {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             <Card className="border-2 border-border/50 hover:border-primary/50 transition-all duration-300 cursor-pointer group">
               <CardContent className="p-8 text-center">
                 <div className="bg-primary/10 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-primary/20 transition-colors">
@@ -204,6 +204,23 @@ export default function HomePage() {
                 <Link href="/auth/register?role=agent">
                   <Button className="w-full h-12 text-base font-semibold">
                     Get Started as Agent
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-2 border-border/50 hover:border-green-500/50 transition-all duration-300 cursor-pointer group">
+              <CardContent className="p-8 text-center">
+                <div className="bg-green-100 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-green-200 transition-colors">
+                  <User className="h-10 w-10 text-green-600" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4">I'm an Individual</h3>
+                <p className="text-muted-foreground mb-6 leading-relaxed">
+                  Looking for accommodation as an individual? Browse hostels and connect directly with agents.
+                </p>
+                <Link href="/auth/register?role=individual">
+                  <Button className="w-full h-12 text-base font-semibold bg-green-600 hover:bg-green-700">
+                    Get Started as Individual
                   </Button>
                 </Link>
               </CardContent>
