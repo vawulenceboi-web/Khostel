@@ -24,6 +24,7 @@ import {
 } from "lucide-react"
 import { toast } from 'sonner'
 import Link from 'next/link'
+import VirusMorphLoader from '@/components/VirusMorphLoader'
 
 interface PendingAgent {
   id: string
@@ -179,11 +180,14 @@ export default function AdminDashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <div className="text-2xl font-bold text-foreground mb-2">k-H Admin</div>
-          <div className="text-muted-foreground">Loading verification queue...</div>
+          <VirusMorphLoader size={180} color="#00FFAB" duration={2500} />
+          <div className="mt-6">
+            <div className="text-2xl font-bold text-white mb-2">k-H Admin Portal</div>
+            <div className="text-gray-300">Loading verification queue...</div>
+            <div className="text-sm text-gray-400 mt-2">Scanning agent applications</div>
+          </div>
         </div>
       </div>
     )
