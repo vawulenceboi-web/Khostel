@@ -1,43 +1,75 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { db } from '@/lib/db'
-import { createHostelSchema } from '@/lib/schema'
 import { authOptions } from '@/lib/auth'
 
-export async function GET(request: NextRequest) {
+export async function GET(req: Request) {
   try {
-    console.log('🏠 Fetching hostels...')
-    const { searchParams } = new URL(request.url)
+    console.log('🏠 Fetching hostels with your filtering method...')
     
-    // Build filters object
-    const filters: any = {}
+    const { searchParams } = new URL(req.url)
     
-    const locationId = searchParams.get('locationId')
-    if (locationId) filters.locationId = locationId
+    // Your clean filtering method
+    const q = searchParams.get("q") || ""
+    const location = searchParams.get("location") || ""
+    const maxPrice = parseInt(searchParams.get("priceMax") || "0")
+    const roomType = searchParams.get("roomType") || ""
+    const verified = searchParams.get("verified")
 
-    const minPrice = searchParams.get('minPrice')
-    if (minPrice) filters.minPrice = parseInt(minPrice)
+    console.log('🔍 Search params:', { q, location, maxPrice, roomType, verified })
 
-    const maxPrice = searchParams.get('maxPrice')
-    if (maxPrice) filters.maxPrice = parseInt(maxPrice)
+    // Build Supabase query using your method
+    let query = db.supabase
+      .from('hostels')
+      .select(`
+        *,
+        location:locations(id, name, latitude, longitude, school_id),
+        agent:users(id, first_name, last_name, phone, verified_status, profile_image_url)
+      `)
+      .order('created_at', { ascending: false })
 
-    const roomType = searchParams.get('roomType')
-    if (roomType) filters.roomType = roomType
+    // Apply search filter
+    if (q) {
+      query = query.or(`title.ilike.%${q}%,description.ilike.%${q}%`)
+    }
 
-    const availability = searchParams.get('availability')
-    if (availability !== null) filters.availability = availability === 'true'
+    // Apply location filter
+    if (location) {
+      query = query.eq('locations.name', location)
+    }
 
-    const search = searchParams.get('search')
-    if (search) filters.search = search
+    // Apply price filter
+    if (maxPrice > 0) {
+      query = query.lte('price_per_semester', maxPrice)
+    }
 
-    console.log('🔍 Applying filters:', filters)
+    // Apply room type filter
+    if (roomType) {
+      query = query.eq('room_type', roomType)
+    }
 
-    const result = await db.hostels.findAll(filters)
-    console.log('✅ Hostels fetched successfully:', result.length)
+    // Apply verified agent filter
+    if (verified === 'true') {
+      query = query.eq('users.verified_status', true)
+    } else if (verified === 'false') {
+      query = query.eq('users.verified_status', false)
+    }
+
+    const { data: result, error } = await query
+
+    if (error) {
+      console.error('❌ Database error:', error)
+      return NextResponse.json(
+        { success: false, message: 'Failed to fetch hostels' },
+        { status: 500 }
+      )
+    }
+
+    console.log('✅ Hostels fetched successfully:', result?.length || 0)
 
     // Add rating data to each hostel's agent using your method
     const hostelsWithRatings = await Promise.all(
-      result.map(async (hostel) => {
+      (result || []).map(async (hostel) => {
         if (hostel.agent?.id) {
           // Get ratings for this agent
           const { data: ratings } = await db.supabase
@@ -92,35 +124,28 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!session.user.verifiedStatus) {
-      return NextResponse.json(
-        { success: false, message: 'Agent verification required' },
-        { status: 403 }
-      )
-    }
-
     const body = await request.json()
-    const validatedData = createHostelSchema.parse(body)
-    
-    // Create hostel using Supabase client
+    console.log('📝 Creating hostel listing...')
+
     const hostelData = {
       title: body.title,
-      description: body.description || null,
-      price: parseFloat(body.price),
+      description: body.description,
+      price_per_semester: parseFloat(body.price),
       price_type: body.priceType || 'semester',
-      room_type: body.roomType || 'single',
+      room_type: body.roomType,
       location_id: body.locationId,
-      agent_id: session.user.id,
-      images: body.mediaUrls || body.images || [],
+      address: body.address,
       amenities: body.amenities || [],
-      address: body.address || null,
-      availability: body.availability !== false,
       media_urls: body.mediaUrls || [],
       media_types: body.mediaTypes || [],
-      status: 'published'
+      availability: body.availability !== false,
+      agent_id: session.user.id,
+      status: 'published',
+      created_at: new Date().toISOString(),
+      last_updated: new Date().toISOString()
     }
 
-    const { data: newHostel, error } = await db.supabase
+    const { data, error } = await db.supabase
       .from('hostels')
       .insert(hostelData)
       .select()
@@ -134,10 +159,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    console.log('✅ Hostel created successfully:', data.title)
+
     return NextResponse.json({
       success: true,
-      data: newHostel,
-      message: 'Hostel created successfully'
+      data: data,
+      message: 'Hostel listing created successfully'
     }, { status: 201 })
 
   } catch (error) {
