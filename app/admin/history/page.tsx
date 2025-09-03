@@ -112,14 +112,15 @@ export default function AdminHistoryPage() {
     setProcessingAgent(agentId)
 
     try {
-      // 2. Call simple ban API
-      const response = await fetch('/api/admin/ban-agent', {
+      // 2. Call API
+      const response = await fetch('/api/admin/verify-agent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
           agentId,
-          banned: newBanStatus
+          action: newBanStatus ? 'ban' : 'unban',
+          reason: newBanStatus ? 'Policy violation - banned by admin' : 'Agent unbanned by admin'
         })
       })
 
@@ -195,7 +196,7 @@ export default function AdminHistoryPage() {
                 </div>
                 <div>
                   <h1 className="text-lg sm:text-xl font-bold text-gray-900">Agent History</h1>
-                  <p className="text-xs sm:text-sm text-gray-500">Agent management & verification records</p>
+                  <p className="text-xs sm:text-sm text-gray-500">Management & verification records</p>
                 </div>
               </div>
             </div>
@@ -322,12 +323,6 @@ export default function AdminHistoryPage() {
                                   </>
                                 )}
                               </Badge>
-                              {agent.banned && (
-                                <Badge variant="destructive" className="text-xs">
-                                  <X className="w-3 h-3 mr-1" />
-                                  Banned
-                                </Badge>
-                              )}
                               <button
                                 onClick={() => window.open(`/agents/${agent.id}`, '_blank')}
                                 className="p-1 hover:bg-gray-100 rounded-full transition-colors"
