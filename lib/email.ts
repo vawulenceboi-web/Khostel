@@ -15,27 +15,34 @@ export async function sendEmail({ to, subject, html }: EmailData) {
   try {
     console.log('📧 Using Supabase email service for:', to)
     
-    // Use Supabase built-in email functionality
-    // This will use whatever email provider you configure in Supabase dashboard
-    // (SMTP, SendGrid, Resend, etc.)
-    
-    const { data, error } = await fetch(`${process.env.SUPABASE_URL}/functions/v1/send-email`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        to,
-        subject,
-        html,
-        from: `${FROM_NAME} <${FROM_EMAIL}>`
+    // Option A: Use Resend (add RESEND_API_KEY to environment)
+    if (process.env.RESEND_API_KEY) {
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: `${FROM_NAME} <${FROM_EMAIL}>`,
+          to: [to],
+          subject,
+          html
+        })
       })
-    })
 
-    if (error) {
-      throw new Error('Supabase email service error')
+      if (!response.ok) {
+        throw new Error('Resend email service error')
+      }
+      
+      console.log('✅ Email sent via Resend')
+      return { success: true, message: 'Email sent successfully' }
     }
+    
+    // Option B: Use any SMTP service through Supabase
+    // Configure in Supabase Dashboard → Authentication → Email Templates
+    
+    throw new Error('No email service configured')
     
     console.log('✅ Email sent via Supabase email service')
     return { success: true, message: 'Email sent successfully' }
