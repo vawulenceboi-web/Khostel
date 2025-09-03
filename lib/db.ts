@@ -163,7 +163,7 @@ export const db = {
         .select(`
           *,
           location:locations(id, name, latitude, longitude, school_id),
-          agent:users(id, first_name, last_name, phone, verified_status, profile_image_url)
+          agent:users(id, first_name, last_name, phone, verified_status, profile_image_url, average_rating, total_ratings)
         `)
         .order('created_at', { ascending: false })
 

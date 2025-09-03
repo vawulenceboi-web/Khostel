@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import Link from "next/link"
-import { ArrowLeft, Calendar, Clock, CheckCircle, Search } from "lucide-react"
+import { ArrowLeft, Calendar, Clock, CheckCircle, Search, Star } from "lucide-react"
 import { MdVerified } from "react-icons/md"
 import { useSession } from 'next-auth/react'
 import { toast } from 'sonner'
@@ -365,6 +365,18 @@ export default function HostelsClient() {
                         <span>Agent: {hostel.agent?.first_name} {hostel.agent?.last_name}</span>
                         {hostel.agent?.verified_status && (
                           <MdVerified className="text-blue-500 w-4 h-4" />
+                        )}
+                        {/* Agent Rating Display */}
+                        {hostel.agent?.average_rating > 0 && (
+                          <div className="flex items-center space-x-1">
+                            <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                            <span className="text-yellow-600 font-medium text-xs">
+                              {hostel.agent.average_rating.toFixed(1)}
+                            </span>
+                            <span className="text-gray-400 text-xs">
+                              ({hostel.agent.total_ratings})
+                            </span>
+                          </div>
                         )}
                       </div>
                       

@@ -46,6 +46,7 @@ export default function BookingsPage() {
   const [updatingBooking, setUpdatingBooking] = useState<string | null>(null)
   const [showRatingForm, setShowRatingForm] = useState<string | null>(null)
   const [submittingRating, setSubmittingRating] = useState(false)
+  const [selectedRating, setSelectedRating] = useState(0)
 
   useEffect(() => {
     if (session?.user) {
@@ -405,15 +406,25 @@ export default function BookingsPage() {
                                   {[1, 2, 3, 4, 5].map((star) => (
                                     <button
                                       key={star}
-                                      className="text-gray-300 hover:text-yellow-400 transition-colors"
+                                      className={`transition-colors ${
+                                        star <= selectedRating 
+                                          ? 'text-yellow-400' 
+                                          : 'text-gray-300 hover:text-yellow-400'
+                                      }`}
                                       onClick={() => {
                                         console.log('Star clicked:', star)
-                                        const agentId = booking.hostel?.agent_id || 'unknown-agent'
-                                        console.log('Using agent ID:', agentId)
-                                        submitRating(agentId, star, 'Great agent!')
+                                        setSelectedRating(star)
+                                        
+                                        // Submit after a brief delay to show the filled stars
+                                        setTimeout(() => {
+                                          const agentId = booking.hostel?.agent_id || 'unknown-agent'
+                                          console.log('Using agent ID:', agentId)
+                                          submitRating(agentId, star, 'Great agent!')
+                                          setSelectedRating(0) // Reset after submission
+                                        }, 800)
                                       }}
                                     >
-                                      <Star className="w-5 h-5" />
+                                      <Star className={`w-5 h-5 ${star <= selectedRating ? 'fill-current' : ''}`} />
                                     </button>
                                   ))}
                                 </div>
