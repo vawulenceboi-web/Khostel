@@ -118,7 +118,8 @@ export async function POST(request: NextRequest) {
     const actionMessages = {
       approve: `✅ Agent ${agent.first_name} ${agent.last_name} has been approved and can now list hostels`,
       reject: `❌ Agent ${agent.first_name} ${agent.last_name} has been rejected`,
-      ban: `🚫 Agent ${agent.first_name} ${agent.last_name} has been banned from the platform`
+      ban: `🚫 Agent ${agent.first_name} ${agent.last_name} has been banned from the platform`,
+      unban: `✅ Agent ${agent.first_name} ${agent.last_name} has been unbanned and can access their account`
     }
 
     console.log(actionMessages[action as keyof typeof actionMessages])
