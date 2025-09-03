@@ -13,6 +13,7 @@ export default function SimpleRating({
   const [stars, setStars] = useState(0);
   const [feedback, setFeedback] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [alreadyRated, setAlreadyRated] = useState(false);
 
   const handleSubmit = async () => {
     console.log('🔍 Submitting rating:', { agentId, studentId, stars, feedback });
@@ -28,7 +29,12 @@ export default function SimpleRating({
     } else {
       const errorData = await res.json();
       console.error('❌ Rating error:', errorData);
-      alert(`Error: ${errorData.error}`);
+      
+      if (errorData.error?.includes('duplicate key') || errorData.error?.includes('unique constraint')) {
+        setAlreadyRated(true);
+      } else {
+        alert(`Error: ${errorData.error}`);
+      }
     }
   };
 
@@ -36,6 +42,15 @@ export default function SimpleRating({
     return (
       <div className="text-center py-4">
         <p className="text-green-600">✅ Thanks for your feedback!</p>
+      </div>
+    );
+  }
+
+  if (alreadyRated) {
+    return (
+      <div className="text-center py-4">
+        <p className="text-blue-600">⭐ You have already rated this agent</p>
+        <p className="text-sm text-gray-500">Each student can only rate an agent once</p>
       </div>
     );
   }
