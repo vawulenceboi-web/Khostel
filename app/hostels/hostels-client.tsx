@@ -10,6 +10,7 @@ import { useSession } from 'next-auth/react'
 import { toast } from 'sonner'
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import HostelSearch from "@/components/HostelSearch"
 
 export default function HostelsClient() {
   const { data: session } = useSession()
@@ -60,9 +61,24 @@ export default function HostelsClient() {
     fetchHostels()
   }, [])
 
+  // Listen for URL changes to refetch data (your method)
+  useEffect(() => {
+    const handlePopState = () => {
+      fetchHostels()
+    }
+    
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
   const fetchHostels = async () => {
     try {
-      const response = await fetch('/api/hostels')
+      // Get URL params for your backend filtering method
+      const urlParams = new URLSearchParams(window.location.search)
+      const apiUrl = `/api/hostels?${urlParams.toString()}`
+      
+      console.log('🔍 Fetching with URL params:', apiUrl)
+      const response = await fetch(apiUrl)
       
       if (response.ok) {
         const data = await response.json()
@@ -178,7 +194,11 @@ export default function HostelsClient() {
       </div>
 
       <div className="max-w-7xl mx-auto p-4">
-        {/* Steps 9-12: Complete search, filter, and sort system */}
+        {/* NEW: Your Clean Search Method (Testing) */}
+        <HostelSearch />
+        
+        {/* OLD: Existing system (keeping for now) - Comment out to test new one */}
+        {/* 
         <div className="mb-6 space-y-4">
           {/* Row 1: Search + Location + Room Type */}
           <div className="flex flex-col sm:flex-row gap-4">
@@ -276,18 +296,16 @@ export default function HostelsClient() {
             </button>
           </div>
         </div>
+        */}
 
         {/* Results count */}
         <div className="mb-4">
           <p className="text-sm text-gray-600">
-            Showing {filteredAndSortedHostels.length} of {hostels.length} hostels
-            {(searchTerm || selectedLocation || selectedRoomType || minPrice || maxPrice) && (
-              <span className="ml-2 text-blue-600">• Filters applied</span>
-            )}
+            Showing {hostels.length} hostels
           </p>
         </div>
 
-        {filteredAndSortedHostels.length === 0 ? (
+        {hostels.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center">
               <h3>No hostels found</h3>
@@ -300,7 +318,7 @@ export default function HostelsClient() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredAndSortedHostels.map((hostel, index) => (
+            {hostels.map((hostel, index) => (
               <Card key={hostel.id || index} className="overflow-hidden hover:shadow-lg transition-shadow">
                 {/* Step 2: Professional image display */}
                 {hostel.images && Array.isArray(hostel.images) && hostel.images.length > 0 && (
