@@ -20,8 +20,14 @@ interface Booking {
   created_at: string
   hostel?: {
     title: string
+    agent_id: string
     location: {
       name: string
+    }
+    agent?: {
+      id: string
+      first_name: string
+      last_name: string
     }
   }
   student?: {
@@ -402,7 +408,9 @@ export default function BookingsPage() {
                                       className="text-yellow-400 hover:text-yellow-500 transition-colors"
                                       onClick={() => {
                                         console.log('Star clicked:', star)
-                                        submitRating('test-agent', star, 'Great agent!')
+                                        const agentId = booking.hostel?.agent_id || 'unknown-agent'
+                                        console.log('Using agent ID:', agentId)
+                                        submitRating(agentId, star, 'Great agent!')
                                       }}
                                     >
                                       <Star className="w-5 h-5 fill-current" />

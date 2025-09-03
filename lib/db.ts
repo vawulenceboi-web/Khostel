@@ -218,7 +218,7 @@ export const db = {
         .from('bookings')
         .select(`
           *,
-          hostel:hostels(id, title, price, price_type, images),
+          hostel:hostels(id, title, price, price_type, images, agent_id, agent:users(id, first_name, last_name)),
           student:users(id, first_name, last_name, email, phone)
         `)
 
@@ -259,7 +259,7 @@ export const db = {
         .eq('id', bookingId)
         .select(`
           *,
-          hostel:hostels(id, title, price, price_type, images),
+          hostel:hostels(id, title, price, price_type, images, agent_id, agent:users(id, first_name, last_name)),
           student:users(id, first_name, last_name, email, phone)
         `)
         .single()
