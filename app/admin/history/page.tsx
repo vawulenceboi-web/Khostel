@@ -156,6 +156,37 @@ export default function AdminHistoryPage() {
     }
   }
 
+  const handleBanAgent = async (agentId: string, reason: string) => {
+    setProcessingAgent(agentId)
+    
+    try {
+      const response = await fetch('/api/admin/verify-agent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          agentId,
+          action: 'ban',
+          reason: reason || 'Policy violation - banned by admin'
+        })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        toast.success('Agent banned successfully')
+        fetchAgentHistory() // Refresh list
+      } else {
+        toast.error(result.message || 'Failed to ban agent')
+      }
+    } catch (error) {
+      console.error('Error banning agent:', error)
+      toast.error('Failed to ban agent')
+    } finally {
+      setProcessingAgent(null)
+    }
+  }
+
   const filteredAgents = agents.filter(agent => {
     if (filter === 'all') return true
     if (filter === 'verified') return agent.verified_status
@@ -421,25 +452,11 @@ export default function AdminHistoryPage() {
 
                     {/* Action Buttons */}
                     <div className="lg:w-64 flex lg:flex-col gap-3">
-                      {/* Ban/Unban available for all agents */}
-                      {agent.banned ? (
-                        <Button
-                          variant="outline"
-                          onClick={() => toggleBan(agent.id, false)}
-                          disabled={processingAgent === agent.id}
-                          className="flex-1 lg:w-full border-green-300 text-green-600 hover:bg-green-50"
-                        >
-                          {processingAgent === agent.id ? (
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600 mr-2"></div>
-                          ) : (
-                            <CheckCircle className="w-4 h-4 mr-2" />
-                          )}
-                          Unban Agent
-                        </Button>
-                      ) : (
+                      {/* Simple Ban Button Only */}
+                      {!agent.banned && (
                         <Button
                           variant="destructive"
-                          onClick={() => toggleBan(agent.id, true)}
+                          onClick={() => handleBanAgent(agent.id, 'Policy violation detected by admin')}
                           disabled={processingAgent === agent.id}
                           className="flex-1 lg:w-full"
                         >
