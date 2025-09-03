@@ -452,8 +452,18 @@ export default function AdminHistoryPage() {
 
                     {/* Action Buttons */}
                     <div className="lg:w-64 flex lg:flex-col gap-3">
-                      {/* Simple Ban Button Only */}
-                      {!agent.banned && (
+                      {/* Step 1: Add unban button display */}
+                      {agent.banned === true ? (
+                        <Button
+                          variant="outline"
+                          onClick={() => alert('Unban clicked - Step 1 test')}
+                          disabled={processingAgent === agent.id}
+                          className="flex-1 lg:w-full border-green-300 text-green-600 hover:bg-green-50"
+                        >
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Unban Agent
+                        </Button>
+                      ) : (
                         <Button
                           variant="destructive"
                           onClick={() => handleBanAgent(agent.id, 'Policy violation detected by admin')}
