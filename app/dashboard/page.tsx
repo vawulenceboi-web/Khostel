@@ -24,6 +24,7 @@ import {
   Phone
 } from "lucide-react"
 import { InstagramVerificationBadge } from '@/components/ui/verification-badge'
+import VirusMorphLoader from '@/components/VirusMorphLoader'
 import ProfilePhotoUpload from '@/components/ProfilePhotoUpload'
 import Link from "next/link"
 import { signOut } from 'next-auth/react'
@@ -170,11 +171,14 @@ export default function DashboardPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <div className="text-2xl font-bold text-foreground mb-2">k-H</div>
-          <div className="text-muted-foreground">Loading real-time data...</div>
+          <VirusMorphLoader size={170} color="#3B82F6" duration={2800} />
+          <div className="mt-6">
+            <div className="text-2xl font-bold text-white mb-2">k-H Dashboard</div>
+            <div className="text-gray-300">Loading real-time data...</div>
+            <div className="text-sm text-gray-400 mt-2">Syncing your profile & stats</div>
+          </div>
         </div>
       </div>
     )

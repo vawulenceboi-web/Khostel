@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Calendar, Phone, Mail, User, MapPin, Clock } from 'lucide-react'
+import VirusMorphLoader from '@/components/VirusMorphLoader'
 
 interface Booking {
   id: string
@@ -129,11 +130,12 @@ export default function BookingsPage() {
 
   if (status === 'loading') {
     return (
-      <div className="max-w-7xl mx-auto p-4">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto mb-4"></div>
-            <p>Loading...</p>
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <VirusMorphLoader size={140} color="#F59E0B" duration={2000} />
+          <div className="mt-6">
+            <div className="text-xl font-bold text-white mb-2">Booking Management</div>
+            <div className="text-gray-300">Loading booking requests...</div>
           </div>
         </div>
       </div>
@@ -144,11 +146,12 @@ export default function BookingsPage() {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto p-4">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto mb-4"></div>
-            <p>Loading bookings...</p>
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <VirusMorphLoader size={140} color="#F59E0B" duration={2000} />
+          <div className="mt-6">
+            <div className="text-xl font-bold text-white mb-2">Booking Management</div>
+            <div className="text-gray-300">Loading booking requests...</div>
           </div>
         </div>
       </div>

@@ -25,6 +25,7 @@ import {
 } from "lucide-react"
 import { toast } from 'sonner'
 import Link from 'next/link'
+import VirusMorphLoader from '@/components/VirusMorphLoader'
 
 interface AgentWithHistory {
   id: string
@@ -227,11 +228,14 @@ export default function AdminHistoryPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <div className="text-2xl font-bold text-foreground mb-2">k-H Admin</div>
-          <div className="text-muted-foreground">Loading agent history...</div>
+          <VirusMorphLoader size={160} color="#8B5CF6" duration={2200} />
+          <div className="mt-6">
+            <div className="text-2xl font-bold text-white mb-2">k-H Admin History</div>
+            <div className="text-gray-300">Loading agent records...</div>
+            <div className="text-sm text-gray-400 mt-2">Analyzing verification history</div>
+          </div>
         </div>
       </div>
     )

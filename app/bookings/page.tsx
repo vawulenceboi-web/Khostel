@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Calendar, MapPin, X } from 'lucide-react'
+import VirusMorphLoader from '@/components/VirusMorphLoader'
 
 interface StudentBooking {
   id: string
@@ -67,10 +68,13 @@ export default function StudentBookingsPage() {
 
   if (loading) {
     return (
-      <div className="max-w-2xl mx-auto p-4 mt-8">
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-black mx-auto mb-3"></div>
-          <p className="text-gray-600">Loading...</p>
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <VirusMorphLoader size={130} color="#EC4899" duration={1800} />
+          <div className="mt-6">
+            <div className="text-xl font-bold text-white mb-2">My Bookings</div>
+            <div className="text-gray-300">Loading your requests...</div>
+          </div>
         </div>
       </div>
     )
