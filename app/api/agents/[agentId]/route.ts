@@ -78,6 +78,9 @@ export async function GET(
       // Don't fail the request, just return empty hostels
     }
 
+    console.log('🏠 Hostels query result:', hostels?.length || 0, 'hostels found for agent:', agentId)
+    console.log('🔍 First hostel (if any):', hostels?.[0])
+
     // Calculate profile stats
     const hostelsData = hostels || []
     const profileStats = {
