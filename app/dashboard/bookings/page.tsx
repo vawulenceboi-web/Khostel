@@ -397,11 +397,11 @@ export default function BookingsPage() {
                           </p>
                         </div>
                         
-                        {/* Simple Rating using your method */}
+                        {/* YOUR EXACT RATING METHOD */}
                         <SimpleRating
                           agentId={booking.hostel?.agent_id || ''}
                           studentId={session?.user?.id || ''}
-                          agentName={booking.hostel?.agent ? `${booking.hostel.agent.first_name} ${booking.hostel.agent.last_name}` : 'Agent'}
+                          agentName="Test Agent"
                         />
                       </div>
                     )}

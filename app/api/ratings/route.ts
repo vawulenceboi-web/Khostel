@@ -3,8 +3,11 @@ import { getServerSession } from 'next-auth'
 import { db } from '@/lib/db'
 import { authOptions } from '@/lib/auth'
 
-export async function POST(request: NextRequest) {
+export async function POST(req: Request) {
   try {
+    const body = await req.json();
+    console.log("Received body:", body); // 👀 YOUR DEBUG METHOD
+    
     const session = await getServerSession(authOptions)
     
     if (!session?.user) {
@@ -21,9 +24,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { agentId, stars, feedback } = await request.json()
+    const { agentId, studentId, stars, feedback } = body
 
-    if (!agentId || !stars) {
+    if (!agentId || !studentId || !stars) {
+      console.log("❌ Missing fields:", { agentId: !!agentId, studentId: !!studentId, stars: !!stars });
       return NextResponse.json(
         { error: 'Missing fields' },
         { status: 400 }
