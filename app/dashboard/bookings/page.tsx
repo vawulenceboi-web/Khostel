@@ -405,7 +405,7 @@ export default function BookingsPage() {
                                   {[1, 2, 3, 4, 5].map((star) => (
                                     <button
                                       key={star}
-                                      className="text-yellow-400 hover:text-yellow-500 transition-colors"
+                                      className="text-gray-300 hover:text-yellow-400 transition-colors"
                                       onClick={() => {
                                         console.log('Star clicked:', star)
                                         const agentId = booking.hostel?.agent_id || 'unknown-agent'
@@ -413,7 +413,7 @@ export default function BookingsPage() {
                                         submitRating(agentId, star, 'Great agent!')
                                       }}
                                     >
-                                      <Star className="w-5 h-5 fill-current" />
+                                      <Star className="w-5 h-5" />
                                     </button>
                                   ))}
                                 </div>
