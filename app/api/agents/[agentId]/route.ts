@@ -27,15 +27,18 @@ export async function GET(
         email,
         phone,
         address,
+        business_reg_number,
         profile_image_url,
         face_photo_url,
         verified_status,
+        banned,
         face_verification_status,
         created_at
       `)
       .eq('id', agentId)
       .eq('role', 'agent')
       .eq('verified_status', true) // Only show verified agents
+      .neq('banned', true) // Don't show banned agents
       .single()
 
     if (agentError || !agent) {
@@ -97,6 +100,7 @@ export async function GET(
       email: agent.email,
       phone: agent.phone,
       address: agent.address,
+      cacNumber: agent.business_reg_number,
       profileImage: agent.profile_image_url,
       facePhoto: agent.face_photo_url,
       isVerified: agent.verified_status,

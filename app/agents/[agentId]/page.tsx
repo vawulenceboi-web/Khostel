@@ -35,6 +35,7 @@ interface AgentProfile {
   email: string
   phone: string
   address: string
+  cacNumber: string
   profileImage: string
   facePhoto: string
   isVerified: boolean
@@ -208,6 +209,13 @@ export default function AgentProfilePage() {
                     <Mail className="w-4 h-4 mr-2 flex-shrink-0" />
                     <span className="text-sm">{agent.email}</span>
                   </div>
+                  
+                  {agent.cacNumber && (
+                    <div className="flex items-center justify-center sm:justify-start text-muted-foreground">
+                      <Building className="w-4 h-4 mr-2 flex-shrink-0" />
+                      <span className="text-sm font-mono">CAC: {agent.cacNumber}</span>
+                    </div>
+                  )}
                   
                   {agent.address && (
                     <div className="flex items-center justify-center sm:justify-start text-muted-foreground">
