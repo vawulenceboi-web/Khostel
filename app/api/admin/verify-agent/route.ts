@@ -91,6 +91,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('✅ Database update successful. Updated agent:', JSON.stringify(updatedAgent))
+    console.log('🔍 Action was:', action, 'Agent banned status now:', updatedAgent.banned)
 
     // Log admin action
     try {
