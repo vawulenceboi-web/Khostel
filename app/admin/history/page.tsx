@@ -187,6 +187,37 @@ export default function AdminHistoryPage() {
     }
   }
 
+  const handleUnbanAgent = async (agentId: string) => {
+    setProcessingAgent(agentId)
+    
+    try {
+      const response = await fetch('/api/admin/verify-agent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          agentId,
+          action: 'unban',
+          reason: 'Agent unbanned by admin'
+        })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        toast.success('Agent unbanned successfully')
+        fetchAgentHistory() // Refresh list
+      } else {
+        toast.error(result.message || 'Failed to unban agent')
+      }
+    } catch (error) {
+      console.error('Error unbanning agent:', error)
+      toast.error('Failed to unban agent')
+    } finally {
+      setProcessingAgent(null)
+    }
+  }
+
   const filteredAgents = agents.filter(agent => {
     if (filter === 'all') return true
     if (filter === 'verified') return agent.verified_status
@@ -456,11 +487,15 @@ export default function AdminHistoryPage() {
                       {agent.banned === true ? (
                         <Button
                           variant="outline"
-                          onClick={() => alert('Unban clicked - Step 1 test')}
+                          onClick={() => handleUnbanAgent(agent.id)}
                           disabled={processingAgent === agent.id}
                           className="flex-1 lg:w-full border-green-300 text-green-600 hover:bg-green-50"
                         >
-                          <CheckCircle className="w-4 h-4 mr-2" />
+                          {processingAgent === agent.id ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600 mr-2"></div>
+                          ) : (
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                          )}
                           Unban Agent
                         </Button>
                       ) : (
