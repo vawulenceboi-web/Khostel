@@ -66,14 +66,11 @@ export default function HomePage() {
             </div>
             
             <div className="hidden md:flex items-center space-x-8">
-              <Link href="/hostels" className="text-foreground hover:text-primary transition-colors">
+              <Link href="/hostels" className="text-foreground hover:text-primary transition-colors font-medium">
                 Browse Hostels
               </Link>
-              <Link href="/how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">
-                How It Works
-              </Link>
-              <Link href="/about" className="text-muted-foreground hover:text-foreground transition-colors">
-                About
+              <Link href="/agents" className="text-muted-foreground hover:text-foreground transition-colors">
+                Find Agents
               </Link>
             </div>
             
@@ -94,17 +91,21 @@ export default function HomePage() {
         <div className="absolute inset-0 pattern-dots opacity-20"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-              <span className="bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
-                Find Your Perfect
-              </span>
-              <br />
-              <span className="text-foreground">Student Hostel</span>
-            </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed">
-              Discover verified, affordable accommodation near Nigerian universities. 
-              Book inspections instantly with trusted agents.
-            </p>
+            <Link href="/hostels">
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight cursor-pointer hover:opacity-80 transition-opacity">
+                <span className="bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
+                  Find Your Perfect
+                </span>
+                <br />
+                <span className="text-foreground">Student Hostel</span>
+              </h1>
+            </Link>
+            <Link href="/auth/register">
+              <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed cursor-pointer hover:text-foreground transition-colors">
+                Discover verified, affordable accommodation near Nigerian universities. 
+                Book inspections instantly with trusted agents.
+              </p>
+            </Link>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
               <Link href="/hostels">
@@ -121,32 +122,43 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* Real-Time Stats */}
+            {/* Clickable Real-Time Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-20">
-              <div className="text-center">
-                <div className="text-4xl font-bold text-primary mb-2">
-                  {stats.totalHostels || 0}
+              <Link href="/hostels">
+                <div className="text-center cursor-pointer hover:opacity-80 transition-opacity">
+                  <div className="text-4xl font-bold text-primary mb-2">
+                    {stats.totalHostels || 0}
+                  </div>
+                  <div className="text-muted-foreground">Total Hostels</div>
                 </div>
-                <div className="text-muted-foreground">Total Hostels</div>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-primary mb-2">
-                  {stats.totalUniversities || 0}
+              </Link>
+              
+              <Link href="/hostels">
+                <div className="text-center cursor-pointer hover:opacity-80 transition-opacity">
+                  <div className="text-4xl font-bold text-primary mb-2">
+                    {stats.totalUniversities || 0}
+                  </div>
+                  <div className="text-muted-foreground">Universities</div>
                 </div>
-                <div className="text-muted-foreground">Universities</div>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-primary mb-2">
-                  {stats.totalStudents || 0}
+              </Link>
+              
+              <Link href="/auth/register">
+                <div className="text-center cursor-pointer hover:opacity-80 transition-opacity">
+                  <div className="text-4xl font-bold text-primary mb-2">
+                    {stats.totalStudents || 0}
+                  </div>
+                  <div className="text-muted-foreground">Students</div>
                 </div>
-                <div className="text-muted-foreground">Students</div>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-primary mb-2">
-                  {stats.availableHostels || 0}
+              </Link>
+              
+              <Link href="/hostels">
+                <div className="text-center cursor-pointer hover:opacity-80 transition-opacity">
+                  <div className="text-4xl font-bold text-primary mb-2">
+                    {stats.availableHostels || 0}
+                  </div>
+                  <div className="text-muted-foreground">Available Now</div>
                 </div>
-                <div className="text-muted-foreground">Available Now</div>
-              </div>
+              </Link>
             </div>
           </div>
         </div>
@@ -331,8 +343,8 @@ export default function HomePage() {
               <h3 className="font-semibold text-foreground mb-4">For Students</h3>
               <ul className="space-y-2">
                 <li><Link href="/hostels" className="text-muted-foreground hover:text-foreground transition-colors">Browse Hostels</Link></li>
-                <li><Link href="/how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">How It Works</Link></li>
-                <li><Link href="/support" className="text-muted-foreground hover:text-foreground transition-colors">Support</Link></li>
+                <li><Link href="/agents" className="text-muted-foreground hover:text-foreground transition-colors">Find Agents</Link></li>
+                <li><Link href="/auth/register" className="text-muted-foreground hover:text-foreground transition-colors">Sign Up</Link></li>
               </ul>
             </div>
             
@@ -340,8 +352,8 @@ export default function HomePage() {
               <h3 className="font-semibold text-foreground mb-4">For Agents</h3>
               <ul className="space-y-2">
                 <li><Link href="/auth/register?role=agent" className="text-muted-foreground hover:text-foreground transition-colors">List Property</Link></li>
-                <li><Link href="/verification" className="text-muted-foreground hover:text-foreground transition-colors">Get Verified</Link></li>
-                <li><Link href="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">Dashboard</Link></li>
+                <li><Link href="/auth/login" className="text-muted-foreground hover:text-foreground transition-colors">Agent Login</Link></li>
+                <li><Link href="/terms" className="text-muted-foreground hover:text-foreground transition-colors">Terms & Conditions</Link></li>
               </ul>
             </div>
           </div>
