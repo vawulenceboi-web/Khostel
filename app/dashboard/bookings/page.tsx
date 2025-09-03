@@ -167,8 +167,14 @@ export default function BookingsPage() {
       })
 
       if (response.ok) {
-        alert(`Rating submitted: ${rating} stars!`)
+        // Silent success - just close form and reset
         setShowRatingForm(null)
+        setSelectedRating(0)
+        
+        // Show subtle success feedback
+        setTimeout(() => {
+          alert(`Thank you! Your ${rating}-star rating has been submitted.`)
+        }, 500)
       } else {
         const errorData = await response.json()
         alert(`Failed to submit rating: ${errorData.message}`)
@@ -414,28 +420,58 @@ export default function BookingsPage() {
                                       onClick={() => {
                                         console.log('Star clicked:', star)
                                         setSelectedRating(star)
-                                        
-                                        // Submit after a brief delay to show the filled stars
-                                        setTimeout(() => {
-                                          const agentId = booking.hostel?.agent_id || 'unknown-agent'
-                                          console.log('Using agent ID:', agentId)
-                                          submitRating(agentId, star, 'Great agent!')
-                                          setSelectedRating(0) // Reset after submission
-                                        }, 800)
                                       }}
                                     >
                                       <Star className={`w-5 h-5 ${star <= selectedRating ? 'fill-current' : ''}`} />
                                     </button>
                                   ))}
                                 </div>
+                                
+                                {/* Rating Text */}
+                                {selectedRating > 0 && (
+                                  <p className="text-sm text-gray-600 mt-2">
+                                    {selectedRating === 1 && "😞 Poor - Not satisfied"}
+                                    {selectedRating === 2 && "😐 Fair - Could be better"}
+                                    {selectedRating === 3 && "😊 Good - Satisfied"}
+                                    {selectedRating === 4 && "😄 Very Good - Happy"}
+                                    {selectedRating === 5 && "🤩 Excellent - Highly recommend"}
+                                  </p>
+                                )}
                               </div>
-                              <Button
-                                onClick={() => setShowRatingForm(null)}
-                                variant="outline"
-                                size="sm"
-                              >
-                                Cancel
-                              </Button>
+                              
+                              <div className="flex space-x-2">
+                                {selectedRating > 0 && (
+                                  <Button
+                                    onClick={() => {
+                                      const agentId = booking.hostel?.agent_id || 'unknown-agent'
+                                      console.log('Submitting rating:', selectedRating, 'for agent:', agentId)
+                                      submitRating(agentId, selectedRating, `${selectedRating} star rating`)
+                                    }}
+                                    disabled={submittingRating}
+                                    className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white"
+                                    size="sm"
+                                  >
+                                    {submittingRating ? (
+                                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-2"></div>
+                                    ) : (
+                                      <Star className="w-3 h-3 mr-2" />
+                                    )}
+                                    Submit {selectedRating} Star{selectedRating !== 1 ? 's' : ''}
+                                  </Button>
+                                )}
+                                
+                                <Button
+                                  onClick={() => {
+                                    setShowRatingForm(null)
+                                    setSelectedRating(0)
+                                  }}
+                                  variant="outline"
+                                  size="sm"
+                                  className="flex-1"
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
                             </div>
                           ) : (
                             <Button
