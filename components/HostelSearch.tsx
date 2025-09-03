@@ -108,53 +108,24 @@ export default function HostelSearch() {
         </select>
       </div>
 
-      {/* Active Filters & Reset */}
+      {/* Reset Button Only (Hide filter chips on mobile) */}
       {activeFilters.length > 0 && (
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-600">Active filters:</span>
-            <div className="flex items-center space-x-2">
-              {q && (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
-                  Search: {q}
-                  <button onClick={() => setQ("")} className="ml-1 hover:text-blue-600">
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              )}
-              {location && (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
-                  Location: {location}
-                  <button onClick={() => setLocation("")} className="ml-1 hover:text-green-600">
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              )}
-              {priceMax && (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800">
-                  Max: ₦{priceMax}
-                  <button onClick={() => setPriceMax("")} className="ml-1 hover:text-purple-600">
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              )}
-              {roomType && (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-800">
-                  {roomType}
-                  <button onClick={() => setRoomType("")} className="ml-1 hover:text-orange-600">
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              )}
-              {verified && (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800">
-                  {verified === 'true' ? 'Verified' : 'Unverified'}
-                  <button onClick={() => setVerified("")} className="ml-1 hover:text-yellow-600">
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              )}
+        <div className="flex justify-between items-center">
+          {/* Show filter chips only on desktop */}
+          <div className="hidden lg:flex items-center space-x-2">
+            <span className="text-sm text-gray-600">Active:</span>
+            <div className="flex items-center space-x-1">
+              {q && <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">Search</span>}
+              {location && <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">Location</span>}
+              {priceMax && <span className="px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800">Price</span>}
+              {roomType && <span className="px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-800">Room</span>}
+              {verified && <span className="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800">Verified</span>}
             </div>
+          </div>
+          
+          {/* Show filter count on mobile */}
+          <div className="lg:hidden">
+            <span className="text-sm text-gray-600">{activeFilters.length} filter{activeFilters.length !== 1 ? 's' : ''} active</span>
           </div>
           
           <button

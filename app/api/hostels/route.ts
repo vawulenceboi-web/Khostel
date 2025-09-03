@@ -40,7 +40,7 @@ export async function GET(req: Request) {
 
     // Apply price filter
     if (maxPrice > 0) {
-      query = query.lte('price_per_semester', maxPrice)
+      query = query.lte('price', maxPrice)
     }
 
     // Apply room type filter
