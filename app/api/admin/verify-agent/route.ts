@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
       updateData.verified_status = false
       updateData.banned = true
     } else if (action === 'unban') {
-      updateData.verified_status = false
+      updateData.verified_status = true  // Restore verification when unbanning
       updateData.banned = false
     }
 
