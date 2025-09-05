@@ -1,9 +1,9 @@
+export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server'
 
 import { cookies } from 'next/headers'
 
 import { db } from '@/lib/db'
-
 
 export async function POST(request: NextRequest) {
   try {

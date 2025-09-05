@@ -1,6 +1,7 @@
+export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server'
 
-import { cookies } from 'next/headers'
+import { cookies } from 'next/headers';
 
 import { db } from '@/lib/db'
 
@@ -8,8 +9,9 @@ import { db } from '@/lib/db'
 export async function GET(request: NextRequest) {
   try {
     // Verify admin session
-    const cookieStore = cookies()
-    const adminSessionCookie = cookieStore.get('admin-session')
+    const cookieStore = cookies();
+    const adminSessionCookie = 
+    cookieStore.get('admin-session');
 
     if (!adminSessionCookie) {
       return NextResponse.json(
@@ -21,7 +23,7 @@ export async function GET(request: NextRequest) {
     console.log('📋 Admin fetching agent history...')
 
     // Get all agents (verified and unverified) with their history
-    const { data: allAgents, error } = await db.supabase
+      const { data: allAgents, error } = await db.supabase
       .from('users')
       .select(`
         id,
