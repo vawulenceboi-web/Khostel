@@ -1,6 +1,6 @@
 'use client'
 
-import { useSession } from 'next-auth/react'
+import { useAuth } from '@/app/providers/auth-provider'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Button } from "@/components/ui/button"
@@ -27,7 +27,7 @@ import { InstagramVerificationBadge } from '@/components/ui/verification-badge'
 import VirusMorphLoader from '@/components/VirusMorphLoader'
 import ProfilePhotoUpload from '@/components/ProfilePhotoUpload'
 import Link from "next/link"
-import { signOut } from 'next-auth/react'
+import { useAuth } from '@/app/providers/auth-provider'
 import { toast } from 'sonner'
 
 interface Stats {
