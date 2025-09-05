@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-export const runtime = 'nodejs'
 import { z } from 'zod'
 
-export const runtime = 'nodejs'
 import { supabase } from '@/lib/supabase'
 
-export const runtime = 'nodejs'
 
 const resetPasswordSchema = z.object({
   accessToken: z.string().min(1, 'Access token is required'),

@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-export const runtime = 'nodejs'
 import { registerUserSchema } from '@/lib/schema'
 
-export const runtime = 'nodejs'
 import { supabase } from '@/lib/supabase'
 
-export const runtime = 'nodejs'
 
 export async function POST(request: NextRequest) {
   try {

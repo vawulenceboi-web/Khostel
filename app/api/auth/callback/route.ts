@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server'
 
-export const runtime = 'nodejs'
 import { supabase } from '@/lib/supabase'
 
-export const runtime = 'nodejs'
 
 // This route handles callbacks from Supabase Auth (email verification, password reset, etc.)
 export async function GET(request: Request) {

@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-export const runtime = 'nodejs'
 import { z } from 'zod'
 
-export const runtime = 'nodejs'
 
 // This route is no longer needed as Supabase handles email verification automatically
 export async function POST(request: NextRequest) {

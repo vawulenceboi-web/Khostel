@@ -3,7 +3,6 @@ import { getServerSession } from '@/lib/session'
 import { db } from '@/lib/db'
 import { createBookingSchema } from '@/lib/schema'
 
-export const runtime = 'nodejs'
 
 export async function GET(request: NextRequest) {
   try {

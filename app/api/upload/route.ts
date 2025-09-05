@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-export const runtime = 'nodejs'
 import { getServerSession } from '@/lib/session'
 
-export const runtime = 'nodejs'
 import { supabase } from '@/lib/db'
 
-export const runtime = 'nodejs'
 
 export async function POST(request: NextRequest) {
   try {
