@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/db'
+import { getCurrentUser } from '@/lib/session'
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getCurrentUser()
     
-    if (!session?.user) {
+    if (!session) {
       return NextResponse.json(
         { success: false, message: 'Authentication required' },
         { status: 401 }
@@ -24,7 +23,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log(`📸 Processing profile photo for ${session.user.email}: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`)
+    console.log(`📸 Processing profile photo for ${session.email}: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`)
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
@@ -56,7 +55,7 @@ export async function POST(request: NextRequest) {
 
     // Step 2: Try to upload to Supabase Storage
     const fileExt = file.name.split('.').pop()
-    const fileName = `${session.user.id}/profile-${Date.now()}.${fileExt}`
+    const fileName = `${session.id}/profile-${Date.now()}.${fileExt}`
     
     try {
       // First, ensure the bucket exists or use the existing one
@@ -82,14 +81,14 @@ export async function POST(request: NextRequest) {
 
       console.log('✅ Profile photo uploaded to:', publicUrlData.publicUrl)
 
-      // Step 3: Update user profile in database
-      const { error: updateError } = await db.supabase
-        .from('users')
-        .update({
-          profile_image_url: publicUrlData.publicUrl,
-          updated_at: new Date().toISOString()
+      // Step 3: Update user metadata in Supabase Auth
+      const { error: updateError } = await db.supabase.auth
+        .updateUser({
+          data: {
+            profile_image_url: publicUrlData.publicUrl,
+            updated_at: new Date().toISOString()
+          }
         })
-        .eq('id', session.user.id)
 
       if (updateError) {
         console.error('❌ Database update error:', updateError)

@@ -1,16 +1,17 @@
 'use client'
 
-import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { MapPin, Shield, Clock, Users, Star, Search, GraduationCap, Building, User } from "lucide-react"
-import Link from "next/link"
+import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { MapPin, Shield, Clock, Users, Star, Search, GraduationCap, Building, User } from 'lucide-react'
+import Link from 'next/link'
+import { useAuth } from '@/lib/hooks/use-auth'
 
 export default function HomePage() {
-  const { data: session, status } = useSession()
+  const { session } = useAuth()
   const router = useRouter()
+  const [loading, setLoading] = useState(false)
   const [stats, setStats] = useState({
     totalHostels: 0,
     availableHostels: 0,
@@ -20,10 +21,10 @@ export default function HomePage() {
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
-    if (status === 'authenticated' && session?.user) {
+    if (session) {
       router.push('/dashboard')
     }
-  }, [session, status, router])
+  }, [session, router])
 
   // Fetch real platform stats for landing page
   useEffect(() => {
@@ -42,19 +43,8 @@ export default function HomePage() {
     fetchPublicStats()
   }, [])
 
-  if (status === 'loading') {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-2xl font-bold text-foreground mb-2">k-H</div>
-          <div className="text-muted-foreground">Loading...</div>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       {/* Navigation */}
       <nav className="border-b border-border bg-background/95 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -88,7 +78,7 @@ export default function HomePage() {
 
       {/* Hero Section */}
       <section className="relative py-20 md:py-32 overflow-hidden">
-        <div className="absolute inset-0 pattern-dots opacity-20"></div>
+        <div className="absolute inset-0 pattern-dots opacity-20" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <Link href="/hostels">
@@ -180,7 +170,7 @@ export default function HomePage() {
                 <div className="bg-primary/10 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-primary/20 transition-colors">
                   <GraduationCap className="h-10 w-10 text-primary" />
                 </div>
-                <h3 className="text-2xl font-bold mb-4">I'm a Student</h3>
+                <h3 className="text-2xl font-bold mb-4">I&apos;m a Student</h3>
                 <p className="text-muted-foreground mb-6 leading-relaxed">
                   Find and book affordable hostels near your university. Browse verified listings and schedule inspections.
                 </p>
@@ -197,7 +187,7 @@ export default function HomePage() {
                 <div className="bg-primary/10 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-primary/20 transition-colors">
                   <Building className="h-10 w-10 text-primary" />
                 </div>
-                <h3 className="text-2xl font-bold mb-4">I'm an Agent/Owner</h3>
+                <h3 className="text-2xl font-bold mb-4">I&apos;m an Agent/Owner</h3>
                 <p className="text-muted-foreground mb-6 leading-relaxed">
                   List your properties and connect with students. Manage bookings and grow your hostel business.
                 </p>
@@ -214,7 +204,7 @@ export default function HomePage() {
                 <div className="bg-green-100 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-green-200 transition-colors">
                   <User className="h-10 w-10 text-green-600" />
                 </div>
-                <h3 className="text-2xl font-bold mb-4">I'm an Individual</h3>
+                <h3 className="text-2xl font-bold mb-4">I&apos;m an Individual</h3>
                 <p className="text-muted-foreground mb-6 leading-relaxed">
                   Looking for accommodation as an individual? Browse hostels and connect directly with agents.
                 </p>
@@ -296,7 +286,7 @@ export default function HomePage() {
               <div className="bg-primary text-primary-foreground w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">
                 1
               </div>
-              <h3 className="text-xl font-semibold mb-3">Search & Filter</h3>
+              <h3 className="text-xl font-semibold mb-3">Search &amp; Filter</h3>
               <p className="text-muted-foreground">Browse hostels by university, location, price range, and amenities</p>
             </div>
             
@@ -370,7 +360,7 @@ export default function HomePage() {
               <ul className="space-y-2">
                 <li><Link href="/auth/register?role=agent" className="text-muted-foreground hover:text-foreground transition-colors">List Property</Link></li>
                 <li><Link href="/auth/login" className="text-muted-foreground hover:text-foreground transition-colors">Agent Login</Link></li>
-                <li><Link href="/terms" className="text-muted-foreground hover:text-foreground transition-colors">Terms & Conditions</Link></li>
+                <li><Link href="/terms" className="text-muted-foreground hover:text-foreground transition-colors">Terms &amp; Conditions</Link></li>
               </ul>
             </div>
           </div>

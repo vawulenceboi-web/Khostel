@@ -1,9 +1,7 @@
-import { NextAuthOptions } from 'next-auth'
-import CredentialsProvider from 'next-auth/providers/credentials'
-import bcrypt from 'bcryptjs'
 import { db } from './db'
 
-export const authOptions: NextAuthOptions = {
+// This file is deprecated and will be removed. Use Supabase Auth instead.
+const authOptions = {
   providers: [
     CredentialsProvider({
       name: 'credentials',

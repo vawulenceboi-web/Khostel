@@ -7,16 +7,53 @@ import { Card, CardContent } from "@/components/ui/card"
 import Link from "next/link"
 import { ArrowLeft, Calendar, Clock, CheckCircle, Search, Star } from "lucide-react"
 import { MdVerified } from "react-icons/md"
-import { useSession } from 'next-auth/react'
+import { useAuth } from '@/app/providers/auth-provider'
 import { toast } from 'sonner'
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import HostelSearch from "@/components/HostelSearch"
 
 export default function HostelsClient() {
-  const { data: session } = useSession()
+  const { user: authUser, session } = useAuth()
   const searchParams = useSearchParams()
-  const [hostels, setHostels] = useState([])
+
+  // Define the hostel type
+  interface Hostel {
+    id: string
+    title: string
+    description: string
+    price_per_semester: number
+    price: number // Used for display
+    price_type: string
+    room_type: string
+    address: string
+    amenities: string[]
+    images: string[] // From media_urls
+    media_urls: string[]
+    availability: boolean
+    agent_id: string
+    created_at: string
+    last_updated: string
+    location: {
+      id: string
+      name: string
+      latitude: number
+      longitude: number
+      school_id: string
+    }
+    agent: {
+      id: string
+      first_name: string
+      last_name: string
+      phone: string
+      verified_status: boolean
+      profile_image_url: string
+      average_rating?: number
+      total_ratings?: number
+    }
+  }
+  
+  const [hostels, setHostels] = useState<Hostel[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedLocation, setSelectedLocation] = useState('')
@@ -26,8 +63,8 @@ export default function HostelsClient() {
   const [sortBy, setSortBy] = useState('newest') // 'newest', 'price-low', 'price-high'
 
   // Get unique values from hostels
-  const uniqueLocations = [...new Set((hostels || []).map(h => h?.location?.name).filter(Boolean))]
-  const uniqueRoomTypes = [...new Set((hostels || []).map(h => h?.room_type).filter(Boolean))]
+  const uniqueLocations = [...new Set(hostels.map(h => h.location?.name).filter(Boolean))]
+  const uniqueRoomTypes = [...new Set(hostels.map(h => h.room_type).filter(Boolean))]
 
   // Complete filter and sort system
   const filteredAndSortedHostels = (hostels || [])
@@ -41,21 +78,20 @@ export default function HostelsClient() {
       const matchesLocation = !selectedLocation || h?.location?.name === selectedLocation
       const matchesRoomType = !selectedRoomType || h?.room_type === selectedRoomType
       
-      const price = parseFloat(h?.price_per_semester || 0)
-      const matchesMinPrice = !minPrice || price >= parseFloat(minPrice)
-      const matchesMaxPrice = !maxPrice || price <= parseFloat(maxPrice)
+      const matchesMinPrice = !minPrice || h.price_per_semester >= Number(minPrice)
+      const matchesMaxPrice = !maxPrice || h.price_per_semester <= Number(maxPrice)
       
       return matchesSearch && matchesLocation && matchesRoomType && matchesMinPrice && matchesMaxPrice
     })
     .sort((a, b) => {
       switch (sortBy) {
         case 'price-low':
-          return parseFloat(a?.price_per_semester || 0) - parseFloat(b?.price_per_semester || 0)
+          return a.price_per_semester - b.price_per_semester
         case 'price-high':
-          return parseFloat(b?.price_per_semester || 0) - parseFloat(a?.price_per_semester || 0)
+          return b.price_per_semester - a.price_per_semester
         case 'newest':
         default:
-          return new Date(b?.created_at || 0).getTime() - new Date(a?.created_at || 0).getTime()
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       }
     })
 
@@ -95,8 +131,8 @@ export default function HostelsClient() {
   }
 
   // Step 5: Add booking function
-  const handleBookInspection = async (hostelId) => {
-    if (!session?.user) {
+  const handleBookInspection = async (hostelId: string) => {
+    if (!authUser || !session) {
       toast.error('Please sign in to book inspections')
       return
     }
@@ -129,7 +165,7 @@ export default function HostelsClient() {
   }
 
   // Step 7: Fixed time formatting function
-  const formatTimeAgo = (dateString) => {
+  const formatTimeAgo = (dateString: string) => {
     if (!dateString) return 'Recently posted'
     
     try {
@@ -155,7 +191,7 @@ export default function HostelsClient() {
     }
   }
 
-  const isNewPost = (dateString) => {
+  const isNewPost = (dateString: string) => {
     if (!dateString) return false
     
     try {
@@ -258,10 +294,10 @@ export default function HostelsClient() {
                     <Button 
                       className="w-full"
                       onClick={() => handleBookInspection(hostel.id)}
-                      disabled={!session?.user || session.user.role !== 'student'}
+                      disabled={!session || !authUser || session.user.role !== 'student'}
                     >
                       <Calendar className="w-4 h-4 mr-2" />
-                      {!session?.user ? 'Sign In to Book' : 'Book Inspection'}
+                      {!session ? 'Sign In to Book' : 'Book Inspection'}
                     </Button>
                   </div>
                   

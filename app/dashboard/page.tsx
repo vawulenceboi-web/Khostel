@@ -1,6 +1,6 @@
 'use client'
 
-import { useAuth } from '@/app/providers/auth-provider'
+
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Button } from "@/components/ui/button"
@@ -27,7 +27,6 @@ import { InstagramVerificationBadge } from '@/components/ui/verification-badge'
 import VirusMorphLoader from '@/components/VirusMorphLoader'
 import ProfilePhotoUpload from '@/components/ProfilePhotoUpload'
 import Link from "next/link"
-import { useAuth } from '@/app/providers/auth-provider'
 import { toast } from 'sonner'
 
 interface Stats {
@@ -47,7 +46,7 @@ interface Stats {
 }
 
 export default function DashboardPage() {
-  const { data: session, status } = useSession()
+  const { user: authUser, session, isLoading } = useAuth()
   const router = useRouter()
   const [stats, setStats] = useState<Stats | null>(null)
   const [recentHostels, setRecentHostels] = useState<any[]>([])
@@ -58,16 +57,16 @@ export default function DashboardPage() {
   const [freshUserData, setFreshUserData] = useState<any>(null)
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (!session) {
       router.push('/auth/login')
       return
     }
 
-    if (status === 'authenticated' && session?.user) {
+    if (session && authUser) {
       fetchRealTimeData()
       fetchFreshUserData()
     }
-  }, [status, session, router])
+  }, [session, authUser, router])
 
   const fetchRealTimeData = async () => {
     if (!session?.user) return
@@ -169,7 +168,7 @@ export default function DashboardPage() {
     }
   }
 
-  if (status === 'loading' || loading) {
+  if (isLoading || loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
@@ -184,12 +183,14 @@ export default function DashboardPage() {
     )
   }
 
-  if (!session?.user) {
+  if (!authUser || !session) {
     return null
   }
 
+  const { signOut } = useAuth()
+  
   // Use fresh user data if available, otherwise fall back to session
-  const user = freshUserData || session.user
+  const user = freshUserData || authUser
 
   // Safety check for essential user data
   if (!user?.id || !user?.email) {
@@ -201,7 +202,7 @@ export default function DashboardPage() {
           <p className="text-muted-foreground mb-4">
             There was an issue loading your session. Please sign in again.
           </p>
-          <Button onClick={() => signOut({ callbackUrl: '/auth/login' })}>
+          <Button onClick={signOut}>
             Sign In Again
           </Button>
         </div>
@@ -233,7 +234,7 @@ export default function DashboardPage() {
               <span className="text-sm text-muted-foreground hidden sm:block">
                 {user.firstName || user.name || 'User'}
               </span>
-              <Button variant="outline" onClick={() => signOut({ callbackUrl: '/' })}>
+              <Button variant="outline" onClick={signOut}>
                 Sign Out
               </Button>
             </div>

@@ -1,39 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/db'
+import { getCurrentUser } from '@/lib/session'
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getCurrentUser()
     
-    if (!session?.user) {
+    if (!session) {
       return NextResponse.json(
         { success: false, message: 'Authentication required' },
         { status: 401 }
       )
     }
 
-    console.log('🔄 Refreshing session data for:', session.user.email)
+    console.log('🔄 Refreshing session data for:', session.email)
 
     // Get updated user data from database
-    const { data: updatedUser, error } = await db.supabase
-      .from('users')
-      .select(`
-        id,
-        email,
-        first_name,
-        last_name,
-        phone,
-        address,
-        profile_image_url,
-        face_photo_url,
-        role,
-        verified_status,
-        school_id
-      `)
-      .eq('id', session.user.id)
-      .single()
+    const { data: updatedUser, error } = await db.supabase.auth.getUser()
 
     if (error || !updatedUser) {
       console.error('❌ Error fetching updated user data:', error)
@@ -45,18 +28,18 @@ export async function POST(request: NextRequest) {
 
     // Return updated user data for client-side session update
     const refreshedUserData = {
-      id: updatedUser.id,
-      email: updatedUser.email,
-      name: `${updatedUser.first_name} ${updatedUser.last_name || ''}`.trim(),
-      firstName: updatedUser.first_name,
-      lastName: updatedUser.last_name,
-      phone: updatedUser.phone,
-      address: updatedUser.address,
-      profileImage: updatedUser.profile_image_url,
-      facePhoto: updatedUser.face_photo_url,
-      role: updatedUser.role,
-      verifiedStatus: updatedUser.verified_status,
-      schoolId: updatedUser.school_id
+      id: updatedUser.user.id,
+      email: updatedUser.user.email,
+      name: updatedUser.user.user_metadata?.name,
+      firstName: updatedUser.user.user_metadata?.first_name,
+      lastName: updatedUser.user.user_metadata?.last_name,
+      phone: updatedUser.user.phone || updatedUser.user.user_metadata?.phone,
+      address: updatedUser.user.user_metadata?.address,
+      profileImage: updatedUser.user.user_metadata?.profile_image_url,
+      facePhoto: updatedUser.user.user_metadata?.face_photo_url,
+      role: updatedUser.user.user_metadata?.role || 'student',
+      verifiedStatus: updatedUser.user.user_metadata?.verified_status || false,
+      schoolId: updatedUser.user.user_metadata?.school_id
     }
 
     console.log('✅ Session data refreshed successfully')

@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { getServerSession } from '@/lib/session'
 import { db } from '@/lib/db'
 import { createBookingSchema } from '@/lib/schema'
-import { authOptions } from '@/lib/auth'
+
+export const runtime = 'nodejs'
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession()
     
-    if (!session?.user) {
+    if (!session) {
       return NextResponse.json(
         { success: false, message: 'Authentication required' },
         { status: 401 }
@@ -17,7 +18,10 @@ export async function GET(request: NextRequest) {
 
     console.log('📅 Fetching bookings for user:', session.user.email, session.user.role)
     
-    const result = await db.bookings.findByUser(session.user.id, session.user.role)
+    const result = await db.bookings.findByUser(
+      session.user.id as string,
+      session.user.user_metadata?.role || 'student'
+    )
     console.log('✅ Bookings fetched successfully:', result.length)
 
     return NextResponse.json({
@@ -36,9 +40,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession()
     
-    if (!session?.user) {
+    if (!session) {
       return NextResponse.json(
         { success: false, message: 'Authentication required' },
         { status: 401 }
@@ -84,9 +88,9 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession()
     
-    if (!session?.user) {
+    if (!session) {
       return NextResponse.json(
         { success: false, message: 'Authentication required' },
         { status: 401 }

@@ -1,20 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
 import { db } from '@/lib/db'
-import { authOptions } from '@/lib/auth'
+import { getCurrentUser } from '@/lib/session'
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getCurrentUser()
     
-    if (!session?.user) {
+    if (!session) {
       return NextResponse.json(
         { success: false, message: 'Authentication required' },
         { status: 401 }
       )
     }
 
-    if (session.user.role !== 'student') {
+    if (session.role !== 'student') {
       return NextResponse.json(
         { success: false, message: 'Student access only' },
         { status: 403 }
@@ -32,7 +31,7 @@ export async function GET(request: NextRequest) {
         created_at,
         hostel:hostels(title, agent_id, location:locations(name), agent:users(id, first_name, last_name))
       `)
-      .eq('student_id', session.user.id)
+      .eq('student_id', session.id)
 
     if (error) {
       throw error
@@ -54,9 +53,9 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getCurrentUser()
     
-    if (!session?.user || session.user.role !== 'student') {
+    if (!session || session.role !== 'student') {
       return NextResponse.json(
         { success: false, message: 'Student access only' },
         { status: 403 }
@@ -81,7 +80,7 @@ export async function PUT(request: NextRequest) {
       .eq('id', id)
       .single()
     
-    if (!booking || booking.student_id !== session.user.id) {
+    if (!booking || booking.student_id !== session.id) {
       return NextResponse.json(
         { success: false, message: 'You can only cancel your own bookings' },
         { status: 403 }

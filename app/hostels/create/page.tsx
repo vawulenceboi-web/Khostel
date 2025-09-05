@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
+import { useAuth } from '@/app/providers/auth-provider'
 import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -29,7 +29,7 @@ import Link from 'next/link'
 import SimpleMediaUpload from '@/components/SimpleMediaUpload'
 
 export default function CreateHostelPage() {
-  const { data: session, status } = useSession()
+  const { user: authUser, session } = useAuth()
   const router = useRouter()
   const [formData, setFormData] = useState({
     title: '',
@@ -46,33 +46,35 @@ export default function CreateHostelPage() {
   })
   const [locations, setLocations] = useState<any[]>([])
   const [schools, setSchools] = useState<any[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
   const [uploadedMediaUrls, setUploadedMediaUrls] = useState<string[]>([])
   const [uploadedMediaTypes, setUploadedMediaTypes] = useState<string[]>([])
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([])
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (!session || !authUser) {
       router.push('/auth/login')
       return
     }
 
-    if (status === 'authenticated') {
-      if (session?.user?.role !== 'agent') {
+    if (session && authUser) {
+      if (session.user.role !== 'agent') {
         toast.error('Only agents can create hostel listings')
         router.push('/dashboard')
         return
       }
 
-      if (!session?.user?.verifiedStatus) {
+      if (!session.user.verified_status) {
         toast.error('You must be verified to create hostel listings')
         router.push('/dashboard')
         return
       }
 
       fetchSchoolsAndLocations()
+      setLoading(false)
     }
-  }, [status, session, router])
+  }, [session, authUser, router])
 
   const fetchSchoolsAndLocations = async () => {
     try {
@@ -137,13 +139,13 @@ export default function CreateHostelPage() {
       return
     }
 
-    setIsLoading(true)
+    setSubmitting(true)
 
     try {
       const hostelData = {
         ...formData,
         price: parseFloat(formData.price),
-        agentId: session?.user?.id,
+        agentId: authUser.id,
         images: uploadedMediaUrls, // Backward compatibility
         mediaUrls: uploadedMediaUrls,
         mediaTypes: uploadedMediaTypes
@@ -167,7 +169,7 @@ export default function CreateHostelPage() {
       console.error('Error creating hostel:', error)
       toast.error('Failed to create hostel listing')
     } finally {
-      setIsLoading(false)
+      setSubmitting(false)
     }
   }
 
@@ -177,7 +179,7 @@ export default function CreateHostelPage() {
     'Cleaning Service', 'CCTV', 'Furnished', 'Balcony'
   ]
 
-  if (status === 'loading') {
+  if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -438,9 +440,9 @@ export default function CreateHostelPage() {
                   <Button 
                     type="submit" 
                     className="flex-1 h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg" 
-                    disabled={isLoading}
+                    disabled={submitting}
                   >
-                    {isLoading ? (
+                    {submitting ? (
                       <>
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                         <span className="hidden sm:inline">Creating Listing...</span>

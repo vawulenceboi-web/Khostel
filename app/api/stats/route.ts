@@ -1,13 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { getServerSession } from '@/lib/session'
 import { db } from '@/lib/db'
-import { authOptions } from '@/lib/auth'
+
+interface Stats {
+  totalHostels: number
+  totalBookings: number
+  pendingBookings: number
+  confirmedBookings: number
+  availableHostels: number
+  totalSchools: number
+  myListings: number
+  myBookingRequests: number
+  pendingRequests: number
+  totalUsers: number
+  pendingAgents: number
+  verifiedAgents: number
+  totalStudents: number
+}
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession()
     
-    if (!session?.user) {
+    if (!session) {
       return NextResponse.json(
         { success: false, message: 'Authentication required' },
         { status: 401 }
@@ -24,13 +39,20 @@ export async function GET(request: NextRequest) {
     ])
 
     // Calculate user-specific stats
-    const userStats = {
+    const userStats: Stats = {
       totalHostels: hostelsData.length,
       totalBookings: bookingsData.length,
       pendingBookings: bookingsData.filter(b => b.status === 'pending').length,
       confirmedBookings: bookingsData.filter(b => b.status === 'confirmed').length,
       availableHostels: hostelsData.filter(h => h.availability).length,
       totalSchools: schoolsData.length,
+      myListings: 0,
+      myBookingRequests: 0,
+      pendingRequests: 0,
+      totalUsers: 0,
+      pendingAgents: 0,
+      verifiedAgents: 0,
+      totalStudents: 0
     }
 
     // Role-specific stats
@@ -52,7 +74,7 @@ export async function GET(request: NextRequest) {
         .select('role, verified_status')
 
       userStats.totalUsers = allUsers?.length || 0
-      userStats.pendingAgents = allUsers?.filter(u => u.role === 'agent' && !u.verified_status).length || 0
+      userStats.pendingAgents = allUsers?.filter(u => u.role === 'agent' && !u.verified_status).length || 0 
       userStats.verifiedAgents = allUsers?.filter(u => u.role === 'agent' && u.verified_status).length || 0
       userStats.totalStudents = allUsers?.filter(u => u.role === 'student').length || 0
     }

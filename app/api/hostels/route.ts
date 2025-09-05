@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { getServerSession } from '@/lib/session'
 import { db } from '@/lib/db'
-import { authOptions } from '@/lib/auth'
 
 export async function GET(req: Request) {
   try {
@@ -108,9 +107,9 @@ export async function GET(req: Request) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession()
     
-    if (!session?.user) {
+    if (!session) {
       return NextResponse.json(
         { success: false, message: 'Authentication required' },
         { status: 401 }

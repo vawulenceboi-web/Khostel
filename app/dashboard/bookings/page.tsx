@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useSession } from 'next-auth/react'
+import { useAuth } from '@/app/providers/auth-provider'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -40,7 +40,7 @@ interface Booking {
 }
 
 export default function BookingsPage() {
-  const { data: session, status } = useSession()
+  const { user: authUser, session, isLoading } = useAuth()
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
   const [updatingBooking, setUpdatingBooking] = useState<string | null>(null)
@@ -49,12 +49,12 @@ export default function BookingsPage() {
   const [selectedRating, setSelectedRating] = useState(0)
 
   useEffect(() => {
-    if (session?.user) {
+    if (session && authUser) {
       fetchBookings()
-    } else if (status !== 'loading') {
+    } else if (!isLoading) {
       setLoading(false)
     }
-  }, [session, status])
+  }, [session, authUser, isLoading])
 
   const fetchBookings = async () => {
     try {
@@ -138,7 +138,7 @@ export default function BookingsPage() {
     }
   }
 
-  if (status === 'loading') {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
@@ -400,7 +400,7 @@ export default function BookingsPage() {
                         {/* YOUR EXACT RATING METHOD */}
                         <SimpleRating
                           agentId={booking.hostel?.agent_id || ''}
-                          studentId={session?.user?.id || ''}
+                          studentId={authUser?.id || ''}
                                                         agentName={booking.hostel?.agent ? `${booking.hostel.agent.first_name} ${booking.hostel.agent.last_name}` : 'Agent'}
                         />
                       </div>

@@ -1,33 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
 import { db } from '@/lib/db'
-import { authOptions } from '@/lib/auth'
+import { getCurrentUser } from '@/lib/session'
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
     console.log("Received body:", body); // 👀 YOUR DEBUG METHOD
     
-    const session = await getServerSession(authOptions)
+    const session = await getCurrentUser()
     
-    if (!session?.user) {
+    if (!session) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
       )
     }
 
-    if (session.user.role !== 'student') {
+    if (session.role !== 'student') {
       return NextResponse.json(
         { error: 'Only students can rate agents' },
         { status: 403 }
       )
     }
 
-    const { agentId, studentId, stars, feedback } = body
+    const { agentId, stars, feedback } = body
 
-    if (!agentId || !studentId || !stars) {
-      console.log("❌ Missing fields:", { agentId: !!agentId, studentId: !!studentId, stars: !!stars });
+    if (!agentId || !stars) {
+      console.log("❌ Missing fields:", { agentId: !!agentId, stars: !!stars });
       return NextResponse.json(
         { error: 'Missing fields' },
         { status: 400 }
@@ -41,7 +40,7 @@ export async function POST(req: Request) {
       .from('ratings')
       .upsert({
         agent_id: agentId,
-        student_id: session.user.id,
+        student_id: session.id,
         stars: stars,
         feedback: feedback || null
       })

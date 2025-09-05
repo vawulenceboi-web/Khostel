@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { getServerSession } from '@/lib/session'
 import { db } from '@/lib/db'
-import { authOptions } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession()
     
-    if (!session?.user || session.user.role !== 'agent') {
+    if (!session || session.user.role !== 'agent') {
       return NextResponse.json(
         { success: false, message: 'Agent authentication required' },
         { status: 401 }
