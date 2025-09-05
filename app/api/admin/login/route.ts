@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
+
+export const runtime = 'nodejs'
 import { validateAdminCredentials, createAdminSession, getAdminEmail } from '@/lib/adminAuth'
+
+export const runtime = 'nodejs'
 import { adminLoginSchema } from '@/lib/schema'
+
+export const runtime = 'nodejs'
 import { cookies } from 'next/headers'
+
+export const runtime = 'nodejs'
 
 export async function POST(request: NextRequest) {
   try {

@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
+
+export const runtime = 'nodejs'
 import { z } from 'zod'
+
+export const runtime = 'nodejs'
 import { supabase } from '@/lib/supabase'
+
+export const runtime = 'nodejs'
 
 const forgotPasswordSchema = z.object({
   email: z.string().email('Invalid email address')

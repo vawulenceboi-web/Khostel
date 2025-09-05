@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
+
+export const runtime = 'nodejs'
 import { db } from '@/lib/db'
+
+export const runtime = 'nodejs'
 import { getCurrentUser } from '@/lib/session'
+
+export const runtime = 'nodejs'
 
 export async function POST(request: NextRequest) {
   try {
