@@ -131,31 +131,39 @@ export default function RegisterPage() {
     setIsLoading(true)
 
     try {
-      const submitData = {
-        ...formData,
-        facePhotoUrl: facePhotoUrl || '',
-        termsAcceptedAt: new Date().toISOString()
-      }
-      delete (submitData as any).confirmPassword
-
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(submitData)
+      const { data, error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            first_name: formData.firstName,
+            last_name: formData.lastName || null,
+            phone: formData.phone || null,
+            role: formData.role,
+            school_id: formData.schoolId || null,
+            business_reg_number: formData.businessRegNumber || null,
+            address: formData.address || null,
+            profile_image_url: formData.profileImageUrl || null,
+            face_photo_url: facePhotoUrl || null,
+            terms_accepted: formData.termsAccepted,
+            terms_accepted_at: new Date().toISOString(),
+            verified_status: formData.role === 'agent' ? false : true,
+          },
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
+        }
       })
 
-      const result = await response.json()
-
-      if (result.success) {
+      if (error) {
+        console.error('Registration error:', error.message)
+        toast.error(error.message || 'Registration failed')
+        if (formData.role === 'agent') {
+          setCurrentStep('form')
+        }
+      } else if (data.user) {
         toast.success('Registration successful! Please check your email to verify your account.')
         setTimeout(() => {
-          router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`)
+          router.push('/auth/verify-email')
         }, 2000)
-      } else {
-        toast.error(result.message || 'Registration failed')
-        if (formData.role === 'agent') {
-          setCurrentStep('form') // Go back to form if registration fails
-        }
       }
     } catch (error) {
       console.error('Registration error:', error)

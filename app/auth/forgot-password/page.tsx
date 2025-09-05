@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ArrowLeft, Mail, Send } from 'lucide-react'
 import { toast } from 'sonner'
+import { supabase } from '@/lib/supabase'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -27,19 +28,16 @@ export default function ForgotPasswordPage() {
     setIsLoading(true)
 
     try {
-      const response = await fetch('/api/auth/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/reset-password`,
       })
 
-      const data = await response.json()
-
-      if (response.ok) {
-        setEmailSent(true)
-        toast.success('Password reset code sent to your email')
+      if (error) {
+        console.error('Reset password error:', error)
+        toast.error('Failed to send reset link. Please try again.')
       } else {
-        toast.error(data.message || 'Failed to send reset code')
+        setEmailSent(true)
+        toast.success('Password reset link sent to your email')
       }
     } catch (error) {
       console.error('Forgot password error:', error)
@@ -60,7 +58,7 @@ export default function ForgotPasswordPage() {
               </div>
               <CardTitle className="text-2xl text-green-700">Check Your Email</CardTitle>
               <CardDescription>
-                We've sent a password reset code to {email}
+                We've sent a password reset link to {email}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -70,17 +68,15 @@ export default function ForgotPasswordPage() {
                 </p>
                 <ol className="text-sm text-green-700 mt-2 space-y-1">
                   <li>1. Check your email inbox (and spam folder)</li>
-                  <li>2. Copy the 6-digit reset code</li>
-                  <li>3. Click the link below to reset your password</li>
+                  <li>2. Click the password reset link in your email</li>
+                  <li>3. Create your new password</li>
                 </ol>
               </div>
               
-              <Link href="/auth/reset-password">
-                <Button className="w-full h-12 bg-green-600 hover:bg-green-700">
-                  <Send className="w-4 h-4 mr-2" />
-                  Continue to Reset Password
-                </Button>
-              </Link>
+              <Button className="w-full h-12 bg-green-600 hover:bg-green-700" onClick={() => setEmailSent(false)}>
+                <Send className="w-4 h-4 mr-2" />
+                Send Another Reset Link
+              </Button>
               
               <div className="text-center">
                 <button

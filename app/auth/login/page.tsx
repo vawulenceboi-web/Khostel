@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -10,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { Eye, EyeOff, ArrowLeft } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -25,30 +25,29 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const result = await signIn('credentials', {
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
-        redirect: false,
       })
 
-      if (result?.error) {
-        console.error('Login error:', result.error)
+      if (error) {
+        console.error('Login error:', error.message)
         
         // Handle different types of errors
-        if (result.error === 'CredentialsSignin') {
+        if (error.message.includes('Invalid login credentials')) {
           toast.error('Login failed', {
             description: 'Invalid email or password. Please check your credentials.',
           })
-        } else if (result.error.includes('Database')) {
-          toast.error('Server Error', {
-            description: 'Database connection issue. Please try again or contact support.',
+        } else if (error.message.includes('Email not confirmed')) {
+          toast.error('Email not verified', {
+            description: 'Please check your email and verify your account before signing in.',
           })
         } else {
           toast.error('Login failed', {
-            description: 'Server error occurred. Please try again.',
+            description: error.message,
           })
         }
-      } else {
+      } else if (data.user) {
         toast.success('Login successful', {
           description: 'Welcome back to k-H!',
         })

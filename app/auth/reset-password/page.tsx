@@ -9,10 +9,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ArrowLeft, Lock, Eye, EyeOff, CheckCircle } from 'lucide-react'
 import { toast } from 'sonner'
+import { supabase } from '@/lib/supabase'
 
 export default function ResetPasswordPage() {
-  const [email, setEmail] = useState('')
-  const [resetCode, setResetCode] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -23,8 +22,8 @@ export default function ResetPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!email || !resetCode || !newPassword) {
-      toast.error('Please fill in all fields')
+    if (!newPassword) {
+      toast.error('Please enter a new password')
       return
     }
 
@@ -41,23 +40,16 @@ export default function ResetPasswordPage() {
     setIsLoading(true)
 
     try {
-      const response = await fetch('/api/auth/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          resetCode,
-          newPassword
-        })
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
       })
 
-      const data = await response.json()
-
-      if (response.ok) {
+      if (error) {
+        console.error('Reset password error:', error)
+        toast.error(error.message || 'Failed to reset password')
+      } else {
         setResetSuccess(true)
         toast.success('Password reset successfully!')
-      } else {
-        toast.error(data.message || 'Failed to reset password')
       }
     } catch (error) {
       console.error('Reset password error:', error)
@@ -124,33 +116,6 @@ export default function ResetPasswordPage() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email address"
-                  required
-                  className="h-12"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="resetCode">Reset Code</Label>
-                <Input
-                  id="resetCode"
-                  type="text"
-                  value={resetCode}
-                  onChange={(e) => setResetCode(e.target.value)}
-                  placeholder="Enter 6-digit code from email"
-                  maxLength={6}
-                  required
-                  className="h-12 text-center text-lg font-mono tracking-wider"
-                />
-              </div>
-
-              <div className="space-y-2">
                 <Label htmlFor="newPassword">New Password</Label>
                 <div className="relative">
                   <Input
@@ -195,25 +160,16 @@ export default function ResetPasswordPage() {
                 {isLoading ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
-                    Resetting Password...
+                    Setting New Password...
                   </>
                 ) : (
                   <>
                     <Lock className="w-4 h-4 mr-2" />
-                    Reset Password
+                    Set New Password
                   </>
                 )}
               </Button>
             </form>
-
-            <div className="mt-6 text-center">
-              <p className="text-sm text-muted-foreground">
-                Didn't receive the code?{' '}
-                <Link href="/auth/forgot-password" className="text-primary hover:underline font-medium">
-                  Resend code
-                </Link>
-              </p>
-            </div>
           </CardContent>
         </Card>
       </div>
