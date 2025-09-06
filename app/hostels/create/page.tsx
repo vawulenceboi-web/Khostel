@@ -65,7 +65,7 @@ export default function CreateHostelPage() {
         return
       }
 
-      if (!session.user.verified_status) {
+      if (!session.user.user_metadata?.verified_status) {
         toast.error('You must be verified to create hostel listings')
         router.push('/dashboard')
         return
@@ -145,7 +145,7 @@ export default function CreateHostelPage() {
       const hostelData = {
         ...formData,
         price: parseFloat(formData.price),
-        agentId: authUser.id,
+        agentId: authUser?.id || '',
         images: uploadedMediaUrls, // Backward compatibility
         mediaUrls: uploadedMediaUrls,
         mediaTypes: uploadedMediaTypes

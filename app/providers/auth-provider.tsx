@@ -26,22 +26,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
 
   useEffect(() => {
+    console.log('👤 AUTH PROVIDER DEBUG: Initializing auth provider')
+    
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('👤 AUTH PROVIDER DEBUG: Initial session check')
+      console.log('👤 AUTH PROVIDER DEBUG: Session present:', !!session)
+      console.log('👤 AUTH PROVIDER DEBUG: User present:', !!session?.user)
+      
       setSession(session)
       setUser(session?.user ?? null)
       setIsLoading(false)
+      
+      if (session?.user) {
+        console.log('👤 AUTH PROVIDER DEBUG: User ID:', session.user.id)
+        console.log('👤 AUTH PROVIDER DEBUG: User email:', session.user.email)
+      }
     })
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('👤 AUTH PROVIDER DEBUG: Auth state change')
+      console.log('👤 AUTH PROVIDER DEBUG: Event:', event)
+      console.log('👤 AUTH PROVIDER DEBUG: Session present:', !!session)
+      console.log('👤 AUTH PROVIDER DEBUG: User present:', !!session?.user)
+      
       setSession(session)
       setUser(session?.user ?? null)
       setIsLoading(false)
+      
+      if (session?.user) {
+        console.log('👤 AUTH PROVIDER DEBUG: Updated user ID:', session.user.id)
+        console.log('👤 AUTH PROVIDER DEBUG: Updated user email:', session.user.email)
+      }
+      
       router.refresh()
     })
 
     return () => {
+      console.log('👤 AUTH PROVIDER DEBUG: Cleaning up auth subscription')
       subscription.unsubscribe()
     }
   }, [router])

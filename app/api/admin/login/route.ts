@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     const adminSession = createAdminSession()
     
     // Set admin session cookie (secure, httpOnly) - extended duration
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     cookieStore.set('admin-session', JSON.stringify(adminSession), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

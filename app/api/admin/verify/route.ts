@@ -6,7 +6,7 @@ import { cookies } from 'next/headers'
 
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const adminSessionCookie = cookieStore.get('admin-session')
 
     if (!adminSessionCookie) {

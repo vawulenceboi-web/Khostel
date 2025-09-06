@@ -5,11 +5,23 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 const supabaseServiceRole = process.env.SUPABASE_SERVICE_ROLE_KEY
 
+console.log('🔧 SUPABASE CONFIG DEBUG: Environment variables check')
+console.log('🔧 SUPABASE CONFIG DEBUG: NEXT_PUBLIC_SUPABASE_URL present:', !!supabaseUrl)
+console.log('🔧 SUPABASE CONFIG DEBUG: NEXT_PUBLIC_SUPABASE_ANON_KEY present:', !!supabaseAnonKey)
+console.log('🔧 SUPABASE CONFIG DEBUG: SUPABASE_SERVICE_ROLE_KEY present:', !!supabaseServiceRole)
+console.log('🔧 SUPABASE CONFIG DEBUG: NEXT_PUBLIC_SITE_URL:', process.env.NEXT_PUBLIC_SITE_URL)
+
+if (supabaseUrl) {
+  console.log('🔧 SUPABASE CONFIG DEBUG: Supabase URL:', supabaseUrl.substring(0, 30) + '...')
+}
+
 if (!supabaseUrl) {
+  console.error('❌ SUPABASE CONFIG ERROR: Missing NEXT_PUBLIC_SUPABASE_URL')
   throw new Error('Missing environment variable: NEXT_PUBLIC_SUPABASE_URL')
 }
 
 if (!supabaseAnonKey) {
+  console.error('❌ SUPABASE CONFIG ERROR: Missing NEXT_PUBLIC_SUPABASE_ANON_KEY')
   throw new Error('Missing environment variable: NEXT_PUBLIC_SUPABASE_ANON_KEY')
 }
 

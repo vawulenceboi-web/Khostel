@@ -42,7 +42,7 @@ Edit `.env.local` with your credentials:
 SUPABASE_URL=https://your-project-id.supabase.co
 SUPABASE_ANON_KEY=your-anon-key-here
 DATABASE_URL=postgresql://postgres:your-password@db.your-project-id.supabase.co:5432/postgres
-NEXTAUTH_SECRET=your-random-secret
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
 ### **3. Initialize Database**
@@ -134,14 +134,14 @@ npm run seed      # Add sample data
 ```
 
 ### **Environment Variables**
-- **Required**: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `DATABASE_URL`, `NEXTAUTH_SECRET`
+- **Required**: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `DATABASE_URL`, `NEXT_PUBLIC_SITE_URL`
 - **Optional**: `GOOGLE_MAPS_API_KEY`, `SENDGRID_API_KEY`
 
 ## 🎯 **Built With**
 
 - **Framework**: Next.js 15 with App Router
 - **Database**: Supabase PostgreSQL + Drizzle ORM
-- **Authentication**: NextAuth.js with credentials
+- **Authentication**: Supabase Auth with email/password
 - **Styling**: Tailwind CSS with custom black/white theme
 - **UI Components**: Radix UI primitives
 - **TypeScript**: Full type safety

@@ -91,7 +91,7 @@ export async function GET(
       averagePrice: hostelsData.length > 0 
         ? Math.round(hostelsData.reduce((sum, h) => sum + h.price, 0) / hostelsData.length)
         : 0,
-      locations: [...new Set(hostelsData.map(h => h.location?.name).filter(Boolean))],
+      locations: [...new Set(hostelsData.map(h => (h.location as any)?.name).filter(Boolean))],
       hasVideo: hostelsData.some(h => h.media_types?.includes('video')),
       joinedDate: agent.created_at
     }
