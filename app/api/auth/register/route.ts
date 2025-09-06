@@ -9,10 +9,18 @@ import { supabase } from '@/lib/supabase'
 export async function POST(request: NextRequest) {
   console.log('📝 REGISTER API: ===== REGISTRATION REQUEST STARTED =====')
   console.log('📝 REGISTER API: Timestamp:', new Date().toISOString())
+  console.log('📝 REGISTER API: Request headers:', JSON.stringify({
+    host: request.headers.get('host'),
+    origin: request.headers.get('origin'),
+    referer: request.headers.get('referer'),
+    'user-agent': request.headers.get('user-agent')?.substring(0, 50) + '...'
+  }, null, 2))
   console.log('📝 REGISTER API: Environment check:')
   console.log('📝 REGISTER API: - NEXT_PUBLIC_SUPABASE_URL present:', !!process.env.NEXT_PUBLIC_SUPABASE_URL)
   console.log('📝 REGISTER API: - NEXT_PUBLIC_SUPABASE_ANON_KEY present:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
   console.log('📝 REGISTER API: - NEXT_PUBLIC_SITE_URL:', process.env.NEXT_PUBLIC_SITE_URL)
+  console.log('📝 REGISTER API: - VERCEL_URL:', process.env.VERCEL_URL)
+  console.log('📝 REGISTER API: - NODE_ENV:', process.env.NODE_ENV)
   
   try {
     const body = await request.json()
@@ -92,6 +100,14 @@ export async function POST(request: NextRequest) {
       }
       if (error.message.includes('email')) {
         console.error('❌ REGISTER API ERROR: Email-related error')
+        console.error('❌ REGISTER API ERROR: This might be SMTP/domain configuration issue')
+        console.error('❌ REGISTER API ERROR: Check Supabase SMTP settings and site URL')
+      }
+      if (error.message.includes('confirmation')) {
+        console.error('❌ REGISTER API ERROR: Email confirmation error - likely SMTP issue')
+      }
+      if (error.message.includes('SMTP')) {
+        console.error('❌ REGISTER API ERROR: SMTP configuration error detected')
       }
       
       return NextResponse.json(
