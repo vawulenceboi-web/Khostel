@@ -131,48 +131,99 @@ export default function RegisterPage() {
   const completeRegistration = async (facePhotoUrl?: string) => {
     setIsLoading(true)
 
+    console.log('📝 REGISTER CLIENT: Starting registration process...')
+    console.log('📝 REGISTER CLIENT: Email:', formData.email)
+    console.log('📝 REGISTER CLIENT: Role:', formData.role)
+
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            first_name: formData.firstName,
-            last_name: formData.lastName || null,
-            phone: formData.phone || null,
-            role: formData.role,
-            school_id: formData.schoolId || null,
-            business_reg_number: formData.businessRegNumber || null,
-            address: formData.address || null,
-            profile_image_url: formData.profileImageUrl || null,
-            face_photo_url: facePhotoUrl || null,
-            terms_accepted: formData.termsAccepted,
-            terms_accepted_at: new Date().toISOString(),
-            verified_status: formData.role === 'agent' ? false : true,
-          },
-          emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
-        }
+      console.log('📝 REGISTER CLIENT: Calling server-side registration API...')
+      
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          firstName: formData.firstName,
+          lastName: formData.lastName || undefined,
+          phone: formData.phone || undefined,
+          role: formData.role,
+          schoolId: formData.schoolId || undefined,
+          businessRegNumber: formData.businessRegNumber || undefined,
+          address: formData.address || undefined,
+          profileImageUrl: formData.profileImageUrl || undefined,
+          termsAccepted: formData.termsAccepted,
+        }),
       })
 
-      if (error) {
-        console.error('Registration error:', error.message)
-        toast.error(error.message || 'Registration failed')
+      console.log('📝 REGISTER CLIENT: API response received')
+      console.log('📝 REGISTER CLIENT: Status:', response.status)
+      console.log('📝 REGISTER CLIENT: Status text:', response.statusText)
+
+      const result = await response.json()
+      console.log('📝 REGISTER CLIENT: Response data:', result)
+
+      if (!response.ok || !result.success) {
+        console.error('❌ REGISTER CLIENT ERROR: API request failed')
+        console.error('❌ REGISTER CLIENT ERROR: Status:', response.status)
+        console.error('❌ REGISTER CLIENT ERROR: Result:', result)
+        
+        // Check for specific error types
+        if (result.message?.includes('confirmation email')) {
+          toast.error('Error sending confirmation email', {
+            description: 'Account created but email confirmation failed. Please try password reset to verify your account.',
+          })
+        } else if (result.message?.includes('already registered')) {
+          toast.error('Account already exists', {
+            description: 'An account with this email already exists. Try signing in instead.',
+          })
+        } else {
+          toast.error('Registration failed', {
+            description: result.message || 'Please try again.',
+          })
+        }
+        
         if (formData.role === 'agent') {
           setCurrentStep('form')
         }
-      } else if (data.user) {
-        toast.success('Registration successful! Please check your email to verify your account.')
+      } else {
+        console.log('✅ REGISTER CLIENT SUCCESS: Registration API successful')
+        console.log('✅ REGISTER CLIENT SUCCESS: User data:', result.user)
+        console.log('✅ REGISTER CLIENT SUCCESS: Debug info:', result.debug)
+        
+        if (result.debug?.emailConfirmationRequired) {
+          toast.success('Registration successful!', {
+            description: 'Please check your email to verify your account before signing in.',
+          })
+        } else {
+          toast.success('Registration successful!', {
+            description: 'You can now sign in to your account.',
+          })
+        }
+        
         setTimeout(() => {
           router.push('/auth/verify-email')
         }, 2000)
       }
     } catch (error) {
-      console.error('Registration error:', error)
-      toast.error('Registration failed. Please try again.')
+      console.error('❌ REGISTER CLIENT EXCEPTION:', error)
+      console.error('❌ REGISTER CLIENT EXCEPTION Details:', {
+        name: (error as Error).name,
+        message: (error as Error).message,
+        stack: (error as Error).stack
+      })
+      
+      toast.error('Registration failed', {
+        description: 'Network error. Please try again.',
+      })
+      
       if (formData.role === 'agent') {
         setCurrentStep('form')
       }
     } finally {
+      console.log('📝 REGISTER CLIENT: Registration process completed')
       setIsLoading(false)
     }
   }
