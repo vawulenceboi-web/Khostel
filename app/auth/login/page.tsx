@@ -30,59 +30,71 @@ export default function LoginPage() {
     console.log('🔐 LOGIN DEBUG: Site URL:', process.env.NEXT_PUBLIC_SITE_URL)
 
     try {
-      console.log('🔐 LOGIN DEBUG: Calling supabase.auth.signInWithPassword...')
+      console.log('🔐 LOGIN CLIENT: Calling server-side login API...')
       
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
       })
 
-      console.log('🔐 LOGIN DEBUG: Supabase response received')
-      console.log('🔐 LOGIN DEBUG: Data:', data)
-      console.log('🔐 LOGIN DEBUG: Error:', error)
+      console.log('🔐 LOGIN CLIENT: API response received')
+      console.log('🔐 LOGIN CLIENT: Status:', response.status)
+      console.log('🔐 LOGIN CLIENT: Status text:', response.statusText)
 
-      if (error) {
-        console.error('❌ LOGIN ERROR:', error.message)
-        console.error('❌ LOGIN ERROR Details:', {
-          name: error.name,
-          message: error.message,
-          status: error.status,
-          statusCode: error.status
-        })
+      const result = await response.json()
+      console.log('🔐 LOGIN CLIENT: Response data:', result)
+
+      if (!response.ok || !result.success) {
+        console.error('❌ LOGIN CLIENT ERROR: API request failed')
+        console.error('❌ LOGIN CLIENT ERROR: Status:', response.status)
+        console.error('❌ LOGIN CLIENT ERROR: Result:', result)
         
         // Handle different types of errors
-        if (error.message.includes('Invalid login credentials')) {
+        if (result.message?.includes('Invalid login credentials')) {
           toast.error('Login failed', {
             description: 'Invalid email or password. Please check your credentials.',
           })
-        } else if (error.message.includes('Email not confirmed')) {
+        } else if (result.message?.includes('Email not confirmed')) {
           toast.error('Email not verified', {
             description: 'Please check your email and verify your account before signing in.',
           })
         } else {
           toast.error('Login failed', {
-            description: error.message,
+            description: result.message || 'Login failed',
           })
         }
-      } else if (data.user) {
-        console.log('✅ LOGIN SUCCESS: User authenticated')
-        console.log('✅ LOGIN SUCCESS: User ID:', data.user.id)
-        console.log('✅ LOGIN SUCCESS: User Email:', data.user.email)
-        console.log('✅ LOGIN SUCCESS: Session:', data.session ? 'Present' : 'Missing')
-        console.log('✅ LOGIN SUCCESS: Callback URL:', callbackUrl)
-        
-        toast.success('Login successful', {
-          description: 'Welcome back to k-H!',
-        })
-        
-        console.log('🔐 LOGIN DEBUG: Redirecting to:', callbackUrl)
-        router.push(callbackUrl)
       } else {
-        console.error('❌ LOGIN ERROR: No error but no user data received')
-        console.error('❌ LOGIN ERROR: Unexpected response:', { data, error })
-        toast.error('Login failed', {
-          description: 'Unexpected response from server',
+        console.log('✅ LOGIN CLIENT SUCCESS: Login API successful')
+        console.log('✅ LOGIN CLIENT SUCCESS: User data:', result.user)
+        
+        // Now sign in with Supabase on the client side using the successful response
+        console.log('🔐 LOGIN CLIENT: Attempting client-side Supabase sign in...')
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
         })
+        
+        if (error) {
+          console.error('❌ LOGIN CLIENT ERROR: Client-side Supabase sign in failed')
+          console.error('❌ LOGIN CLIENT ERROR:', error)
+          toast.error('Login failed', {
+            description: 'Failed to establish client session',
+          })
+        } else if (data.user) {
+          console.log('✅ LOGIN CLIENT SUCCESS: Client session established')
+          toast.success('Login successful', {
+            description: 'Welcome back to k-H!',
+          })
+          
+          console.log('🔐 LOGIN CLIENT: Redirecting to:', callbackUrl)
+          router.push(callbackUrl)
+        }
       }
     } catch (error) {
       console.error('❌ LOGIN EXCEPTION:', error)

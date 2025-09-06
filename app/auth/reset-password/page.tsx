@@ -133,30 +133,50 @@ export default function ResetPasswordPage() {
     setIsLoading(true)
 
     try {
-      console.log('🔄 RESET PASSWORD DEBUG: Calling supabase.auth.updateUser...')
+      console.log('🔄 RESET PASSWORD CLIENT: Calling server-side reset API...')
       
-      // Check current session before updating
-      const { data: { session } } = await supabase.auth.getSession()
-      console.log('🔄 RESET PASSWORD DEBUG: Current session before update:', !!session)
+      // Get tokens from URL
+      const accessToken = searchParams.get('access_token')
+      const refreshToken = searchParams.get('refresh_token')
       
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword
+      console.log('🔄 RESET PASSWORD CLIENT: Access token present:', !!accessToken)
+      console.log('🔄 RESET PASSWORD CLIENT: Refresh token present:', !!refreshToken)
+      
+      if (!accessToken || !refreshToken) {
+        toast.error('Missing reset tokens. Please request a new reset link.')
+        router.push('/auth/forgot-password')
+        return
+      }
+      
+      const response = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          accessToken,
+          refreshToken,
+          newPassword,
+        }),
       })
 
-      console.log('🔄 RESET PASSWORD DEBUG: updateUser response received')
-      console.log('🔄 RESET PASSWORD DEBUG: Error:', error)
+      console.log('🔄 RESET PASSWORD CLIENT: API response received')
+      console.log('🔄 RESET PASSWORD CLIENT: Status:', response.status)
+      console.log('🔄 RESET PASSWORD CLIENT: Status text:', response.statusText)
 
-      if (error) {
-        console.error('❌ RESET PASSWORD ERROR:', error.message)
-        console.error('❌ RESET PASSWORD ERROR Details:', {
-          name: error.name,
-          message: error.message,
-          status: error.status,
-          statusCode: error.status
-        })
-        toast.error(error.message || 'Failed to reset password')
+      const result = await response.json()
+      console.log('🔄 RESET PASSWORD CLIENT: Response data:', result)
+
+      if (!response.ok || !result.success) {
+        console.error('❌ RESET PASSWORD CLIENT ERROR: API request failed')
+        console.error('❌ RESET PASSWORD CLIENT ERROR: Status:', response.status)
+        console.error('❌ RESET PASSWORD CLIENT ERROR: Result:', result)
+        
+        toast.error(result.message || 'Failed to reset password')
       } else {
-        console.log('✅ RESET PASSWORD SUCCESS: Password updated successfully')
+        console.log('✅ RESET PASSWORD CLIENT SUCCESS: Password reset API successful')
+        console.log('✅ RESET PASSWORD CLIENT SUCCESS: Debug info:', result.debug)
+        
         setResetSuccess(true)
         toast.success('Password reset successfully!')
       }
