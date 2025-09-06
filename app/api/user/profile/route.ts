@@ -7,17 +7,27 @@ import { getCurrentUser } from '@/lib/session'
 
 
 export async function GET(request: NextRequest) {
+  console.log('👤 PROFILE API: ===== PROFILE REQUEST STARTED =====')
+  
   try {
+    console.log('👤 PROFILE API: Getting current user session...')
     const session = await getCurrentUser()
     
+    console.log('👤 PROFILE API: Session result:', {
+      hasSession: !!session,
+      email: session?.email,
+      role: session?.role
+    })
+    
     if (!session) {
+      console.log('❌ PROFILE API: No session found - returning 401')
       return NextResponse.json(
         { success: false, message: 'Authentication required' },
         { status: 401 }
       )
     }
 
-    console.log('👤 Fetching fresh profile data for:', session.email)
+    console.log('✅ PROFILE API: Session found, fetching profile for:', session.email)
 
     // Get fresh user data from custom table (maintains existing dashboard functionality)
     console.log('👤 Fetching user from custom table for session email:', session.email)
