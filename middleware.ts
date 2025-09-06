@@ -1,14 +1,63 @@
-import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
+import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  const res = NextResponse.next()
-  const supabase = createMiddlewareClient({ req: request, res })
+  console.log('🔧 MIDDLEWARE: Request to:', request.nextUrl.pathname)
+  
+  // Debug cookies
+  const allCookies = request.cookies.getAll()
+  console.log('🔧 MIDDLEWARE: Total cookies:', allCookies.length)
+  console.log('🔧 MIDDLEWARE: Cookie names:', allCookies.map(c => c.name))
+  
+  // Look for Supabase session cookies specifically
+  const supabaseCookies = allCookies.filter(c => 
+    c.name.includes('supabase') || 
+    c.name.includes('sb-') ||
+    c.name.includes('auth')
+  )
+  console.log('🔧 MIDDLEWARE: Supabase cookies found:', supabaseCookies.length)
+  supabaseCookies.forEach(cookie => {
+    console.log('🔧 MIDDLEWARE: Supabase cookie:', cookie.name, '=', cookie.value.substring(0, 20) + '...')
+  })
+  
+  const response = NextResponse.next()
+  
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          const cookies = request.cookies.getAll()
+          console.log('🔧 MIDDLEWARE: getAll() called, returning', cookies.length, 'cookies')
+          return cookies
+        },
+        setAll(cookiesToSet) {
+          console.log('🔧 MIDDLEWARE: setAll() called with', cookiesToSet.length, 'cookies')
+          cookiesToSet.forEach(({ name, value, options }) => {
+            console.log('🔧 MIDDLEWARE: Setting cookie:', name)
+            request.cookies.set(name, value)
+            response.cookies.set(name, value, options)
+          })
+        },
+      },
+    }
+  )
 
+  console.log('🔧 MIDDLEWARE: Getting user (secure method)...')
   const {
-    data: { session },
-  } = await supabase.auth.getSession()
+    data: { user },
+    error
+  } = await supabase.auth.getUser()
+  
+  console.log('🔧 MIDDLEWARE: User result:', {
+    hasUser: !!user,
+    email: user?.email,
+    role: user?.user_metadata?.role,
+    error: error?.message,
+    path: request.nextUrl.pathname
+  })
 
   // Public paths that don't require authentication
   const publicPaths = [
@@ -27,7 +76,8 @@ export async function middleware(request: NextRequest) {
   )
 
   // Check auth condition
-  if (!session && !isPublicPath) {
+  if (!user && !isPublicPath) {
+    console.log('🔧 MIDDLEWARE: No user found, redirecting to login')
     // Save the original URL
     const redirectUrl = new URL('/auth/login', request.url)
     redirectUrl.searchParams.set('callbackUrl', request.url)
@@ -35,13 +85,14 @@ export async function middleware(request: NextRequest) {
   }
 
   // Special routes for authenticated users
-  if (session && ['/auth/login', '/auth/register'].some(path => 
+  if (user && ['/auth/login', '/auth/register'].some(path => 
     request.nextUrl.pathname.startsWith(path)
   )) {
+    console.log('🔧 MIDDLEWARE: Authenticated user accessing auth pages, redirecting to dashboard')
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  return res
+  return response
 }
 
 export const config = {

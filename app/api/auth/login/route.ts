@@ -31,6 +31,9 @@ export async function POST(request: NextRequest) {
     console.log('✅ LOGIN API DEBUG: Input validation passed')
 
     console.log('🔐 LOGIN API DEBUG: Calling supabase.auth.signInWithPassword...')
+    console.log('🔐 LOGIN API DEBUG: Email being used:', validatedData.email)
+    console.log('🔐 LOGIN API DEBUG: Password length:', validatedData.password.length)
+    
     const startTime = Date.now()
     
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -42,6 +45,8 @@ export async function POST(request: NextRequest) {
     console.log('🔐 LOGIN API DEBUG: Supabase call completed in', endTime - startTime, 'ms')
     console.log('🔐 LOGIN API DEBUG: Response data present:', !!data)
     console.log('🔐 LOGIN API DEBUG: Response error present:', !!error)
+    console.log('🔐 LOGIN API DEBUG: Raw response data:', JSON.stringify(data, null, 2))
+    console.log('🔐 LOGIN API DEBUG: Raw response error:', JSON.stringify(error, null, 2))
     
     if (data) {
       console.log('🔐 LOGIN API DEBUG: Data details:')
@@ -81,14 +86,15 @@ export async function POST(request: NextRequest) {
           
           if (!resetError) {
             console.log('🔍 LOGIN API DEBUG: Password reset succeeded - user exists')
-            console.log('❌ LOGIN API DEBUG: User exists but login failed - likely email not confirmed or wrong password')
+            console.log('❌ LOGIN API DEBUG: User exists but login failed')
+            console.log('🔍 LOGIN API DEBUG: This might be an old user created when email confirmation was enabled')
             return NextResponse.json(
               { 
                 success: false, 
-                message: 'Invalid login credentials. If you just registered, please check your email to verify your account first.',
+                message: 'Login failed. This might be an old account that needs verification. Try using the password reset to verify your account, or contact support.',
                 errorCode: 'invalid_credentials_user_exists',
                 userExists: true,
-                suggestion: 'Check your email for verification link or try password reset'
+                suggestion: 'Use password reset to verify your account, or check if password is correct'
               },
               { status: 400 }
             )

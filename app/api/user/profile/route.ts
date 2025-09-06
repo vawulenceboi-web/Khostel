@@ -7,53 +7,143 @@ import { getCurrentUser } from '@/lib/session'
 
 
 export async function GET(request: NextRequest) {
+  console.log('👤 PROFILE API: ===== PROFILE REQUEST STARTED =====')
+  
   try {
+    console.log('👤 PROFILE API: Getting current user session...')
     const session = await getCurrentUser()
     
+    console.log('👤 PROFILE API: Session result:', {
+      hasSession: !!session,
+      email: session?.email,
+      role: session?.role
+    })
+    
     if (!session) {
+      console.log('❌ PROFILE API: No session found - returning 401')
       return NextResponse.json(
         { success: false, message: 'Authentication required' },
         { status: 401 }
       )
     }
 
-    console.log('👤 Fetching fresh profile data for:', session.email)
+    console.log('✅ PROFILE API: Session found, fetching profile for:', session.email)
 
-    // Get fresh user data from the Supabase auth session
-    const { data: { user }, error: authError } = await db.supabase.auth.getUser()
+    // Get fresh user data from custom table (maintains existing dashboard functionality)
+    console.log('👤 Fetching user from custom table for session email:', session.email)
+    let customUser = await db.users.findByEmail(session.email)
 
-    if (authError || !user) {
-      console.error('❌ Error fetching user profile:', authError)
-      return NextResponse.json(
-        { success: false, message: 'User profile not found' },
-        { status: 404 }
-      )
+    if (!customUser) {
+      console.log('⚠️ User not found in custom table, creating from Supabase Auth data:', session.email)
+      
+      // Get user from Supabase Auth to create custom table entry
+      const { data: { user: authUser }, error: authError } = await db.supabase.auth.getUser()
+      
+      if (authError || !authUser) {
+        console.error('❌ User not found in either system:', session.email)
+        return NextResponse.json(
+          { success: false, message: 'User profile not found in any system' },
+          { status: 404 }
+        )
+      }
+
+      console.log('✅ Found user in Supabase Auth, creating custom table entry...')
+      console.log('👤 PROFILE API DEBUG: Auth user metadata:', JSON.stringify(authUser.user_metadata, null, 2))
+      console.log('👤 PROFILE API DEBUG: Auth user role from metadata:', authUser.user_metadata?.role)
+      console.log('👤 PROFILE API DEBUG: Auth user user_metadata:', JSON.stringify(authUser.user_metadata, null, 2))
+      
+      // Create user in custom table using Supabase Auth data
+      try {
+        const { data: newCustomUser, error: createError } = await db.supabase
+          .from('users')
+          .insert({
+            id: authUser.id,
+            email: authUser.email,
+            password_hash: 'supabase-auth', // Placeholder
+            first_name: authUser.user_metadata?.first_name || 'User',
+            last_name: authUser.user_metadata?.last_name || null,
+            phone: authUser.phone || authUser.user_metadata?.phone || null,
+            role: authUser.user_metadata?.role || 'student',
+            school_id: authUser.user_metadata?.school_id || null,
+            business_reg_number: authUser.user_metadata?.business_reg_number || null,
+            address: authUser.user_metadata?.address || null,
+            profile_image_url: authUser.user_metadata?.profile_image_url || null,
+            face_photo_url: authUser.user_metadata?.face_photo_url || null,
+            terms_accepted: authUser.user_metadata?.terms_accepted || true,
+            terms_accepted_at: authUser.user_metadata?.terms_accepted_at || authUser.created_at,
+            verified_status: authUser.user_metadata?.role === 'student' ? true : (authUser.user_metadata?.verified_status || false),
+            email_verified: true,
+            created_at: authUser.created_at,
+            updated_at: new Date().toISOString()
+          })
+          .select()
+          .single()
+
+        if (createError) {
+          console.error('❌ Failed to create custom table entry:', createError)
+          return NextResponse.json(
+            { success: false, message: 'Failed to create user profile: ' + createError.message },
+            { status: 500 }
+          )
+        }
+
+        console.log('✅ Created custom table entry for user:', newCustomUser.email)
+        customUser = newCustomUser
+        
+      } catch (createException) {
+        console.error('❌ Exception creating custom table entry:', createException)
+        return NextResponse.json(
+          { success: false, message: 'Failed to initialize user profile' },
+          { status: 500 }
+        )
+      }
     }
 
-    console.log('✅ Fresh profile data loaded:', {
-      email: user.email,
-      hasProfileImage: !!user.user_metadata?.profile_image_url,
-      hasFacePhoto: !!user.user_metadata?.face_photo_url,
-      profileImageUrl: user.user_metadata?.profile_image_url
+    console.log('✅ Custom table user found:', {
+      id: customUser.id,
+      email: customUser.email,
+      role: customUser.role,
+      verifiedStatus: customUser.verified_status,
+      hasProfileImage: !!customUser.profile_image_url,
+      hasFacePhoto: !!customUser.face_photo_url,
+      averageRating: customUser.average_rating,
+      totalRatings: customUser.total_ratings
     })
 
-    // Return fresh user data
+    console.log('👤 PROFILE API DEBUG: Final role being returned:', customUser.role)
+    console.log('👤 PROFILE API DEBUG: Verified status being returned:', customUser.verified_status)
+
+    // Return user data from custom table (maintains all existing dashboard features)
     const profileData = {
-      id: user.id,
-      email: user.email,
-      name: `${user.user_metadata?.first_name} ${user.user_metadata?.last_name || ''}`.trim(),
-      firstName: user.user_metadata?.first_name,
-      lastName: user.user_metadata?.last_name,
-      phone: user.phone || user.user_metadata?.phone,
-      address: user.user_metadata?.address,
-      profileImage: user.user_metadata?.profile_image_url,
-      facePhoto: user.user_metadata?.face_photo_url,
-      role: user.user_metadata?.role || 'student',
-      verifiedStatus: user.user_metadata?.verified_status || false,
-      faceVerificationStatus: user.user_metadata?.face_verification_status || false,
-      schoolId: user.user_metadata?.school_id,
-      lastUpdated: user.updated_at
+      id: customUser.id,
+      email: customUser.email,
+      name: `${customUser.first_name} ${customUser.last_name || ''}`.trim(),
+      firstName: customUser.first_name,
+      lastName: customUser.last_name,
+      phone: customUser.phone,
+      address: customUser.address,
+      profileImage: customUser.profile_image_url,
+      facePhoto: customUser.face_photo_url,
+      role: customUser.role,
+      verifiedStatus: customUser.verified_status,
+      emailVerified: customUser.email_verified,
+      schoolId: customUser.school_id,
+      businessRegNumber: customUser.business_reg_number,
+      termsAccepted: customUser.terms_accepted,
+      banned: customUser.banned,
+      averageRating: customUser.average_rating,
+      totalRatings: customUser.total_ratings,
+      faceVerificationStatus: customUser.face_verification_status,
+      profileCompletenessScore: customUser.profile_completeness_score,
+      trustLevel: customUser.trust_level,
+      lastUpdated: customUser.updated_at,
+      createdAt: customUser.created_at
     }
+
+    console.log('👤 PROFILE API DEBUG: Final profile data being returned:')
+    console.log('👤 PROFILE API DEBUG: - Role:', profileData.role)
+    console.log('👤 PROFILE API DEBUG: - Verified Status:', profileData.verifiedStatus)
+    console.log('👤 PROFILE API DEBUG: - Email Verified:', profileData.emailVerified)
 
     return NextResponse.json({
       success: true,

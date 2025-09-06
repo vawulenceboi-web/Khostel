@@ -76,9 +76,9 @@ export default function DashboardPage() {
       console.log('📊 Fetching real-time dashboard data...')
       
       const [statsRes, hostelsRes, bookingsRes] = await Promise.all([
-        fetch('/api/stats'),
-        fetch('/api/hostels?limit=6'),
-        fetch('/api/bookings?limit=5')
+        fetch('/api/stats', { credentials: 'include' }),
+        fetch('/api/hostels?limit=6', { credentials: 'include' }),
+        fetch('/api/bookings?limit=5', { credentials: 'include' })
       ])
 
       if (statsRes.ok) {
@@ -108,13 +108,29 @@ export default function DashboardPage() {
   }
 
   const fetchFreshUserData = async () => {
+    console.log('🔄 DASHBOARD: fetchFreshUserData called')
     try {
-      const response = await fetch('/api/user/profile')
+      console.log('🔄 DASHBOARD: Fetching /api/user/profile...')
+      const response = await fetch('/api/user/profile', {
+        credentials: 'include', // Include cookies in request
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      console.log('🔄 DASHBOARD: Profile API response status:', response.status)
+      
       if (response.ok) {
         const data = await response.json()
+        console.log('🔄 DASHBOARD: Profile API response data:', data)
+        console.log('🔄 DASHBOARD: Setting freshUserData with role:', data.data?.role)
         setFreshUserData(data.data)
+        console.log('✅ DASHBOARD: freshUserData set successfully')
         console.log('🔄 Fresh user data loaded:', data.data.profileImage ? 'Has profile image' : 'No profile image')
         console.log('🔍 User banned status:', data.data.banned)
+      } else {
+        console.error('❌ DASHBOARD: Profile API failed with status:', response.status)
+        const errorText = await response.text()
+        console.error('❌ DASHBOARD: Profile API error response:', errorText)
       }
     } catch (error) {
       console.error('Error fetching fresh user data:', error)
@@ -192,6 +208,35 @@ export default function DashboardPage() {
   
   // Use fresh user data if available, otherwise fall back to session
   const user = freshUserData || authUser
+
+  // DEBUG: Log what user data the dashboard is actually using
+  console.log('🎯 DASHBOARD DEBUG: ===== USER DATA ANALYSIS =====')
+  console.log('🎯 DASHBOARD DEBUG: freshUserData present:', !!freshUserData)
+  console.log('🎯 DASHBOARD DEBUG: authUser present:', !!authUser)
+  console.log('🎯 DASHBOARD DEBUG: Using freshUserData:', !!freshUserData)
+  console.log('🎯 DASHBOARD DEBUG: Final user object:', {
+    id: user?.id,
+    email: user?.email,
+    role: user?.role,
+    verifiedStatus: user?.verifiedStatus,
+    source: freshUserData ? 'custom_table' : 'supabase_auth'
+  })
+  
+  if (freshUserData) {
+    console.log('🎯 DASHBOARD DEBUG: freshUserData details:', {
+      role: freshUserData.role,
+      verifiedStatus: freshUserData.verifiedStatus,
+      emailVerified: freshUserData.emailVerified
+    })
+  }
+  
+  if (authUser) {
+    console.log('🎯 DASHBOARD DEBUG: authUser details:', {
+      id: authUser.id,
+      email: authUser.email,
+      user_metadata: authUser.user_metadata
+    })
+  }
 
   // Safety check for essential user data
   if (!user?.id || !user?.email) {

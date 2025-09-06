@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { Eye, EyeOff, ArrowLeft } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase-browser'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -30,71 +30,70 @@ export default function LoginPage() {
     console.log('🔐 LOGIN DEBUG: Site URL:', process.env.NEXT_PUBLIC_SITE_URL)
 
     try {
-      console.log('🔐 LOGIN CLIENT: Calling server-side login API...')
+      console.log('🔐 LOGIN CLIENT: Signing in with Supabase directly...')
       
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       })
 
-      console.log('🔐 LOGIN CLIENT: API response received')
-      console.log('🔐 LOGIN CLIENT: Status:', response.status)
-      console.log('🔐 LOGIN CLIENT: Status text:', response.statusText)
+      console.log('🔐 LOGIN CLIENT: Supabase response received')
+      console.log('🔐 LOGIN CLIENT: Data:', !!data)
+      console.log('🔐 LOGIN CLIENT: Error:', !!error)
 
-      const result = await response.json()
-      console.log('🔐 LOGIN CLIENT: Response data:', result)
-
-      if (!response.ok || !result.success) {
-        console.error('❌ LOGIN CLIENT ERROR: API request failed')
-        console.error('❌ LOGIN CLIENT ERROR: Status:', response.status)
-        console.error('❌ LOGIN CLIENT ERROR: Result:', result)
+      if (error) {
+        console.error('❌ LOGIN CLIENT ERROR: Supabase login failed')
+        console.error('❌ LOGIN CLIENT ERROR:', error.message)
         
         // Handle different types of errors
-        if (result.message?.includes('Invalid login credentials')) {
+        if (error.message.includes('Invalid login credentials')) {
           toast.error('Login failed', {
             description: 'Invalid email or password. Please check your credentials.',
           })
-        } else if (result.message?.includes('Email not confirmed')) {
+        } else if (error.message.includes('Email not confirmed')) {
           toast.error('Email not verified', {
             description: 'Please check your email and verify your account before signing in.',
           })
         } else {
           toast.error('Login failed', {
-            description: result.message || 'Login failed',
+            description: error.message,
           })
         }
-      } else {
-        console.log('✅ LOGIN CLIENT SUCCESS: Login API successful')
-        console.log('✅ LOGIN CLIENT SUCCESS: User data:', result.user)
+      } else if (data.user) {
+        console.log('✅ LOGIN CLIENT SUCCESS: User authenticated')
+        console.log('✅ LOGIN CLIENT SUCCESS: User ID:', data.user.id)
+        console.log('✅ LOGIN CLIENT SUCCESS: User Email:', data.user.email)
+        console.log('✅ LOGIN CLIENT SUCCESS: Session:', data.session ? 'Present' : 'Missing')
         
-        // Now sign in with Supabase on the client side using the successful response
-        console.log('🔐 LOGIN CLIENT: Attempting client-side Supabase sign in...')
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
+        // Debug cookies after login
+        console.log('🍪 LOGIN CLIENT: Checking cookies after login...')
+        setTimeout(() => {
+          const allCookies = document.cookie.split(';').map(c => c.trim()).filter(c => c)
+          console.log('🍪 LOGIN CLIENT: Total browser cookies:', allCookies.length)
+          console.log('🍪 LOGIN CLIENT: All cookies:', allCookies.map(c => c.split('=')[0]))
+          
+          const supabaseCookies = allCookies.filter(c => 
+            c.includes('supabase') || 
+            c.includes('sb-') ||
+            c.includes('auth')
+          )
+          console.log('🍪 LOGIN CLIENT: Supabase cookies found:', supabaseCookies.length)
+          supabaseCookies.forEach(cookie => {
+            console.log('🍪 LOGIN CLIENT: Supabase cookie:', cookie.split('=')[0], '=', cookie.split('=')[1]?.substring(0, 20) + '...')
+          })
+        }, 1000) // Check cookies after a delay
+        
+        toast.success('Login successful', {
+          description: 'Welcome back to k-H!',
         })
         
-        if (error) {
-          console.error('❌ LOGIN CLIENT ERROR: Client-side Supabase sign in failed')
-          console.error('❌ LOGIN CLIENT ERROR:', error)
-          toast.error('Login failed', {
-            description: 'Failed to establish client session',
-          })
-        } else if (data.user) {
-          console.log('✅ LOGIN CLIENT SUCCESS: Client session established')
-          toast.success('Login successful', {
-            description: 'Welcome back to k-H!',
-          })
-          
-          console.log('🔐 LOGIN CLIENT: Redirecting to:', callbackUrl)
-          router.push(callbackUrl)
-        }
+        console.log('🔐 LOGIN CLIENT: Redirecting to:', callbackUrl)
+        router.push(callbackUrl)
+      } else {
+        console.error('❌ LOGIN CLIENT ERROR: No error but no user data received')
+        toast.error('Login failed', {
+          description: 'Unexpected response from server',
+        })
       }
     } catch (error) {
       console.error('❌ LOGIN EXCEPTION:', error)

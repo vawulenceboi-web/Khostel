@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react'
 import { Session, User } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase-browser'
 import { useRouter } from 'next/navigation'
 
 type AuthContextType = {
@@ -41,6 +41,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (session?.user) {
         console.log('👤 AUTH PROVIDER DEBUG: User ID:', session.user.id)
         console.log('👤 AUTH PROVIDER DEBUG: User email:', session.user.email)
+        console.log('👤 AUTH PROVIDER DEBUG: User metadata:', JSON.stringify(session.user.user_metadata, null, 2))
+        console.log('👤 AUTH PROVIDER DEBUG: User role from metadata:', session.user.user_metadata?.role)
       }
     })
 
@@ -58,6 +60,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (session?.user) {
         console.log('👤 AUTH PROVIDER DEBUG: Updated user ID:', session.user.id)
         console.log('👤 AUTH PROVIDER DEBUG: Updated user email:', session.user.email)
+        console.log('👤 AUTH PROVIDER DEBUG: Updated user metadata:', JSON.stringify(session.user.user_metadata, null, 2))
+        console.log('👤 AUTH PROVIDER DEBUG: Updated user role:', session.user.user_metadata?.role)
       }
       
       router.refresh()
