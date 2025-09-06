@@ -145,24 +145,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Double-check that the user was actually created by querying Supabase Auth
-    console.log('🔍 REGISTER API: Verifying user was actually created in Supabase Auth...')
-    try {
-      const { data: verifyUser, error: verifyError } = await supabase.auth.admin.getUserById(data.user.id)
-      
-      if (verifyError || !verifyUser.user) {
-        console.error('❌ REGISTER API ERROR: User not found after creation:', verifyError)
-        return NextResponse.json(
-          { success: false, message: 'Registration failed - user creation verification failed' },
-          { status: 500 }
-        )
-      }
-      
-      console.log('✅ REGISTER API: User verified in Supabase Auth:', verifyUser.user.email)
-    } catch (verifyException) {
-      console.error('❌ REGISTER API ERROR: Could not verify user creation:', verifyException)
-      // Continue anyway, but log the issue
-    }
+    // User creation successful - we have the user data from the response
+    console.log('✅ REGISTER API: User creation confirmed from response data')
+    console.log('✅ REGISTER API: User ID:', data.user.id)
+    console.log('✅ REGISTER API: User email:', data.user.email)
 
     const userRole = data.user?.user_metadata?.role || 'student'
     const isStudent = userRole === 'student'
@@ -176,28 +162,46 @@ export async function POST(request: NextRequest) {
 
     // Now create user in custom table to maintain existing dashboard functionality
     console.log('📝 REGISTER API: Creating user in custom table...')
+    console.log('📝 REGISTER API: Custom table data to insert:', {
+      id: data.user.id,
+      email: validatedData.email,
+      role: validatedData.role,
+      verified_status: validatedData.role === 'student' ? true : false
+    })
+    
     try {
+      const customTableData = {
+        id: data.user.id, // Use same ID as Supabase Auth
+        email: validatedData.email,
+        password_hash: 'supabase-auth', // Placeholder since auth is handled by Supabase
+        first_name: validatedData.firstName,
+        last_name: validatedData.lastName || null,
+        phone: validatedData.phone || null,
+        role: validatedData.role,
+        school_id: validatedData.schoolId || null,
+        business_reg_number: validatedData.businessRegNumber || null,
+        address: validatedData.address || null,
+        profile_image_url: validatedData.profileImageUrl || null,
+        terms_accepted: validatedData.termsAccepted,
+        terms_accepted_at: new Date().toISOString(),
+        verified_status: validatedData.role === 'student' ? true : false,
+        email_verified: true, // Will be verified via OTP
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        // Add missing fields with defaults
+        verification_attempts: 0,
+        face_verification_status: 'pending',
+        profile_completeness_score: 0,
+        trust_level: 'basic',
+        banned: false,
+        average_rating: 0.0,
+        total_ratings: 0
+      }
+      
+      console.log('📝 REGISTER API: Attempting custom table insert...')
       const { data: customUser, error: customError } = await db.supabase
         .from('users')
-        .insert({
-          id: data.user.id, // Use same ID as Supabase Auth
-          email: validatedData.email,
-          password_hash: 'supabase-auth', // Placeholder since auth is handled by Supabase
-          first_name: validatedData.firstName,
-          last_name: validatedData.lastName || null,
-          phone: validatedData.phone || null,
-          role: validatedData.role,
-          school_id: validatedData.schoolId || null,
-          business_reg_number: validatedData.businessRegNumber || null,
-          address: validatedData.address || null,
-          profile_image_url: validatedData.profileImageUrl || null,
-          terms_accepted: validatedData.termsAccepted,
-          terms_accepted_at: new Date().toISOString(),
-          verified_status: validatedData.role === 'student' ? true : false,
-          email_verified: true, // Will be verified via OTP
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
+        .insert(customTableData)
         .select()
         .single()
 
