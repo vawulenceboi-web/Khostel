@@ -33,24 +33,7 @@ export const supabase = createClient<Database>(
     auth: {
       autoRefreshToken: true,
       persistSession: true,
-      detectSessionInUrl: true,
-      storage: {
-        getItem: (key: string) => {
-          console.log('🍪 SUPABASE STORAGE: Getting item:', key)
-          const value = localStorage.getItem(key)
-          console.log('🍪 SUPABASE STORAGE: Value found:', !!value, value?.substring(0, 20) + '...')
-          return value
-        },
-        setItem: (key: string, value: string) => {
-          console.log('🍪 SUPABASE STORAGE: Setting item:', key)
-          console.log('🍪 SUPABASE STORAGE: Value length:', value.length)
-          localStorage.setItem(key, value)
-        },
-        removeItem: (key: string) => {
-          console.log('🍪 SUPABASE STORAGE: Removing item:', key)
-          localStorage.removeItem(key)
-        },
-      },
+      detectSessionInUrl: true
     },
     db: {
       schema: 'public'
