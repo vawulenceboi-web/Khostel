@@ -21,14 +21,69 @@ export async function GET(request: NextRequest) {
 
     // Get fresh user data from custom table (maintains existing dashboard functionality)
     console.log('👤 Fetching user from custom table for session email:', session.email)
-    const customUser = await db.users.findByEmail(session.email)
+    let customUser = await db.users.findByEmail(session.email)
 
     if (!customUser) {
-      console.error('❌ User not found in custom table:', session.email)
-      return NextResponse.json(
-        { success: false, message: 'User profile not found in database' },
-        { status: 404 }
-      )
+      console.log('⚠️ User not found in custom table, creating from Supabase Auth data:', session.email)
+      
+      // Get user from Supabase Auth to create custom table entry
+      const { data: { user: authUser }, error: authError } = await db.supabase.auth.getUser()
+      
+      if (authError || !authUser) {
+        console.error('❌ User not found in either system:', session.email)
+        return NextResponse.json(
+          { success: false, message: 'User profile not found in any system' },
+          { status: 404 }
+        )
+      }
+
+      console.log('✅ Found user in Supabase Auth, creating custom table entry...')
+      
+      // Create user in custom table using Supabase Auth data
+      try {
+        const { data: newCustomUser, error: createError } = await db.supabase
+          .from('users')
+          .insert({
+            id: authUser.id,
+            email: authUser.email,
+            password_hash: 'supabase-auth', // Placeholder
+            first_name: authUser.user_metadata?.first_name || 'User',
+            last_name: authUser.user_metadata?.last_name || null,
+            phone: authUser.phone || authUser.user_metadata?.phone || null,
+            role: authUser.user_metadata?.role || 'student',
+            school_id: authUser.user_metadata?.school_id || null,
+            business_reg_number: authUser.user_metadata?.business_reg_number || null,
+            address: authUser.user_metadata?.address || null,
+            profile_image_url: authUser.user_metadata?.profile_image_url || null,
+            face_photo_url: authUser.user_metadata?.face_photo_url || null,
+            terms_accepted: authUser.user_metadata?.terms_accepted || true,
+            terms_accepted_at: authUser.user_metadata?.terms_accepted_at || authUser.created_at,
+            verified_status: authUser.user_metadata?.role === 'student' ? true : (authUser.user_metadata?.verified_status || false),
+            email_verified: true,
+            created_at: authUser.created_at,
+            updated_at: new Date().toISOString()
+          })
+          .select()
+          .single()
+
+        if (createError) {
+          console.error('❌ Failed to create custom table entry:', createError)
+          return NextResponse.json(
+            { success: false, message: 'Failed to create user profile: ' + createError.message },
+            { status: 500 }
+          )
+        }
+
+        console.log('✅ Created custom table entry for user:', newCustomUser.email)
+        customUser = newCustomUser
+        
+      } catch (createException) {
+        console.error('❌ Exception creating custom table entry:', createException)
+        return NextResponse.json(
+          { success: false, message: 'Failed to initialize user profile' },
+          { status: 500 }
+        )
+      }
     }
 
     console.log('✅ Custom table user found:', {
