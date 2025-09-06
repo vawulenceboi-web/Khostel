@@ -83,9 +83,8 @@ export async function POST(request: NextRequest) {
           verified_status: validatedData.role === 'student' ? true : false,
           dashboard_access: validatedData.role === 'student' ? true : false,
           pending_approval: validatedData.role === 'agent' ? true : false,
-        },
-        // No email redirect needed for OTP flow
-        emailRedirectTo: undefined
+        }
+        // Remove emailRedirectTo completely for OTP flow
       }
     })
 
