@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
       console.log('✅ Found user in Supabase Auth, creating custom table entry...')
       console.log('👤 PROFILE API DEBUG: Auth user metadata:', JSON.stringify(authUser.user_metadata, null, 2))
       console.log('👤 PROFILE API DEBUG: Auth user role from metadata:', authUser.user_metadata?.role)
-      console.log('👤 PROFILE API DEBUG: Auth user raw_user_meta_data:', JSON.stringify(authUser.raw_user_meta_data, null, 2))
+      console.log('👤 PROFILE API DEBUG: Auth user user_metadata:', JSON.stringify(authUser.user_metadata, null, 2))
       
       // Create user in custom table using Supabase Auth data
       try {

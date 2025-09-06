@@ -39,6 +39,27 @@ export async function POST(request: NextRequest) {
     const emailRedirectUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
     console.log('📝 REGISTER API: Email redirect URL:', emailRedirectUrl)
 
+    // Check for existing user first
+    console.log('🔍 REGISTER API: Checking for existing user...')
+    try {
+      const existingUser = await db.users.findByEmail(validatedData.email)
+      if (existingUser) {
+        console.log('❌ REGISTER API ERROR: User already exists in custom table:', existingUser.id)
+        return NextResponse.json(
+          { 
+            success: false, 
+            message: 'An account with this email already exists. Please try signing in instead.',
+            errorCode: 'user_already_exists'
+          },
+          { status: 400 }
+        )
+      }
+      console.log('✅ REGISTER API: No existing user found, proceeding with registration')
+    } catch (checkError) {
+      console.log('⚠️ REGISTER API: Could not check for existing user:', checkError)
+      // Continue with registration anyway
+    }
+
     // Register user with Supabase Auth using OTP verification
     console.log('📝 REGISTER API: Calling supabase.auth.signUp with OTP...')
     const startTime = Date.now()
@@ -118,10 +139,30 @@ export async function POST(request: NextRequest) {
 
     if (!data.user) {
       console.error('❌ REGISTER API ERROR: No user in successful response')
+      console.error('❌ REGISTER API ERROR: Data object:', JSON.stringify(data, null, 2))
       return NextResponse.json(
-        { success: false, message: 'Registration failed - no user data' },
+        { success: false, message: 'Registration failed - no user data returned from Supabase' },
         { status: 400 }
       )
+    }
+
+    // Double-check that the user was actually created by querying Supabase Auth
+    console.log('🔍 REGISTER API: Verifying user was actually created in Supabase Auth...')
+    try {
+      const { data: verifyUser, error: verifyError } = await supabase.auth.admin.getUserById(data.user.id)
+      
+      if (verifyError || !verifyUser.user) {
+        console.error('❌ REGISTER API ERROR: User not found after creation:', verifyError)
+        return NextResponse.json(
+          { success: false, message: 'Registration failed - user creation verification failed' },
+          { status: 500 }
+        )
+      }
+      
+      console.log('✅ REGISTER API: User verified in Supabase Auth:', verifyUser.user.email)
+    } catch (verifyException) {
+      console.error('❌ REGISTER API ERROR: Could not verify user creation:', verifyException)
+      // Continue anyway, but log the issue
     }
 
     const userRole = data.user?.user_metadata?.role || 'student'
@@ -163,13 +204,34 @@ export async function POST(request: NextRequest) {
 
       if (customError) {
         console.error('❌ REGISTER API ERROR: Failed to create user in custom table:', customError)
-        // Don't fail the registration, but log the issue
-        console.log('⚠️ REGISTER API WARNING: User exists in Supabase Auth but not in custom table')
+        console.error('❌ REGISTER API ERROR: Custom table error details:', JSON.stringify(customError, null, 2))
+        
+        // This is critical - if custom table fails, the dashboard won't work
+        // So we should fail the registration
+        return NextResponse.json(
+          { 
+            success: false, 
+            message: 'Registration failed: Could not create user profile. ' + customError.message,
+            errorCode: 'custom_table_insert_failed',
+            details: customError
+          },
+          { status: 500 }
+        )
       } else {
-        console.log('✅ REGISTER API SUCCESS: User created in custom table:', customUser.id)
+        console.log('✅ REGISTER API SUCCESS: User created in custom table:', customUser?.id)
       }
     } catch (customTableError) {
       console.error('❌ REGISTER API EXCEPTION: Custom table creation failed:', customTableError)
+      
+      return NextResponse.json(
+        { 
+          success: false, 
+          message: 'Registration failed: Database error during user creation.',
+          errorCode: 'custom_table_exception',
+          details: (customTableError as Error).message
+        },
+        { status: 500 }
+      )
     }
 
     console.log('✅ REGISTER API SUCCESS: Registration completed at:', new Date().toISOString())
