@@ -120,7 +120,21 @@ export default function RegisterPage() {
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!validateForm()) return
+    console.log('📝 FORM SUBMIT: Form submission started')
+    console.log('📝 FORM SUBMIT: Form data:', {
+      email: formData.email,
+      role: formData.role,
+      firstName: formData.firstName,
+      termsAccepted: formData.termsAccepted
+    })
+    
+    console.log('📝 FORM SUBMIT: Running form validation...')
+    if (!validateForm()) {
+      console.log('❌ FORM SUBMIT: Form validation failed')
+      return
+    }
+    
+    console.log('✅ FORM SUBMIT: Form validation passed, calling completeRegistration...')
 
     // Register both students and agents directly (no face verification)
     await completeRegistration()
@@ -137,32 +151,61 @@ export default function RegisterPage() {
 
     try {
       console.log('📝 REGISTER CLIENT: Calling server-side registration API...')
+      console.log('📝 REGISTER CLIENT: Request payload:', {
+        email: formData.email,
+        role: formData.role,
+        firstName: formData.firstName,
+        termsAccepted: formData.termsAccepted
+      })
+      
+      const requestBody = {
+        email: formData.email,
+        password: formData.password,
+        firstName: formData.firstName,
+        lastName: formData.lastName || undefined,
+        phone: formData.phone || undefined,
+        role: formData.role,
+        schoolId: formData.schoolId || undefined,
+        businessRegNumber: formData.businessRegNumber || undefined,
+        address: formData.address || undefined,
+        profileImageUrl: formData.profileImageUrl || undefined,
+        termsAccepted: formData.termsAccepted,
+      }
+      
+      console.log('📝 REGISTER CLIENT: Making fetch request to /api/auth/register...')
       
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-          firstName: formData.firstName,
-          lastName: formData.lastName || undefined,
-          phone: formData.phone || undefined,
-          role: formData.role,
-          schoolId: formData.schoolId || undefined,
-          businessRegNumber: formData.businessRegNumber || undefined,
-          address: formData.address || undefined,
-          profileImageUrl: formData.profileImageUrl || undefined,
-          termsAccepted: formData.termsAccepted,
-        }),
+        body: JSON.stringify(requestBody),
       })
 
-      console.log('📝 REGISTER CLIENT: API response received')
+      console.log('📝 REGISTER CLIENT: Fetch completed')
+      console.log('📝 REGISTER CLIENT: Response object:', response)
       console.log('📝 REGISTER CLIENT: Status:', response.status)
       console.log('📝 REGISTER CLIENT: Status text:', response.statusText)
+      console.log('📝 REGISTER CLIENT: Headers:', Object.fromEntries(response.headers.entries()))
 
+      if (!response.ok) {
+        console.error('❌ REGISTER CLIENT ERROR: HTTP error response')
+        console.error('❌ REGISTER CLIENT ERROR: Status:', response.status)
+        console.error('❌ REGISTER CLIENT ERROR: Status text:', response.statusText)
+        
+        try {
+          const errorText = await response.text()
+          console.error('❌ REGISTER CLIENT ERROR: Response body:', errorText)
+        } catch (textError) {
+          console.error('❌ REGISTER CLIENT ERROR: Could not read error response:', textError)
+        }
+        
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+
+      console.log('📝 REGISTER CLIENT: Parsing JSON response...')
       const result = await response.json()
+      console.log('📝 REGISTER CLIENT: JSON parsed successfully')
       console.log('📝 REGISTER CLIENT: Response data:', result)
 
       if (!response.ok || !result.success) {
