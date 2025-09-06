@@ -193,19 +193,23 @@ export default function RegisterPage() {
         console.log('✅ REGISTER CLIENT SUCCESS: User data:', result.user)
         console.log('✅ REGISTER CLIENT SUCCESS: Debug info:', result.debug)
         
-        if (result.debug?.emailConfirmationRequired) {
+        if (result.otpRequired) {
           toast.success('Registration successful!', {
-            description: 'Please check your email to verify your account before signing in.',
+            description: 'Please check your email for the verification code.',
           })
+          
+          setTimeout(() => {
+            router.push(`/auth/verify-otp?email=${encodeURIComponent(formData.email)}`)
+          }, 2000)
         } else {
           toast.success('Registration successful!', {
             description: 'You can now sign in to your account.',
           })
+          
+          setTimeout(() => {
+            router.push('/auth/login')
+          }, 2000)
         }
-        
-        setTimeout(() => {
-          router.push('/auth/verify-email')
-        }, 2000)
       }
     } catch (error) {
       console.error('❌ REGISTER CLIENT EXCEPTION:', error)
