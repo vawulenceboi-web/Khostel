@@ -27,7 +27,7 @@ import {
   Camera,
   User
 } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase-browser'
 
 
 export default function RegisterPage() {

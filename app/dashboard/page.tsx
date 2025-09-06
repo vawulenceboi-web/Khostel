@@ -76,9 +76,9 @@ export default function DashboardPage() {
       console.log('📊 Fetching real-time dashboard data...')
       
       const [statsRes, hostelsRes, bookingsRes] = await Promise.all([
-        fetch('/api/stats'),
-        fetch('/api/hostels?limit=6'),
-        fetch('/api/bookings?limit=5')
+        fetch('/api/stats', { credentials: 'include' }),
+        fetch('/api/hostels?limit=6', { credentials: 'include' }),
+        fetch('/api/bookings?limit=5', { credentials: 'include' })
       ])
 
       if (statsRes.ok) {
@@ -111,7 +111,12 @@ export default function DashboardPage() {
     console.log('🔄 DASHBOARD: fetchFreshUserData called')
     try {
       console.log('🔄 DASHBOARD: Fetching /api/user/profile...')
-      const response = await fetch('/api/user/profile')
+      const response = await fetch('/api/user/profile', {
+        credentials: 'include', // Include cookies in request
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
       console.log('🔄 DASHBOARD: Profile API response status:', response.status)
       
       if (response.ok) {
