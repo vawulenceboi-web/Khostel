@@ -88,6 +88,28 @@ export default function LoginPage() {
           })
         } else if (data.user) {
           console.log('✅ LOGIN CLIENT SUCCESS: Client session established')
+          console.log('✅ LOGIN CLIENT SUCCESS: Session data:', {
+            user: !!data.user,
+            session: !!data.session,
+            accessToken: data.session?.access_token?.substring(0, 20) + '...'
+          })
+          
+          // Debug cookies after login
+          console.log('🍪 LOGIN CLIENT: Checking cookies after login...')
+          const allCookies = document.cookie.split(';').map(c => c.trim())
+          console.log('🍪 LOGIN CLIENT: Total browser cookies:', allCookies.length)
+          console.log('🍪 LOGIN CLIENT: Cookie names:', allCookies.map(c => c.split('=')[0]))
+          
+          const supabaseCookies = allCookies.filter(c => 
+            c.includes('supabase') || 
+            c.includes('sb-') ||
+            c.includes('auth')
+          )
+          console.log('🍪 LOGIN CLIENT: Supabase cookies:', supabaseCookies.length)
+          supabaseCookies.forEach(cookie => {
+            console.log('🍪 LOGIN CLIENT: Supabase cookie:', cookie.substring(0, 50) + '...')
+          })
+          
           toast.success('Login successful', {
             description: 'Welcome back to k-H!',
           })

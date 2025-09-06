@@ -5,6 +5,22 @@ import type { NextRequest } from 'next/server'
 export async function middleware(request: NextRequest) {
   console.log('🔧 MIDDLEWARE: Request to:', request.nextUrl.pathname)
   
+  // Debug cookies
+  const allCookies = request.cookies.getAll()
+  console.log('🔧 MIDDLEWARE: Total cookies:', allCookies.length)
+  console.log('🔧 MIDDLEWARE: Cookie names:', allCookies.map(c => c.name))
+  
+  // Look for Supabase session cookies specifically
+  const supabaseCookies = allCookies.filter(c => 
+    c.name.includes('supabase') || 
+    c.name.includes('sb-') ||
+    c.name.includes('auth')
+  )
+  console.log('🔧 MIDDLEWARE: Supabase cookies found:', supabaseCookies.length)
+  supabaseCookies.forEach(cookie => {
+    console.log('🔧 MIDDLEWARE: Supabase cookie:', cookie.name, '=', cookie.value.substring(0, 20) + '...')
+  })
+  
   const response = NextResponse.next()
   
   const supabase = createServerClient(
@@ -13,10 +29,14 @@ export async function middleware(request: NextRequest) {
     {
       cookies: {
         getAll() {
-          return request.cookies.getAll()
+          const cookies = request.cookies.getAll()
+          console.log('🔧 MIDDLEWARE: getAll() called, returning', cookies.length, 'cookies')
+          return cookies
         },
         setAll(cookiesToSet) {
+          console.log('🔧 MIDDLEWARE: setAll() called with', cookiesToSet.length, 'cookies')
           cookiesToSet.forEach(({ name, value, options }) => {
+            console.log('🔧 MIDDLEWARE: Setting cookie:', name)
             request.cookies.set(name, value)
             response.cookies.set(name, value, options)
           })
