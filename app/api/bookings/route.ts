@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (session.user.role !== 'student') {
+    if (session.user.user_metadata?.role !== 'student') {
       return NextResponse.json(
         { success: false, message: 'Student role required' },
         { status: 403 }
@@ -59,7 +59,14 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validatedData = createBookingSchema.parse(body)
     
-    console.log('📅 Creating booking for student:', session.user.id)
+    console.log('📅 BOOKING API: Creating booking for student:', session.user.id)
+    console.log('📅 BOOKING API: User role:', session.user.user_metadata?.role)
+    console.log('📅 BOOKING API: Booking data:', {
+      student_id: session.user.id,
+      hostel_id: validatedData.hostelId,
+      preferred_date: validatedData.preferredDate,
+      preferred_time: validatedData.preferredTime
+    })
     
     const newBooking = await db.bookings.create({
       student_id: session.user.id,
@@ -69,7 +76,8 @@ export async function POST(request: NextRequest) {
       message: validatedData.message,
     })
     
-    console.log('✅ Booking created successfully')
+    console.log('✅ BOOKING API: Booking created successfully with ID:', newBooking?.id)
+    console.log('✅ BOOKING API: Booking details:', newBooking)
 
     return NextResponse.json({
       success: true,
