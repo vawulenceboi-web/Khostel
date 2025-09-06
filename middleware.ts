@@ -45,15 +45,16 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  console.log('🔧 MIDDLEWARE: Getting session...')
+  console.log('🔧 MIDDLEWARE: Getting user (secure method)...')
   const {
-    data: { session },
+    data: { user },
     error
-  } = await supabase.auth.getSession()
+  } = await supabase.auth.getUser()
   
-  console.log('🔧 MIDDLEWARE: Session result:', {
-    hasSession: !!session,
-    hasUser: !!session?.user,
+  console.log('🔧 MIDDLEWARE: User result:', {
+    hasUser: !!user,
+    email: user?.email,
+    role: user?.user_metadata?.role,
     error: error?.message,
     path: request.nextUrl.pathname
   })
@@ -75,7 +76,8 @@ export async function middleware(request: NextRequest) {
   )
 
   // Check auth condition
-  if (!session && !isPublicPath) {
+  if (!user && !isPublicPath) {
+    console.log('🔧 MIDDLEWARE: No user found, redirecting to login')
     // Save the original URL
     const redirectUrl = new URL('/auth/login', request.url)
     redirectUrl.searchParams.set('callbackUrl', request.url)
@@ -83,9 +85,10 @@ export async function middleware(request: NextRequest) {
   }
 
   // Special routes for authenticated users
-  if (session && ['/auth/login', '/auth/register'].some(path => 
+  if (user && ['/auth/login', '/auth/register'].some(path => 
     request.nextUrl.pathname.startsWith(path)
   )) {
+    console.log('🔧 MIDDLEWARE: Authenticated user accessing auth pages, redirecting to dashboard')
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
