@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -17,7 +17,60 @@ export default function ResetPasswordPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [resetSuccess, setResetSuccess] = useState(false)
+  const [hasValidSession, setHasValidSession] = useState(false)
+  const [isValidating, setIsValidating] = useState(true)
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // Validate the reset session on component mount
+  useEffect(() => {
+    const validateResetSession = async () => {
+      try {
+        // Check if we have URL parameters (from email link)
+        const accessToken = searchParams.get('access_token')
+        const refreshToken = searchParams.get('refresh_token')
+        
+        if (accessToken && refreshToken) {
+          // Set the session using the tokens from URL
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          })
+
+          if (error) {
+            console.error('❌ Invalid reset session:', error.message)
+            toast.error('Invalid or expired reset link')
+            router.push('/auth/forgot-password')
+            return
+          }
+
+          if (data.session) {
+            setHasValidSession(true)
+            toast.success('Reset link verified! You can now set a new password.')
+          }
+        } else {
+          // Check if user already has a valid session
+          const { data: { session } } = await supabase.auth.getSession()
+          
+          if (session) {
+            setHasValidSession(true)
+          } else {
+            toast.error('No valid reset session found. Please request a new reset link.')
+            router.push('/auth/forgot-password')
+            return
+          }
+        }
+      } catch (error) {
+        console.error('❌ Session validation error:', error)
+        toast.error('Failed to validate reset session')
+        router.push('/auth/forgot-password')
+      } finally {
+        setIsValidating(false)
+      }
+    }
+
+    validateResetSession()
+  }, [searchParams, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -57,6 +110,32 @@ export default function ResetPasswordPage() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Show loading while validating session
+  if (isValidating) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <Card className="border-2 border-border/50 shadow-lg">
+            <CardHeader className="text-center">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+              <CardTitle className="text-2xl">Validating Reset Link</CardTitle>
+              <CardDescription>
+                Please wait while we verify your password reset link...
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  // Don't render the form if session is invalid
+  if (!hasValidSession) {
+    return null
   }
 
   if (resetSuccess) {
