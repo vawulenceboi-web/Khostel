@@ -227,6 +227,9 @@ export const db = {
       } else if (userRole === 'agent') {
         // For agents, get bookings for their hostels
         query = query.eq('hostels.agent_id', userId)
+      } else if (userRole === 'admin') {
+        // For admins, return all bookings (no filter)
+        console.log('📋 Admin user - fetching all bookings')
       }
 
       const { data, error } = await query
