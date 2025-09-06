@@ -31,8 +31,8 @@ export async function POST(request: NextRequest) {
     const emailRedirectUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
     console.log('📝 REGISTER API: Email redirect URL:', emailRedirectUrl)
 
-    // Register user with Supabase Auth
-    console.log('📝 REGISTER API: Calling supabase.auth.signUp...')
+    // Register user with Supabase Auth using OTP verification
+    console.log('📝 REGISTER API: Calling supabase.auth.signUp with OTP...')
     const startTime = Date.now()
     
     const { data, error } = await supabase.auth.signUp({
@@ -50,9 +50,13 @@ export async function POST(request: NextRequest) {
           profile_image_url: validatedData.profileImageUrl || null,
           terms_accepted: validatedData.termsAccepted,
           terms_accepted_at: new Date().toISOString(),
-          verified_status: validatedData.role === 'agent' ? false : true,
+          // Students get immediate access after OTP, agents need admin approval
+          verified_status: validatedData.role === 'student' ? true : false,
+          dashboard_access: validatedData.role === 'student' ? true : false,
+          pending_approval: validatedData.role === 'agent' ? true : false,
         },
-        emailRedirectTo: emailRedirectUrl
+        // No email redirect needed for OTP flow
+        emailRedirectTo: undefined
       }
     })
 
@@ -104,9 +108,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const userRole = data.user?.user_metadata?.role || 'student'
+    const isStudent = userRole === 'student'
+    const requiresOtp = !data.session
+    
     console.log('✅ REGISTER API SUCCESS: User registered successfully')
     console.log('✅ REGISTER API SUCCESS: User ID:', data.user.id)
-    console.log('✅ REGISTER API SUCCESS: Email confirmation required:', !data.session)
+    console.log('✅ REGISTER API SUCCESS: User role:', userRole)
+    console.log('✅ REGISTER API SUCCESS: OTP verification required:', requiresOtp)
+    console.log('✅ REGISTER API SUCCESS: Is student:', isStudent)
     console.log('✅ REGISTER API SUCCESS: Completed at:', new Date().toISOString())
     
     return NextResponse.json({
@@ -114,14 +124,22 @@ export async function POST(request: NextRequest) {
       user: {
         id: data.user.id,
         email: data.user.email,
+        role: userRole,
         emailConfirmed: !!data.user.email_confirmed_at,
         metadata: data.user.user_metadata
       },
       session: !!data.session,
-      message: 'Registration successful! Please check your email to verify your account before signing in.',
+      message: requiresOtp 
+        ? `Registration successful! Please check your email for the OTP code to verify your account.`
+        : `Registration successful! You can now sign in.`,
+      nextStep: requiresOtp ? 'otp_verification' : 'login',
+      otpRequired: requiresOtp,
+      userRole: userRole,
       debug: {
         userId: data.user.id,
-        emailConfirmationRequired: !data.session,
+        role: userRole,
+        otpRequired: requiresOtp,
+        isStudent: isStudent,
         timestamp: new Date().toISOString()
       }
     }, { status: 201 })

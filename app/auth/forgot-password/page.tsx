@@ -14,7 +14,7 @@ import { supabase } from '@/lib/supabase'
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [emailSent, setEmailSent] = useState(false)
+  const [otpSent, setOtpSent] = useState(false)
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,37 +34,33 @@ export default function ForgotPasswordPage() {
     setIsLoading(true)
 
     try {
-      console.log('🔑 FORGOT PASSWORD CLIENT: Calling server-side forgot password API...')
+      console.log('🔑 FORGOT PASSWORD CLIENT: Sending OTP for password reset...')
       
-      const response = await fetch('/api/auth/forgot-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-        }),
+      // Use Supabase OTP for password reset
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/reset-password-otp?email=${encodeURIComponent(email)}`,
       })
 
-      console.log('🔑 FORGOT PASSWORD CLIENT: API response received')
-      console.log('🔑 FORGOT PASSWORD CLIENT: Status:', response.status)
-      console.log('🔑 FORGOT PASSWORD CLIENT: Status text:', response.statusText)
+      console.log('🔑 FORGOT PASSWORD CLIENT: OTP response received')
+      console.log('🔑 FORGOT PASSWORD CLIENT: Error:', error)
 
-      const result = await response.json()
-      console.log('🔑 FORGOT PASSWORD CLIENT: Response data:', result)
-
-      if (!response.ok) {
-        console.error('❌ FORGOT PASSWORD CLIENT ERROR: API request failed')
-        console.error('❌ FORGOT PASSWORD CLIENT ERROR: Status:', response.status)
-        console.error('❌ FORGOT PASSWORD CLIENT ERROR: Result:', result)
+      if (error) {
+        console.error('❌ FORGOT PASSWORD CLIENT ERROR:', error)
         
-        toast.error(result.message || 'Failed to send reset link. Please try again.')
+        if (error.message.includes('User not found')) {
+          toast.error('Account not found', {
+            description: 'No account found with this email address.',
+          })
+        } else {
+          toast.error('Failed to send reset code', {
+            description: 'Please try again or contact support.',
+          })
+        }
       } else {
-        console.log('✅ FORGOT PASSWORD CLIENT SUCCESS: Reset API successful')
-        console.log('✅ FORGOT PASSWORD CLIENT SUCCESS: Debug info:', result.debug)
+        console.log('✅ FORGOT PASSWORD CLIENT SUCCESS: OTP sent')
         
-        setEmailSent(true)
-        toast.success('Password reset link sent to your email')
+        setOtpSent(true)
+        toast.success('Reset code sent to your email')
       }
     } catch (error) {
       console.error('❌ FORGOT PASSWORD EXCEPTION:', error)
@@ -80,7 +76,7 @@ export default function ForgotPasswordPage() {
     }
   }
 
-  if (emailSent) {
+  if (otpSent) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="w-full max-w-md">
@@ -91,7 +87,7 @@ export default function ForgotPasswordPage() {
               </div>
               <CardTitle className="text-2xl text-green-700">Check Your Email</CardTitle>
               <CardDescription>
-                We've sent a password reset link to {email}
+                We've sent a 6-digit reset code to {email}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -101,19 +97,22 @@ export default function ForgotPasswordPage() {
                 </p>
                 <ol className="text-sm text-green-700 mt-2 space-y-1">
                   <li>1. Check your email inbox (and spam folder)</li>
-                  <li>2. Click the password reset link in your email</li>
-                  <li>3. Create your new password</li>
+                  <li>2. Find the 6-digit reset code</li>
+                  <li>3. Enter the code to reset your password</li>
                 </ol>
               </div>
               
-              <Button className="w-full h-12 bg-green-600 hover:bg-green-700" onClick={() => setEmailSent(false)}>
+              <Button 
+                className="w-full h-12 bg-green-600 hover:bg-green-700" 
+                onClick={() => router.push(`/auth/reset-password-otp?email=${encodeURIComponent(email)}`)}
+              >
                 <Send className="w-4 h-4 mr-2" />
-                Send Another Reset Link
+                Enter Reset Code
               </Button>
               
               <div className="text-center">
                 <button
-                  onClick={() => setEmailSent(false)}
+                  onClick={() => setOtpSent(false)}
                   className="text-sm text-muted-foreground hover:text-foreground"
                 >
                   Use different email address
@@ -141,7 +140,7 @@ export default function ForgotPasswordPage() {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Forgot Password?</h1>
           <p className="text-muted-foreground">
-            No worries! Enter your email and we'll send you a reset code.
+            No worries! Enter your email and we'll send you a 6-digit reset code.
           </p>
         </div>
 
