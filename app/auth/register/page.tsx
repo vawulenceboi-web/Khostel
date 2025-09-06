@@ -31,6 +31,8 @@ import { supabase } from '@/lib/supabase'
 
 
 export default function RegisterPage() {
+  console.log('🔄 REGISTER PAGE: Component loaded successfully')
+  
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -55,6 +57,7 @@ export default function RegisterPage() {
   const router = useRouter()
 
   useEffect(() => {
+    console.log('🔄 REGISTER PAGE: useEffect triggered - component mounted')
     fetchSchools()
   }, [])
 
@@ -118,7 +121,12 @@ export default function RegisterPage() {
   }
 
   const handleFormSubmit = async (e: React.FormEvent) => {
+    console.log('🚨 FORM SUBMIT: ===== FORM SUBMISSION TRIGGERED =====')
+    console.log('🚨 FORM SUBMIT: Event object:', e)
+    console.log('🚨 FORM SUBMIT: Event type:', e.type)
+    
     e.preventDefault()
+    console.log('🚨 FORM SUBMIT: preventDefault() called')
     
     console.log('📝 FORM SUBMIT: Form submission started')
     console.log('📝 FORM SUBMIT: Form data:', {
@@ -568,6 +576,13 @@ export default function RegisterPage() {
                 type="submit" 
                 className="w-full h-12" 
                 disabled={isLoading || !formData.termsAccepted}
+                onClick={(e) => {
+                  console.log('🚨 BUTTON CLICK: Submit button clicked!')
+                  console.log('🚨 BUTTON CLICK: Button disabled:', isLoading || !formData.termsAccepted)
+                  console.log('🚨 BUTTON CLICK: isLoading:', isLoading)
+                  console.log('🚨 BUTTON CLICK: termsAccepted:', formData.termsAccepted)
+                  // Don't prevent default here - let the form handle it
+                }}
               >
                 {isLoading ? (
                   <>
