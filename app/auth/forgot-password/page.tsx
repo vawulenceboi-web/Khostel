@@ -20,7 +20,13 @@ export default function ForgotPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    console.log('🔑 FORGOT PASSWORD DEBUG: Starting process')
+    console.log('🔑 FORGOT PASSWORD DEBUG: Email:', email)
+    console.log('🔑 FORGOT PASSWORD DEBUG: Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
+    console.log('🔑 FORGOT PASSWORD DEBUG: Site URL:', process.env.NEXT_PUBLIC_SITE_URL)
+    
     if (!email) {
+      console.log('❌ FORGOT PASSWORD ERROR: No email provided')
       toast.error('Please enter your email address')
       return
     }
@@ -28,21 +34,41 @@ export default function ForgotPasswordPage() {
     setIsLoading(true)
 
     try {
+      const redirectUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?type=recovery`
+      console.log('🔑 FORGOT PASSWORD DEBUG: Redirect URL:', redirectUrl)
+      console.log('🔑 FORGOT PASSWORD DEBUG: Calling supabase.auth.resetPasswordForEmail...')
+      
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?type=recovery`,
+        redirectTo: redirectUrl,
       })
 
+      console.log('🔑 FORGOT PASSWORD DEBUG: Supabase response received')
+      console.log('🔑 FORGOT PASSWORD DEBUG: Error:', error)
+
       if (error) {
-        console.error('Reset password error:', error)
+        console.error('❌ FORGOT PASSWORD ERROR:', error.message)
+        console.error('❌ FORGOT PASSWORD ERROR Details:', {
+          name: error.name,
+          message: error.message,
+          status: error.status,
+          statusCode: error.status
+        })
         toast.error('Failed to send reset link. Please try again.')
       } else {
+        console.log('✅ FORGOT PASSWORD SUCCESS: Reset email sent')
         setEmailSent(true)
         toast.success('Password reset link sent to your email')
       }
     } catch (error) {
-      console.error('Forgot password error:', error)
+      console.error('❌ FORGOT PASSWORD EXCEPTION:', error)
+      console.error('❌ FORGOT PASSWORD EXCEPTION Details:', {
+        name: (error as Error).name,
+        message: (error as Error).message,
+        stack: (error as Error).stack
+      })
       toast.error('Network error. Please try again.')
     } finally {
+      console.log('🔑 FORGOT PASSWORD DEBUG: Process completed, loading:', false)
       setIsLoading(false)
     }
   }

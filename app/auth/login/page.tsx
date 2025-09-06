@@ -24,14 +24,31 @@ export default function LoginPage() {
     e.preventDefault()
     setIsLoading(true)
 
+    console.log('🔐 LOGIN DEBUG: Starting login process')
+    console.log('🔐 LOGIN DEBUG: Email:', email)
+    console.log('🔐 LOGIN DEBUG: Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
+    console.log('🔐 LOGIN DEBUG: Site URL:', process.env.NEXT_PUBLIC_SITE_URL)
+
     try {
+      console.log('🔐 LOGIN DEBUG: Calling supabase.auth.signInWithPassword...')
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
+      console.log('🔐 LOGIN DEBUG: Supabase response received')
+      console.log('🔐 LOGIN DEBUG: Data:', data)
+      console.log('🔐 LOGIN DEBUG: Error:', error)
+
       if (error) {
-        console.error('Login error:', error.message)
+        console.error('❌ LOGIN ERROR:', error.message)
+        console.error('❌ LOGIN ERROR Details:', {
+          name: error.name,
+          message: error.message,
+          status: error.status,
+          statusCode: error.status
+        })
         
         // Handle different types of errors
         if (error.message.includes('Invalid login credentials')) {
@@ -48,16 +65,38 @@ export default function LoginPage() {
           })
         }
       } else if (data.user) {
+        console.log('✅ LOGIN SUCCESS: User authenticated')
+        console.log('✅ LOGIN SUCCESS: User ID:', data.user.id)
+        console.log('✅ LOGIN SUCCESS: User Email:', data.user.email)
+        console.log('✅ LOGIN SUCCESS: Session:', data.session ? 'Present' : 'Missing')
+        console.log('✅ LOGIN SUCCESS: Callback URL:', callbackUrl)
+        
         toast.success('Login successful', {
           description: 'Welcome back to k-H!',
         })
+        
+        console.log('🔐 LOGIN DEBUG: Redirecting to:', callbackUrl)
         router.push(callbackUrl)
+      } else {
+        console.error('❌ LOGIN ERROR: No error but no user data received')
+        console.error('❌ LOGIN ERROR: Unexpected response:', { data, error })
+        toast.error('Login failed', {
+          description: 'Unexpected response from server',
+        })
       }
     } catch (error) {
+      console.error('❌ LOGIN EXCEPTION:', error)
+      console.error('❌ LOGIN EXCEPTION Details:', {
+        name: (error as Error).name,
+        message: (error as Error).message,
+        stack: (error as Error).stack
+      })
+      
       toast.error('Login failed', {
         description: 'An unexpected error occurred',
       })
     } finally {
+      console.log('🔐 LOGIN DEBUG: Login process completed, loading:', false)
       setIsLoading(false)
     }
   }
