@@ -34,28 +34,35 @@ export default function ForgotPasswordPage() {
     setIsLoading(true)
 
     try {
-      const redirectUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?type=recovery`
-      console.log('🔑 FORGOT PASSWORD DEBUG: Redirect URL:', redirectUrl)
-      console.log('🔑 FORGOT PASSWORD DEBUG: Calling supabase.auth.resetPasswordForEmail...')
+      console.log('🔑 FORGOT PASSWORD CLIENT: Calling server-side forgot password API...')
       
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: redirectUrl,
+      const response = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+        }),
       })
 
-      console.log('🔑 FORGOT PASSWORD DEBUG: Supabase response received')
-      console.log('🔑 FORGOT PASSWORD DEBUG: Error:', error)
+      console.log('🔑 FORGOT PASSWORD CLIENT: API response received')
+      console.log('🔑 FORGOT PASSWORD CLIENT: Status:', response.status)
+      console.log('🔑 FORGOT PASSWORD CLIENT: Status text:', response.statusText)
 
-      if (error) {
-        console.error('❌ FORGOT PASSWORD ERROR:', error.message)
-        console.error('❌ FORGOT PASSWORD ERROR Details:', {
-          name: error.name,
-          message: error.message,
-          status: error.status,
-          statusCode: error.status
-        })
-        toast.error('Failed to send reset link. Please try again.')
+      const result = await response.json()
+      console.log('🔑 FORGOT PASSWORD CLIENT: Response data:', result)
+
+      if (!response.ok) {
+        console.error('❌ FORGOT PASSWORD CLIENT ERROR: API request failed')
+        console.error('❌ FORGOT PASSWORD CLIENT ERROR: Status:', response.status)
+        console.error('❌ FORGOT PASSWORD CLIENT ERROR: Result:', result)
+        
+        toast.error(result.message || 'Failed to send reset link. Please try again.')
       } else {
-        console.log('✅ FORGOT PASSWORD SUCCESS: Reset email sent')
+        console.log('✅ FORGOT PASSWORD CLIENT SUCCESS: Reset API successful')
+        console.log('✅ FORGOT PASSWORD CLIENT SUCCESS: Debug info:', result.debug)
+        
         setEmailSent(true)
         toast.success('Password reset link sent to your email')
       }

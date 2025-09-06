@@ -68,6 +68,53 @@ export async function POST(request: NextRequest) {
       console.error('❌ LOGIN API ERROR: Error status:', error.status)
       console.error('❌ LOGIN API ERROR: Full error object:', JSON.stringify(error, null, 2))
       
+      // Additional debugging for invalid credentials
+      if (error.message.includes('Invalid login credentials')) {
+        console.log('🔍 LOGIN API DEBUG: Checking if user exists in Supabase Auth...')
+        
+        try {
+          // Try to send a password reset to see if user exists (safer than admin API)
+          console.log('🔍 LOGIN API DEBUG: Testing if user exists by attempting password reset...')
+          const { error: resetError } = await supabase.auth.resetPasswordForEmail(validatedData.email, {
+            redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?type=recovery`,
+          })
+          
+          if (!resetError) {
+            console.log('🔍 LOGIN API DEBUG: Password reset succeeded - user exists')
+            console.log('❌ LOGIN API DEBUG: User exists but login failed - likely email not confirmed or wrong password')
+            return NextResponse.json(
+              { 
+                success: false, 
+                message: 'Invalid login credentials. If you just registered, please check your email to verify your account first.',
+                errorCode: 'invalid_credentials_user_exists',
+                userExists: true,
+                suggestion: 'Check your email for verification link or try password reset'
+              },
+              { status: 400 }
+            )
+          } else {
+            console.log('🔍 LOGIN API DEBUG: Password reset failed:', resetError.message)
+            if (resetError.message.includes('User not found') || resetError.message.includes('Invalid email')) {
+              console.log('❌ LOGIN API DEBUG: User does not exist')
+              return NextResponse.json(
+                { 
+                  success: false, 
+                  message: 'No account found with this email address. Please sign up first.',
+                  errorCode: 'user_not_found',
+                  userExists: false
+                },
+                { status: 400 }
+              )
+            } else {
+              console.log('🔍 LOGIN API DEBUG: Reset failed for other reason - user might exist')
+              console.log('❌ LOGIN API DEBUG: Assuming user exists but credentials are wrong')
+            }
+          }
+        } catch (debugError) {
+          console.error('❌ LOGIN API DEBUG ERROR:', debugError)
+        }
+      }
+      
       return NextResponse.json(
         { 
           success: false, 
