@@ -17,6 +17,14 @@ export default function HostelsClient() {
   const { user: authUser, session } = useAuth()
   const searchParams = useSearchParams()
 
+  // Debug what user data we're getting
+  console.log('🏠 HOSTELS DEBUG: Auth user:', {
+    authUser: !!authUser,
+    session: !!session,
+    authUserRole: authUser?.user_metadata?.role,
+    sessionUserRole: session?.user?.user_metadata?.role
+  })
+
   // Define the hostel type
   interface Hostel {
     id: string
@@ -294,7 +302,7 @@ export default function HostelsClient() {
                     <Button 
                       className="w-full"
                       onClick={() => handleBookInspection(hostel.id)}
-                      disabled={!session || !authUser || session.user.role !== 'student'}
+                      disabled={!session || !authUser || authUser?.user_metadata?.role !== 'student'}
                     >
                       <Calendar className="w-4 h-4 mr-2" />
                       {!session ? 'Sign In to Book' : 'Book Inspection'}
