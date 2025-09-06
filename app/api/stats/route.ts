@@ -87,9 +87,9 @@ export async function GET(request: NextRequest) {
       success: true,
       data: userStats,
       user: {
-        role: session.user.role,
-        verifiedStatus: session.user.verifiedStatus,
-        name: session.user.firstName || session.user.name
+        role: session.user.user_metadata?.role || 'student',
+        verifiedStatus: (session.user.user_metadata as any)?.verified_status || false,
+        name: (session.user.user_metadata as any)?.first_name || session.user.email
       }
     })
 

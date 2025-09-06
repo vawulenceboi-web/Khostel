@@ -8,7 +8,7 @@ import { db } from '@/lib/db'
 export async function POST(request: NextRequest) {
   try {
     // Verify admin session
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const adminSessionCookie = cookieStore.get('admin-session')
 
     if (!adminSessionCookie) {

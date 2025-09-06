@@ -136,11 +136,11 @@ export default function ProfilePhotoUpload({
     } catch (error) {
       console.error('❌ Profile photo upload error:', error)
       
-      if (error.message?.includes('Failed to fetch')) {
+      if (error instanceof Error && error.message?.includes('Failed to fetch')) {
         toast.error('🌐 Network error - please check your connection and try again')
-      } else if (error.message?.includes('413')) {
+      } else if (error instanceof Error && error.message?.includes('413')) {
         toast.error('📷 Image file is too large. Please select a smaller photo (under 5MB)')
-      } else if (error.message?.includes('timeout')) {
+      } else if (error instanceof Error && error.message?.includes('timeout')) {
         toast.error('⏱️ Upload timed out. Please try with a smaller image or check your connection')
       } else {
         toast.error('📷 Upload failed. Please try again with a different photo.')

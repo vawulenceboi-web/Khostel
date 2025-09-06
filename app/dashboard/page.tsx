@@ -3,6 +3,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { useAuth } from '@/lib/hooks/use-auth'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -152,7 +153,7 @@ export default function DashboardPage() {
       toast.success('Profile photo updated! Updating display...')
       
       // Immediately update the fresh user data with new photo
-      setFreshUserData(prev => ({
+      setFreshUserData((prev: any) => ({
         ...prev,
         profileImage: photoUrl
       }))
@@ -223,7 +224,7 @@ export default function DashboardPage() {
               <Badge variant="secondary" className="hidden sm:inline-flex">
                 {user.role === 'student' && <GraduationCap className="w-3 h-3 mr-1" />}
                 {user.role === 'agent' && <Building className="w-3 h-3 mr-1" />}
-                {user.role === 'individual' && <User className="w-3 h-3 mr-1" />}
+                {user.role === 'individual' && <Users className="w-3 h-3 mr-1" />}
                 {user.role === 'admin' && <Shield className="w-3 h-3 mr-1" />}
                 {user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'User'}
                 {user.verifiedStatus && <InstagramVerificationBadge verified={true} size="sm" className="ml-1" />}
@@ -291,7 +292,7 @@ export default function DashboardPage() {
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <Users className="w-12 h-12 text-muted-foreground" />
-                        {console.log('ℹ️ No profile image found for user:', user?.email)}
+                        {/* No profile image found for user: {user?.email} */}
                       </div>
                     )}
                   </div>

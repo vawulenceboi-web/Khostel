@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     // Verify admin session
     const cookieStore = cookies();
     const adminSessionCookie = 
-    cookieStore.get('admin-session');
+    (await cookies()).get('admin-session');
 
     if (!adminSessionCookie) {
       return NextResponse.json(
