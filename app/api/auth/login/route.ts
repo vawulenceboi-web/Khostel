@@ -31,6 +31,9 @@ export async function POST(request: NextRequest) {
     console.log('✅ LOGIN API DEBUG: Input validation passed')
 
     console.log('🔐 LOGIN API DEBUG: Calling supabase.auth.signInWithPassword...')
+    console.log('🔐 LOGIN API DEBUG: Email being used:', validatedData.email)
+    console.log('🔐 LOGIN API DEBUG: Password length:', validatedData.password.length)
+    
     const startTime = Date.now()
     
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -42,6 +45,8 @@ export async function POST(request: NextRequest) {
     console.log('🔐 LOGIN API DEBUG: Supabase call completed in', endTime - startTime, 'ms')
     console.log('🔐 LOGIN API DEBUG: Response data present:', !!data)
     console.log('🔐 LOGIN API DEBUG: Response error present:', !!error)
+    console.log('🔐 LOGIN API DEBUG: Raw response data:', JSON.stringify(data, null, 2))
+    console.log('🔐 LOGIN API DEBUG: Raw response error:', JSON.stringify(error, null, 2))
     
     if (data) {
       console.log('🔐 LOGIN API DEBUG: Data details:')
