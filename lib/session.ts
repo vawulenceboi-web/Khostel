@@ -49,11 +49,11 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
       }
     )
 
-    const { data: { session }, error } = await supabase.auth.getSession()
+    // Use getUser() instead of getSession() for security (as recommended by Supabase)
+    const { data: { user }, error } = await supabase.auth.getUser()
     
-    console.log('🔐 SESSION: Session check result:', {
-      hasSession: !!session,
-      hasUser: !!session?.user,
+    console.log('🔐 SESSION: User check result:', {
+      hasUser: !!user,
       error: error?.message
     })
 
@@ -62,24 +62,24 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
       return null
     }
 
-    if (!session?.user) {
-      console.log('❌ SESSION: No session or user found')
+    if (!user) {
+      console.log('❌ SESSION: No user found')
       return null
     }
 
     console.log('✅ SESSION: User found:', {
-      id: session.user.id,
-      email: session.user.email,
-      role: session.user.user_metadata?.role
+      id: user.id,
+      email: user.email,
+      role: user.user_metadata?.role
     })
 
     return {
-      id: session.user.id,
-      email: session.user.email!,
-      phone: session.user.phone,
-      role: (session.user.user_metadata?.role as SessionUser['role']) || 'student',
-      verified: session.user.user_metadata?.verified || false,
-      user_metadata: session.user.user_metadata
+      id: user.id,
+      email: user.email!,
+      phone: user.phone,
+      role: (user.user_metadata?.role as SessionUser['role']) || 'student',
+      verified: user.user_metadata?.verified || false,
+      user_metadata: user.user_metadata
     }
   } catch (error) {
     console.error('❌ SESSION EXCEPTION:', error)
