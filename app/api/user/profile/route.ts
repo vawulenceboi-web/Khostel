@@ -19,40 +19,54 @@ export async function GET(request: NextRequest) {
 
     console.log('👤 Fetching fresh profile data for:', session.email)
 
-    // Get fresh user data from the Supabase auth session
-    const { data: { user }, error: authError } = await db.supabase.auth.getUser()
+    // Get fresh user data from custom table (maintains existing dashboard functionality)
+    console.log('👤 Fetching user from custom table for session email:', session.email)
+    const customUser = await db.users.findByEmail(session.email)
 
-    if (authError || !user) {
-      console.error('❌ Error fetching user profile:', authError)
+    if (!customUser) {
+      console.error('❌ User not found in custom table:', session.email)
       return NextResponse.json(
-        { success: false, message: 'User profile not found' },
+        { success: false, message: 'User profile not found in database' },
         { status: 404 }
       )
     }
 
-    console.log('✅ Fresh profile data loaded:', {
-      email: user.email,
-      hasProfileImage: !!user.user_metadata?.profile_image_url,
-      hasFacePhoto: !!user.user_metadata?.face_photo_url,
-      profileImageUrl: user.user_metadata?.profile_image_url
+    console.log('✅ Custom table user found:', {
+      id: customUser.id,
+      email: customUser.email,
+      role: customUser.role,
+      verifiedStatus: customUser.verified_status,
+      hasProfileImage: !!customUser.profile_image_url,
+      hasFacePhoto: !!customUser.face_photo_url,
+      averageRating: customUser.average_rating,
+      totalRatings: customUser.total_ratings
     })
 
-    // Return fresh user data
+    // Return user data from custom table (maintains all existing dashboard features)
     const profileData = {
-      id: user.id,
-      email: user.email,
-      name: `${user.user_metadata?.first_name} ${user.user_metadata?.last_name || ''}`.trim(),
-      firstName: user.user_metadata?.first_name,
-      lastName: user.user_metadata?.last_name,
-      phone: user.phone || user.user_metadata?.phone,
-      address: user.user_metadata?.address,
-      profileImage: user.user_metadata?.profile_image_url,
-      facePhoto: user.user_metadata?.face_photo_url,
-      role: user.user_metadata?.role || 'student',
-      verifiedStatus: user.user_metadata?.verified_status || false,
-      faceVerificationStatus: user.user_metadata?.face_verification_status || false,
-      schoolId: user.user_metadata?.school_id,
-      lastUpdated: user.updated_at
+      id: customUser.id,
+      email: customUser.email,
+      name: `${customUser.first_name} ${customUser.last_name || ''}`.trim(),
+      firstName: customUser.first_name,
+      lastName: customUser.last_name,
+      phone: customUser.phone,
+      address: customUser.address,
+      profileImage: customUser.profile_image_url,
+      facePhoto: customUser.face_photo_url,
+      role: customUser.role,
+      verifiedStatus: customUser.verified_status,
+      emailVerified: customUser.email_verified,
+      schoolId: customUser.school_id,
+      businessRegNumber: customUser.business_reg_number,
+      termsAccepted: customUser.terms_accepted,
+      banned: customUser.banned,
+      averageRating: customUser.average_rating,
+      totalRatings: customUser.total_ratings,
+      faceVerificationStatus: customUser.face_verification_status,
+      profileCompletenessScore: customUser.profile_completeness_score,
+      trustLevel: customUser.trust_level,
+      lastUpdated: customUser.updated_at,
+      createdAt: customUser.created_at
     }
 
     return NextResponse.json({

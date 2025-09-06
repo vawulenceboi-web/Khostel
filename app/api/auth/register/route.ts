@@ -2,7 +2,7 @@ export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server'
 
 import { registerUserSchema } from '@/lib/schema'
-
+import { db } from '@/lib/db'
 import { supabase } from '@/lib/supabase'
 
 
@@ -128,12 +128,51 @@ export async function POST(request: NextRequest) {
     const isStudent = userRole === 'student'
     const requiresOtp = !data.session
     
-    console.log('✅ REGISTER API SUCCESS: User registered successfully')
+    console.log('✅ REGISTER API SUCCESS: User created in Supabase Auth')
     console.log('✅ REGISTER API SUCCESS: User ID:', data.user.id)
     console.log('✅ REGISTER API SUCCESS: User role:', userRole)
     console.log('✅ REGISTER API SUCCESS: OTP verification required:', requiresOtp)
     console.log('✅ REGISTER API SUCCESS: Is student:', isStudent)
-    console.log('✅ REGISTER API SUCCESS: Completed at:', new Date().toISOString())
+
+    // Now create user in custom table to maintain existing dashboard functionality
+    console.log('📝 REGISTER API: Creating user in custom table...')
+    try {
+      const { data: customUser, error: customError } = await db.supabase
+        .from('users')
+        .insert({
+          id: data.user.id, // Use same ID as Supabase Auth
+          email: validatedData.email,
+          password_hash: 'supabase-auth', // Placeholder since auth is handled by Supabase
+          first_name: validatedData.firstName,
+          last_name: validatedData.lastName || null,
+          phone: validatedData.phone || null,
+          role: validatedData.role,
+          school_id: validatedData.schoolId || null,
+          business_reg_number: validatedData.businessRegNumber || null,
+          address: validatedData.address || null,
+          profile_image_url: validatedData.profileImageUrl || null,
+          terms_accepted: validatedData.termsAccepted,
+          terms_accepted_at: new Date().toISOString(),
+          verified_status: validatedData.role === 'student' ? true : false,
+          email_verified: true, // Will be verified via OTP
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single()
+
+      if (customError) {
+        console.error('❌ REGISTER API ERROR: Failed to create user in custom table:', customError)
+        // Don't fail the registration, but log the issue
+        console.log('⚠️ REGISTER API WARNING: User exists in Supabase Auth but not in custom table')
+      } else {
+        console.log('✅ REGISTER API SUCCESS: User created in custom table:', customUser.id)
+      }
+    } catch (customTableError) {
+      console.error('❌ REGISTER API EXCEPTION: Custom table creation failed:', customTableError)
+    }
+
+    console.log('✅ REGISTER API SUCCESS: Registration completed at:', new Date().toISOString())
     
     return NextResponse.json({
       success: true,
