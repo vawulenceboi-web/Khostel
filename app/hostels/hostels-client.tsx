@@ -145,7 +145,7 @@ export default function HostelsClient() {
       return
     }
 
-    if (session.user.role !== 'student') {
+    if (authUser?.user_metadata?.role !== 'student') {
       toast.error('Only students can book inspections')
       return
     }
