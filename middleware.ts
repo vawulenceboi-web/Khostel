@@ -65,6 +65,7 @@ export async function middleware(request: NextRequest) {
     '/auth/register',
     '/auth/forgot-password',
     '/auth/reset-password',
+    '/auth/reset-password-otp', // ✅ NEW: allow OTP reset without session
     '/auth/callback',
     '/',
     '/privacy',

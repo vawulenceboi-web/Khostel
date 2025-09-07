@@ -31,7 +31,7 @@ export default function ResetPasswordOtpPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!email) {
       toast.error('Please enter your email address')
       return
@@ -61,8 +61,8 @@ export default function ResetPasswordOtpPage() {
 
     try {
       console.log('🔄 RESET PASSWORD OTP: Starting password reset...')
-      
-      // First verify the OTP and get session
+
+      // Verify the OTP
       const { data, error: verifyError } = await supabase.auth.verifyOtp({
         email,
         token: otp,
@@ -73,34 +73,26 @@ export default function ResetPasswordOtpPage() {
 
       if (verifyError) {
         console.error('❌ RESET PASSWORD OTP ERROR: OTP verification failed', verifyError)
-        
+
         if (verifyError.message.includes('Invalid token')) {
-          toast.error('Invalid reset code', {
-            description: 'Please check the code and try again.',
-          })
+          toast.error('Invalid reset code', { description: 'Please check the code and try again.' })
         } else if (verifyError.message.includes('expired')) {
-          toast.error('Reset code expired', {
-            description: 'Please request a new reset code.',
-          })
+          toast.error('Reset code expired', { description: 'Please request a new reset code.' })
         } else {
-          toast.error('Verification failed', {
-            description: verifyError.message,
-          })
+          toast.error('Verification failed', { description: verifyError.message })
         }
         return
       }
 
-      if (!data.session) {
-        console.error('❌ RESET PASSWORD OTP ERROR: No session after OTP verification')
-        toast.error('Reset failed', {
-          description: 'Could not establish session. Please try again.',
-        })
+      if (!data.user) {
+        console.error('❌ RESET PASSWORD OTP ERROR: No user returned after OTP verification')
+        toast.error('Verification failed', { description: 'Could not verify your account. Please try again.' })
         return
       }
 
       console.log('✅ RESET PASSWORD OTP: OTP verified, updating password...')
 
-      // Now update the password using the established session
+      // Update the password
       const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword
       })
@@ -109,22 +101,17 @@ export default function ResetPasswordOtpPage() {
 
       if (updateError) {
         console.error('❌ RESET PASSWORD OTP ERROR: Password update failed', updateError)
-        toast.error('Password update failed', {
-          description: updateError.message,
-        })
+        toast.error('Password update failed', { description: updateError.message })
         return
       }
 
       console.log('✅ RESET PASSWORD OTP SUCCESS: Password updated successfully')
-      
       setResetSuccess(true)
       toast.success('Password reset successfully!')
 
     } catch (error) {
       console.error('❌ RESET PASSWORD OTP EXCEPTION:', error)
-      toast.error('Reset failed', {
-        description: 'Network error. Please try again.',
-      })
+      toast.error('Reset failed', { description: 'Network error. Please try again.' })
     } finally {
       setIsLoading(false)
     }
