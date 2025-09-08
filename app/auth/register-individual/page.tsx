@@ -114,7 +114,7 @@ export default function RegisterIndividualPage() {
       if (result.success) {
         toast.success('Registration successful! Please check your email to verify your account.')
         setTimeout(() => {
-          router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`)
+          router.push(`/auth/verify-otp?email=${encodeURIComponent(formData.email)}`)
         }, 2000)
       } else {
         toast.error(result.message || 'Registration failed')
