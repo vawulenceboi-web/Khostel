@@ -36,9 +36,15 @@ export default function ForgotPasswordPage() {
     try {
       console.log('🔑 FORGOT PASSWORD CLIENT: Sending OTP for password reset...')
       
-      // Use Supabase OTP for password reset
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password-otp?email=${encodeURIComponent(email)}`,
+      // Send OTP for password reset (not magic link)
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: false, // Don't create new users
+          data: {
+            type: 'password_reset'
+          }
+        }
       })
 
       console.log('🔑 FORGOT PASSWORD CLIENT: OTP response received')
