@@ -145,8 +145,8 @@ export default function HostelsClient() {
       return
     }
 
-    if (authUser?.user_metadata?.role !== 'student') {
-      toast.error('Only students can book inspections')
+    if (authUser?.user_metadata?.role !== 'student' && authUser?.user_metadata?.role !== 'individual') {
+      toast.error('Only students and individuals can book inspections')
       return
     }
 
@@ -302,10 +302,10 @@ export default function HostelsClient() {
                     <Button 
                       className="w-full"
                       onClick={() => handleBookInspection(hostel.id)}
-                      disabled={!session || !authUser || authUser?.user_metadata?.role !== 'student'}
+                      disabled={!session || !authUser || (authUser?.user_metadata?.role !== 'student' && authUser?.user_metadata?.role !== 'individual')}
                     >
                       <Calendar className="w-4 h-4 mr-2" />
-                      {!session ? 'Sign In to Book' : 'Book Inspection'}
+                      {!session ? 'Sign In to Book' : (authUser?.user_metadata?.user_type === 'individual' ? 'Request Viewing' : 'Book Inspection')}
                     </Button>
                   </div>
                   

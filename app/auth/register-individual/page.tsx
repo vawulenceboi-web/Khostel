@@ -96,9 +96,10 @@ export default function RegisterIndividualPage() {
         email: formData.email.trim().toLowerCase(),
         password: formData.password,
         phone: formData.phone.trim(),
-        role: 'individual',
+        role: 'student', // Map individual to student role for dashboard compatibility
         address: formData.address.trim(),
-        termsAccepted: formData.termsAccepted
+        termsAccepted: formData.termsAccepted,
+        userType: 'individual' // Track original intent
       }
 
       console.log('📝 Submitting individual registration...')

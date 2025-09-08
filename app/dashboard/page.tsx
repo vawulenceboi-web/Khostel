@@ -269,9 +269,9 @@ export default function DashboardPage() {
               <Badge variant="secondary" className="hidden sm:inline-flex">
                 {user.role === 'student' && <GraduationCap className="w-3 h-3 mr-1" />}
                 {user.role === 'agent' && <Building className="w-3 h-3 mr-1" />}
-                {user.role === 'individual' && <Users className="w-3 h-3 mr-1" />}
+                {(user.role === 'student' && freshUserData?.userType === 'individual') && <User className="w-3 h-3 mr-1" />}
                 {user.role === 'admin' && <Shield className="w-3 h-3 mr-1" />}
-                {user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'User'}
+                {freshUserData?.userType === 'individual' ? 'Individual' : (user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'User')}
                 {user.verifiedStatus && <InstagramVerificationBadge verified={true} size="sm" className="ml-1" />}
               </Badge>
             </div>
@@ -439,14 +439,14 @@ export default function DashboardPage() {
         )}
 
         {/* Welcome Section for Non-Agents */}
-        {user.role !== 'agent' && (
+        {user.role !== 'agent' && !freshUserData?.banned && (
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-foreground mb-2">
               Welcome back, {user.firstName || user.name}
             </h1>
             <p className="text-muted-foreground">
               {user.role === 'student' && 'Manage your hostel bookings and discover new accommodations'}
-              {user.role === 'individual' && 'Find and book accommodations as an individual'}
+              {(user.role === 'student' && freshUserData?.userType === 'individual') && 'Find and book accommodations as an individual'}
               {user.role === 'admin' && 'Oversee platform operations and verify agents'}
             </p>
           </div>
@@ -454,7 +454,7 @@ export default function DashboardPage() {
 
         {/* Real-Time Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {user.role === 'student' && stats && (
+          {(user.role === 'student' || (user.role === 'student' && freshUserData?.userType === 'individual')) && stats && (
             <>
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -463,7 +463,9 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{stats.totalBookings}</div>
-                  <p className="text-xs text-muted-foreground">Total inspections booked</p>
+                  <p className="text-xs text-muted-foreground">
+                    {freshUserData?.userType === 'individual' ? 'Total accommodation requests' : 'Total inspections booked'}
+                  </p>
                 </CardContent>
               </Card>
               <Card>
@@ -602,12 +604,12 @@ export default function DashboardPage() {
               <CardDescription>Common tasks and shortcuts</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {user.role === 'student' && (
+              {(user.role === 'student' || (user.role === 'student' && freshUserData?.userType === 'individual')) && (
                 <>
                   <Link href="/hostels">
                     <Button className="w-full justify-start h-12">
                       <Search className="w-4 h-4 mr-2" />
-                      Browse Available Hostels
+                      {freshUserData?.userType === 'individual' ? 'Browse Available Accommodations' : 'Browse Available Hostels'}
                       <Badge variant="outline" className="ml-auto">
                         {stats?.availableHostels || 0} available
                       </Badge>
@@ -616,7 +618,7 @@ export default function DashboardPage() {
                   <Link href="/dashboard/bookings">
                     <Button variant="outline" className="w-full justify-start h-12">
                       <Calendar className="w-4 h-4 mr-2" />
-                      Manage My Bookings
+                      {freshUserData?.userType === 'individual' ? 'Manage My Requests' : 'Manage My Bookings'}
                       <Badge variant="outline" className="ml-auto">
                         {stats?.totalBookings || 0} total
                       </Badge>
@@ -815,7 +817,9 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Role:</span>
-                      <Badge variant="outline">{user.role}</Badge>
+                      <Badge variant="outline">
+                        {freshUserData?.userType === 'individual' ? 'Individual' : user.role}
+                      </Badge>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Status:</span>

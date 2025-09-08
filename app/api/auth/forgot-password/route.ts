@@ -33,12 +33,19 @@ export async function POST(request: NextRequest) {
     const redirectUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?type=recovery`
     console.log('🔑 FORGOT PASSWORD API: Redirect URL constructed:', redirectUrl)
 
-    // Use Supabase Auth to send password reset email
-    console.log('🔑 FORGOT PASSWORD API: Calling supabase.auth.resetPasswordForEmail...')
+    // Send OTP for password reset instead of magic link
+    console.log('🔑 FORGOT PASSWORD API: Calling supabase.auth.signInWithOtp for password reset...')
     const startTime = Date.now()
     
-    const { error } = await supabase.auth.resetPasswordForEmail(validatedData.email, {
-      redirectTo: redirectUrl,
+    const { error } = await supabase.auth.signInWithOtp({
+      email: validatedData.email,
+      options: {
+        shouldCreateUser: false, // Don't create new users during password reset
+        data: {
+          type: 'password_reset',
+          timestamp: new Date().toISOString()
+        }
+      }
     })
 
     const endTime = Date.now()

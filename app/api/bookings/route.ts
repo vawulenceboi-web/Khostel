@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     if (session.user.user_metadata?.role !== 'student') {
       return NextResponse.json(
-        { success: false, message: 'Student role required' },
+        { success: false, message: 'Student or individual role required' },
         { status: 403 }
       )
     }
@@ -106,9 +106,9 @@ export async function PUT(request: NextRequest) {
     }
 
     // Allow agents to manage all bookings, students to cancel their own
-    if (session.user.role !== 'agent' && session.user.role !== 'student') {
+    if (session.user.role !== 'agent' && session.user.role !== 'student' && session.user.role !== 'individual') {
       return NextResponse.json(
-        { success: false, message: 'Agent or student role required' },
+        { success: false, message: 'Agent, student, or individual role required' },
         { status: 403 }
       )
     }
@@ -124,10 +124,10 @@ export async function PUT(request: NextRequest) {
     }
 
     // If student, only allow cancelling their own bookings
-    if (session.user.role === 'student') {
+    if (session.user.role === 'student' || session.user.role === 'individual') {
       if (status !== 'cancelled') {
         return NextResponse.json(
-          { success: false, message: 'Students can only cancel bookings' },
+          { success: false, message: 'Students and individuals can only cancel bookings' },
           { status: 403 }
         )
       }

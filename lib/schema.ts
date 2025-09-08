@@ -24,6 +24,7 @@ export const users = pgTable('users', {
   schoolId: varchar('school_id'),
   verifiedStatus: boolean('verified_status').default(false),
   businessRegNumber: varchar('business_reg_number'), // CAC number for agents
+  userType: varchar('user_type'), // Track original registration intent (individual vs student)
   profileImage: varchar('profile_image'),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
@@ -149,7 +150,8 @@ export const registerUserSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
   lastName: z.string().optional(),
   phone: z.string().optional(),
-  role: z.enum(['student', 'agent', 'individual']).default('student'),
+  role: z.enum(['student', 'agent']).default('student'), // Individuals map to student role
+  userType: z.enum(['student', 'individual', 'agent']).optional(), // Track original intent
   schoolId: z.string().optional(),
   businessRegNumber: z.string().optional(),
   address: z.string().optional(),

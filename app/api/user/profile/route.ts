@@ -125,6 +125,7 @@ export async function GET(request: NextRequest) {
       profileImage: customUser.profile_image_url,
       facePhoto: customUser.face_photo_url,
       role: customUser.role,
+      userType: customUser.user_type,
       verifiedStatus: customUser.verified_status,
       emailVerified: customUser.email_verified,
       schoolId: customUser.school_id,

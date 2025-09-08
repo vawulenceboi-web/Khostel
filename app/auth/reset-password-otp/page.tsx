@@ -62,11 +62,11 @@ export default function ResetPasswordOtpPage() {
     try {
       console.log('🔄 RESET PASSWORD OTP: Starting password reset...')
 
-      // Verify the OTP
+      // Verify the OTP for password reset
       const { data, error: verifyError } = await supabase.auth.verifyOtp({
         email,
         token: otp,
-        type: 'recovery'
+        type: 'email'
       })
 
       console.log('🔄 RESET PASSWORD OTP: OTP verification response:', { data, error: verifyError })

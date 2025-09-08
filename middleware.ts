@@ -21,8 +21,11 @@ export async function middleware(request: NextRequest) {
   const publicPaths = [
     '/auth/login',
     '/auth/register',
+    '/auth/register-individual',
     '/auth/forgot-password',
     '/auth/reset-password',
+    '/auth/reset-password-otp',
+    '/auth/verify-otp',
     '/auth/callback',
     '/',
     '/privacy',

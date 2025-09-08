@@ -110,6 +110,12 @@ export default function HomePage() {
                   List Your Property
                 </Button>
               </Link>
+              <Link href="/auth/register-individual">
+                <Button variant="outline" size="lg" className="text-lg px-8 py-4 h-14 min-w-[200px] bg-green-50 border-green-200 text-green-700 hover:bg-green-100">
+                  <User className="mr-2 h-5 w-5" />
+                  Individual Access
+                </Button>
+              </Link>
             </div>
 
             {/* Clickable Real-Time Stats */}
@@ -206,7 +212,7 @@ export default function HomePage() {
                 </div>
                 <h3 className="text-2xl font-bold mb-4">I&apos;m an Individual</h3>
                 <p className="text-muted-foreground mb-6 leading-relaxed">
-                  Looking for accommodation as an individual? Browse hostels and connect directly with agents.
+                  Looking for accommodation as an individual? Browse properties and connect directly with agents.
                 </p>
                 <Link href="/auth/register-individual">
                   <Button className="w-full h-12 text-base font-semibold bg-green-600 hover:bg-green-700">
