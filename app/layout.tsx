@@ -27,8 +27,8 @@ export default function RootLayout({
             <Image
               src="/images/logo.png"
               alt="k-H Logo"
-              width={32}
-              height={40}
+              width={60}
+              height={70}
               priority
             />
           </header>
