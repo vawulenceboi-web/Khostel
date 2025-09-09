@@ -258,36 +258,51 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-background/95 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <Link href="/" className="text-2xl font-bold text-foreground">
-                k-H
-              </Link>
-              <Badge variant="secondary" className="hidden sm:inline-flex">
-                {user.role === 'student' && <GraduationCap className="w-3 h-3 mr-1" />}
-                {user.role === 'agent' && <Building className="w-3 h-3 mr-1" />}
-                {(user.role === 'student' && freshUserData?.userType === 'individual') && <User className="w-3 h-3 mr-1" />}
-                {user.role === 'admin' && <Shield className="w-3 h-3 mr-1" />}
-                {freshUserData?.userType === 'individual' ? 'Individual' : (user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'User')}
-                {user.verifiedStatus && <InstagramVerificationBadge verified={true} size="sm" className="ml-1" />}
-              </Badge>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-muted-foreground hidden sm:block">
-                {user.firstName || user.name || 'User'}
-              </span>
-              <Button variant="outline" onClick={signOut}>
-                Sign Out
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+{/* ===== Header ===== */}
+<header className="border-b border-border bg-background/95 backdrop-blur-md sticky top-0 z-50">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="flex justify-between items-center h-16">
+      <div className="flex items-center space-x-4">
+        <Link href="/" className="text-2xl font-bold text-foreground">
+          k-H
+        </Link>
 
+        <Badge variant="secondary" className="hidden sm:inline-flex">
+          {user.role === 'student' && (
+            <GraduationCap className="w-3 h-3 mr-1" />
+          )}
+
+          {user.role === 'agent' && (
+            <Building className="w-3 h-3 mr-1" />
+          )}
+
+          {user.role === 'individual' && (
+            <span className="w-3 h-3 mr-1">{user.email}</span>
+          )}
+
+          {user.role === 'admin' && (
+            <Shield className="w-3 h-3 mr-1" />
+          )}
+
+          {user.verifiedStatus && (
+            <InstagramVerificationBadge verified={true} size="sm" className="ml-1" />
+          )}
+        </Badge>
+      </div>
+
+      <div className="flex items-center space-x-4">
+        <span className="text-sm text-muted-foreground hidden sm:block">
+          {user.firstName || user.name || 'User'}
+        </span>
+
+        <Button variant="outline" onClick={signOut}>
+          Sign Out
+        </Button>
+      </div>
+    </div>
+  </div>
+</header>
+{/* ===== end header ===== */}
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Banned Agent Warning */}

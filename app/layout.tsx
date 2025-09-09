@@ -3,6 +3,7 @@ import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 import { Analytics } from '@vercel/analytics/next'
 import { Providers } from './providers'
+import Image from 'next/image'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -21,6 +22,18 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} antialiased`}>
         <Providers>
+          {/* Header with Logo */}
+          <header className="w-full p-4 flex items-center">
+            <Image
+              src="/images/logo.png"
+              alt="k-H Logo"
+              width={120}
+              height={40}
+              priority
+            />
+          </header>
+
+          {/* Page content */}
           {children}
         </Providers>
         <Analytics />
