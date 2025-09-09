@@ -354,7 +354,7 @@ export default function RegisterIndividualPage() {
                 <Button 
                   type="submit" 
                   className="w-full h-12 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-semibold shadow-lg" 
-                  disabled={isLoading || !formData.termsAccepted}
+                  disabled={isLoading || !FormData.termsAccepted}
                 >
                   {isLoading ? (
                     <>
@@ -364,13 +364,13 @@ export default function RegisterIndividualPage() {
                   ) : (
                     <>
                       <UserCheck className="w-4 h-4 mr-2" />
-                      Create Individual Account
+                      Coming soon....
                     </>
                   )}
                 </Button>
                 
                 <p className="text-xs text-gray-500 text-center mt-3">
-                  By creating an account, you agree to receive email verification and platform updates
+                  please note that this feature is not available yet.
                 </p>
               </div>
             </form>
