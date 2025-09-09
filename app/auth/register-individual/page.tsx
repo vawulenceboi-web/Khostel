@@ -116,21 +116,13 @@ export default function RegisterIndividualPage() {
          toast.success('Registration successful! Please check your email to verify your account.')
 
         // Redirect individual users to Coming Soon page
-        if (submitData.userType === 'individual') {
-            setTimeout(() => {
-              router.push('/coming-soon')
-          }, 2000)
-          return
+      if (submitData.userType === 'individual') {
+        toast.info('Coming Soon: Individual dashboard is not available yet');
+        router.push('/coming-soon');
+        return; // skip OTP / other redirects
       }
-
-  // For other users, continue to verification
-  setTimeout(() => {
-    router.push(`/auth/verify-otp?email=${encodeURIComponent(formData.email)}`)
-  }, 2000)
-}
-      
-      } else {
-        toast.error(result.message || 'Registration failed')
+    } else {
+    toast.error(result.message || 'Registration failed')
       }
     } catch (error) {
       console.error('Registration error:', error)
@@ -395,5 +387,6 @@ export default function RegisterIndividualPage() {
           </p>
         </div>
       </div>
-    </div>
-  )
+      </div>
+  );
+};
