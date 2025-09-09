@@ -50,49 +50,50 @@ export default function HomePage() {
       <Card className="sticky top-0 z-50 rounded-none border-b-2 shadow-lg">
         <CardContent className="p-0">
           <nav className="bg-background/98 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10">
-          <div className="flex justify-between items-center h-20 w-full">
-   
-  
-  
-  {/* Logo */}
-  <div className="flex items-center">
-    <Link href="/">
-      <Image
-        src="/images/logo.png"
-        alt="k-H Logo"
-        width={90}  // increase width to match buttons visually
-        height={100}  // match the height of buttons
-        priority
-      />
-    </Link>
-  </div>
+            <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10">
+              <div className="flex justify-between items-center h-20 w-full">
+                {/* Logo */}
+                <div className="flex items-center">
+                  <Link href="/">
+                    <Image
+                      src="/images/logo.png"
+                      alt="k-H Logo"
+                      width={90}
+                      height={100}
+                      priority
+                    />
+                  </Link>
+                </div>
 
-  {/* Navigation Links */}
-  <div className="hidden md:flex items-center space-x-8">
-    <Link href="/hostels" className="text-foreground hover:text-primary transition-colors font-medium">
-      Browse Hostels
-    </Link>
-    <Link href="/agents" className="text-muted-foreground hover:text-foreground transition-colors">
-      Find Agents
-    </Link>
-  </div>
+                {/* Navigation Links */}
+                <div className="hidden md:flex items-center space-x-6">
+                  <Link href="/hostels" className="px-4 py-2 text-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-all duration-200 font-medium">
+                    Browse Hostels
+                  </Link>
+                  <Link href="/agents" className="px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg transition-all duration-200 font-medium">
+                    Find Agents
+                  </Link>
+                </div>
 
-  {/* Buttons */}
-  <div className="flex items-center space-x-4">
-    <Link href="/auth/login">
-      <Button variant="ghost">Sign In</Button>
-    </Link>
-    <Link href="/auth/register">
-      <Button>Get Started</Button>
-    </Link>
-  </div>
-</div>
+                {/* Buttons */}
+                <div className="flex items-center space-x-4">
+                  <Link href="/auth/login">
+                    <Button variant="ghost">Sign In</Button>
+                  </Link>
+                  <Link href="/auth/register">
+                    <Button>Get Started</Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </nav>
+        </CardContent>
+      </Card>
 
       {/* Hero Section */}
       <section className="relative py-10 md:py-16 overflow-hidden">
         <div className="absolute inset-0 pattern-dots opacity-20" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"/>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <Link href="/hostels">
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight cursor-pointer hover:opacity-80 transition-opacity">
@@ -123,6 +124,7 @@ export default function HomePage() {
                   List Your Property
                 </Button>
               </Link>
+            </div>
 
             {/* Clickable Real-Time Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-20">
@@ -385,9 +387,5 @@ export default function HomePage() {
         </div>
       </footer>
     </div>
-    </nav>
-   </CardContent>
-   </Card>
-   </div>
-);
+  );
 }
