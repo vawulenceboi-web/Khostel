@@ -79,7 +79,7 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="relative py-20 md:py-32 overflow-hidden">
         <div className="absolute inset-0 pattern-dots opacity-20" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"/>
           <div className="text-center">
             <Link href="/hostels">
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight cursor-pointer hover:opacity-80 transition-opacity">
@@ -110,13 +110,6 @@ export default function HomePage() {
                   List Your Property
                 </Button>
               </Link>
-              <Link href="/auth/register-individual">
-                <Button variant="outline" size="lg" className="text-lg px-8 py-4 h-14 min-w-[200px] bg-green-50 border-green-200 text-green-700 hover:bg-green-100">
-                  <User className="mr-2 h-5 w-5" />
-                  Individual Access
-                </Button>
-              </Link>
-            </div>
 
             {/* Clickable Real-Time Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-20">

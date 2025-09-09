@@ -113,10 +113,22 @@ export default function RegisterIndividualPage() {
       const result = await response.json()
 
       if (result.success) {
-        toast.success('Registration successful! Please check your email to verify your account.')
-        setTimeout(() => {
-          router.push(`/auth/verify-otp?email=${encodeURIComponent(formData.email)}`)
-        }, 2000)
+         toast.success('Registration successful! Please check your email to verify your account.')
+
+        // Redirect individual users to Coming Soon page
+        if (submitData.userType === 'individual') {
+            setTimeout(() => {
+              router.push('/coming-soon')
+          }, 2000)
+          return
+      }
+
+  // For other users, continue to verification
+  setTimeout(() => {
+    router.push(`/auth/verify-otp?email=${encodeURIComponent(formData.email)}`)
+  }, 2000)
+}
+      
       } else {
         toast.error(result.message || 'Registration failed')
       }
@@ -350,7 +362,7 @@ export default function RegisterIndividualPage() {
                 <Button 
                   type="submit" 
                   className="w-full h-12 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-semibold shadow-lg" 
-                  disabled={isLoading || !formData.termsAccepted}
+                  disabled={isLoading || !FormData.termsAccepted}
                 >
                   {isLoading ? (
                     <>
@@ -385,4 +397,3 @@ export default function RegisterIndividualPage() {
       </div>
     </div>
   )
-}
