@@ -51,7 +51,7 @@ export default function HomePage() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <Link href="/" className="text-2xl font-bold text-foreground">
-                k-H
+        
               </Link>
             </div>
             
@@ -366,7 +366,7 @@ export default function HomePage() {
           
           <div className="border-t border-border mt-12 pt-8 text-center">
             <p className="text-muted-foreground">
-              &copy; 2024 k-H. All rights reserved. Made for Nigerian students.
+              &copy; 2025 k-H. All rights reserved. Made for Nigerian students.
             </p>
           </div>
         </div>

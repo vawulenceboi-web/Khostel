@@ -119,7 +119,7 @@ export default function LoginPage() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center space-x-2">
             <ArrowLeft className="h-5 w-5" />
-            <span className="text-xl font-bold">k-H</span>
+            <span className="text-xl font-bold">Home</span>
           </Link>
         </div>
       </div>
@@ -129,7 +129,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-foreground mb-2">Welcome Back</h1>
-            <p className="text-muted-foreground">Sign in to your k-H account</p>
+            <p className="text-muted-foreground">Sign in to your account</p>
           </div>
 
           <Card className="border-2 border-border/50 shadow-lg">
