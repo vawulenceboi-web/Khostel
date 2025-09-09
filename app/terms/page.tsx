@@ -171,7 +171,7 @@ export default function TermsPage() {
               <div className="text-sm text-gray-700 space-y-2">
                 <p>For questions, disputes, or support:</p>
                 <ul className="ml-4 list-disc space-y-1">
-                  <li>Email: support@k-h.com</li>
+                  <li>Email: info@therealthespians.com</li>
                   <li>Platform disputes: admin@k-h.com</li>
                   <li>Emergency safety concerns: safety@k-h.com</li>
                 </ul>
