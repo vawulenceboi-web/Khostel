@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { MapPin, Shield, Clock, Users, Star, Search, GraduationCap, Building, User } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useAuth } from '@/lib/hooks/use-auth'
 
 export default function HomePage() {
@@ -44,32 +45,46 @@ export default function HomePage() {
   }, [])
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen"> 
       {/* Navigation */}
       <nav className="border-b border-border bg-background/95 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            
-            <div className="hidden md:flex items-center space-x-8">
-              <Link href="/hostels" className="text-foreground hover:text-primary transition-colors font-medium">
-                Browse Hostels
-              </Link>
-              <Link href="/agents" className="text-muted-foreground hover:text-foreground transition-colors">
-                Find Agents
-              </Link>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <Link href="/auth/login">
-                <Button variant="ghost">Sign In</Button>
-              </Link>
-              <Link href="/auth/register">
-                <Button>Get Started</Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+          <div className="flex justify-between items-center h-16 w-full">
+  
+  
+  {/* Logo */}
+  <div className="flex items-center">
+    <Link href="/">
+      <Image
+        src="/images/logo.png"
+        alt="k-H Logo"
+        width={90}  // increase width to match buttons visually
+        height={100}  // match the height of buttons
+        priority
+      />
+    </Link>
+  </div>
+
+  {/* Navigation Links */}
+  <div className="hidden md:flex items-center space-x-8">
+    <Link href="/hostels" className="text-foreground hover:text-primary transition-colors font-medium">
+      Browse Hostels
+    </Link>
+    <Link href="/agents" className="text-muted-foreground hover:text-foreground transition-colors">
+      Find Agents
+    </Link>
+  </div>
+
+  {/* Buttons */}
+  <div className="flex items-center space-x-4">
+    <Link href="/auth/login">
+      <Button variant="ghost">Sign In</Button>
+    </Link>
+    <Link href="/auth/register">
+      <Button>Get Started</Button>
+    </Link>
+  </div>
+</div>
 
       {/* Hero Section */}
       <section className="relative py-10 md:py-16 overflow-hidden">
@@ -367,5 +382,7 @@ export default function HomePage() {
         </div>
       </footer>
     </div>
-  )
+   </nav>
+  </div>
+);
 }
