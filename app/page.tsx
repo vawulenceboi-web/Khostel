@@ -50,9 +50,6 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Link href="/" className="text-2xl font-bold text-foreground">
-        
-              </Link>
             </div>
             
             <div className="hidden md:flex items-center space-x-8">
@@ -77,7 +74,7 @@ export default function HomePage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative py-20 md:py-32 overflow-hidden">
+      <section className="relative py-10 md:py-16 overflow-hidden">
         <div className="absolute inset-0 pattern-dots opacity-20" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"/>
           <div className="text-center">
