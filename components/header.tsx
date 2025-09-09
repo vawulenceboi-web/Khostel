@@ -5,19 +5,17 @@ import Link from 'next/link'
 
 export default function Header() {
   return (
-    <header className="w-full bg-white shadow-md py-4 px-6 flex items-center justify-between">
-      <Link href="/">
-        <div className="flex items-center space-x-2">
+  <header className="w-full bg-white shadow-md py-2 px-6 flex justify-center">
+    <Link href="/">
           <Image
-            src="/images/logo.png"  // place your real logo in public/images/logo.png
+            src="/images/logo.png"  
             alt="k-H Logo"
-            width={120}
-            height={40}
+            width={90}
+            height={100}
             priority
           />
-          <span className="text-xl font-bold text-gray-800">k-H</span>
-        </div>
       </Link>
+    
 
       {/* Optional: future navigation */}
       {/* <nav>
@@ -25,5 +23,6 @@ export default function Header() {
         <Link href="/auth/register">Sign Up</Link>
       </nav> */}
     </header>
-  )
-}
+  
+      )
+    }
