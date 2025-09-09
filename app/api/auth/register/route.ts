@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
           last_name: validatedData.lastName || null,
           phone: validatedData.phone || null,
           role: validatedData.role,
-          user_type: requestBody.userType || validatedData.role, // Track original intent
+          user_type: body.userType || validatedData.role, // Track original intent
           school_id: validatedData.schoolId || null,
           business_reg_number: validatedData.businessRegNumber || null,
           address: validatedData.address || null,
@@ -179,7 +179,7 @@ export async function POST(request: NextRequest) {
         last_name: validatedData.lastName || null,
         phone: validatedData.phone || null,
         role: validatedData.role,
-        user_type: requestBody.userType || validatedData.role,
+        user_type: body.userType || validatedData.role,
         school_id: validatedData.schoolId || null,
         business_reg_number: validatedData.businessRegNumber || null,
         address: validatedData.address || null,
