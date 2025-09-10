@@ -68,6 +68,7 @@ export async function POST(request: NextRequest) {
       email: validatedData.email,
       password: validatedData.password,
       options: {
+        emailRedirectTo: undefined, // Explicitly disable email redirect
         data: {
           first_name: validatedData.firstName,
           last_name: validatedData.lastName || null,
@@ -84,7 +85,6 @@ export async function POST(request: NextRequest) {
           dashboard_access: validatedData.role === 'student' ? true : false,
           pending_approval: validatedData.role === 'agent' ? true : false,
         }
-        // Remove emailRedirectTo completely for OTP flow
       }
     })
 
