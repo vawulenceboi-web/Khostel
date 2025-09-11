@@ -250,7 +250,7 @@ export default function RegisterPage() {
           })
           
           setTimeout(() => {
-            router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`)
+            router.push(`/auth/confirmation-sent?email=${encodeURIComponent(formData.email)}`)
           }, 2000)
         } else {
           toast.success('Registration successful!', {
@@ -592,7 +592,7 @@ export default function RegisterPage() {
                 ) : (
                   <>
                     <UserCheck className="w-4 h-4 mr-2" />
-                    {formData.role === 'agent' ? 'Continue to Face Verification' : 'Create Account'}
+                    {formData.role === 'agent' ? 'join wait list or verified' : 'Create Account'}
                   </>
                 )}
               </Button>
