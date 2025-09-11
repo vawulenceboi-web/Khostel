@@ -250,7 +250,7 @@ export default function RegisterPage() {
           })
           
           setTimeout(() => {
-            router.push(`/auth/verify-otp?email=${encodeURIComponent(formData.email)}`)
+            router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`)
           }, 2000)
         } else {
           toast.success('Registration successful!', {
