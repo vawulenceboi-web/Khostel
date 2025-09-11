@@ -60,10 +60,11 @@ export async function GET(request: Request) {
     }
     
     // Default: email verification or other - redirect to dashboard
-    console.log('✅ AUTH CALLBACK DEBUG: Default flow - redirecting to dashboard')
-    const dashboardUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard`
-    console.log('✅ AUTH CALLBACK DEBUG: Dashboard URL:', dashboardUrl)
-    return NextResponse.redirect(dashboardUrl)
+    console.log('✅ AUTH CALLBACK DEBUG: Default flow - redirecting to verified page')
+    const verifiedUrl = new URL('/auth/verified', process.env.NEXT_PUBLIC_SITE_URL)
+    verifiedUrl.searchParams.set('email', data.user?.email || '')
+    console.log('✅ AUTH CALLBACK DEBUG: Verified page URL:', verifiedUrl.toString())
+    return NextResponse.redirect(verifiedUrl.toString())
   }
 
   // If no code is present, redirect to the home page
