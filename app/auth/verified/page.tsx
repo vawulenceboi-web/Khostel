@@ -1,16 +1,13 @@
 'use client'
 
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { CheckCircle } from 'lucide-react'
 
-interface VerifiedPageProps {
-  searchParams?: { email?: string }
-}
-
-export default function VerifiedPage({ searchParams }: VerifiedPageProps) {
-  const email = searchParams?.email || ''
-
+export default function VerifiedPage() {
+  const searchParams = useSearchParams()
+  const email = searchParams?.get('email') || ''
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <div className="w-full max-w-md">
