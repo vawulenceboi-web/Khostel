@@ -60,16 +60,18 @@ export async function GET(request: Request) {
     }
     
     // Default: email verification or other - redirect to dashboard
-    console.log('✅ AUTH CALLBACK DEBUG: Default flow - redirecting to verified page')
-    const verifiedUrl = new URL('/auth/verified', process.env.NEXT_PUBLIC_SITE_URL)
-    verifiedUrl.searchParams.set('email', data.user?.email || '')
-    console.log('✅ AUTH CALLBACK DEBUG: Verified page URL:', verifiedUrl.toString())
-    return NextResponse.redirect(verifiedUrl.toString())
+    if (type === 'signup' || (!type && data.user)) {
+    console.log('✅ AUTH CALLBACK DEBUG: Email confirmation flow detected')
+    const confirmedUrl = new URL('/auth/verified', process.env.NEXT_PUBLIC_SITE_URL)
+    confirmedUrl.searchParams.set('email', data.user?.email || '')
+    console.log('✅ AUTH CALLBACK DEBUG: Redirecting to email confirmation page:', confirmedUrl.toString())
+    return NextResponse.redirect(confirmedUrl.toString())
   }
-
+// -- fallback --
   // If no code is present, redirect to the home page
   console.log('🔗 AUTH CALLBACK DEBUG: No code present - redirecting to home')
   const homeUrl = process.env.NEXT_PUBLIC_SITE_URL!
   console.log('🔗 AUTH CALLBACK DEBUG: Home URL:', homeUrl)
-  return NextResponse.redirect(homeUrl)
+  return NextResponse.redirect(homeUrl) 
+  }
 }
