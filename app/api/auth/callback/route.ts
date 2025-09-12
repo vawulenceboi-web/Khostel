@@ -60,7 +60,7 @@ export async function GET(request: Request) {
     }
     
     // Default: email verification or other - redirect to dashboard
-    if (type === 'signup' || (!type && data.user)) {
+    if (data.user) {
     console.log('✅ AUTH CALLBACK DEBUG: Email confirmation flow detected')
     const confirmedUrl = new URL('/auth/verified', process.env.NEXT_PUBLIC_SITE_URL)
     confirmedUrl.searchParams.set('email', data.user?.email || '')
@@ -72,6 +72,6 @@ export async function GET(request: Request) {
   console.log('🔗 AUTH CALLBACK DEBUG: No code present - redirecting to home')
   const homeUrl = process.env.NEXT_PUBLIC_SITE_URL!
   console.log('🔗 AUTH CALLBACK DEBUG: Home URL:', homeUrl)
-  return NextResponse.redirect(homeUrl) 
-  }
+  return NextResponse.redirect(homeUrl)
+}
 }
